@@ -5,14 +5,18 @@
 #-------------------------------------------------
 
 QT       += core
-
 QT       -= gui
 
-TARGET = qubiq
+TARGET    = qubiq
+
 CONFIG   += console
 CONFIG   -= app_bundle
 
 TEMPLATE = app
 
+INCLUDEPATH += "include"
+HEADERS     += include/qubiq/text.h
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    src/text.cpp
+
