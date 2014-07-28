@@ -16,9 +16,9 @@ LexemeSequence::LexemeSequence(const Text *text, ulong offset, ulong n, ulong bo
 
     _state = calculate_state(text, offset, n, boundary);
 
-    if (_state == LexemeSequenceState::OK) {
+    if (_state == LexemeSequence::STATE_OK) {
         _state = build_sequence(text, offset, n);
-        if (_state == LexemeSequenceState::OK) {
+        if (_state == LexemeSequence::STATE_OK) {
             calculate_metrics(text, n, boundary);
         }
     }
@@ -38,33 +38,33 @@ LexemeSequence &LexemeSequence::operator =(const LexemeSequence &other)
     return *this;
 }
 
-LexemeSequenceState LexemeSequence::calculate_state(const Text *text, ulong offset, ulong n, ulong boundary)
+LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *text, ulong offset, ulong n, ulong boundary)
 {
     if (n < 2)
-        return LexemeSequenceState::UNIGRAM;
+        return LexemeSequence::STATE_UNIGRAM;
 
     if (boundary < 1 || boundary >= n)
-        return LexemeSequenceState::BAD_BOUNDARY;
+        return LexemeSequence::STATE_BAD_BOUNDARY;
 
-    if (offset >= text->offsets()->length())
-        return LexemeSequenceState::BAD_OFFSET;
+    if (offset >= (ulong)text->offsets()->length())
+        return LexemeSequence::STATE_BAD_OFFSET;
 
-    if (offset + n > text->offsets()->length())
-        return LexemeSequenceState::BAD_OFFSET_N;
+    if (offset + n > (ulong)text->offsets()->length())
+        return LexemeSequence::STATE_BAD_OFFSET_N;
 
-    return LexemeSequenceState::OK;
+    return LexemeSequence::STATE_OK;
 }
 
-LexemeSequenceState LexemeSequence::build_sequence(const Text *text, ulong offset, ulong n)
+LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *text, ulong offset, ulong n)
 {
-    for (int i = 0; i < n; i++) {
+    for (ulong i = 0; i < n; i++) {
         ulong  idx_lexeme = text->offsets()->at(offset + i);
         Lexeme *lexeme    = text->lexemes()->at(idx_lexeme);
         if (lexeme->isBoundary()) {
             /* For invalid sequences we shrink containers to 0: */
             _lexemes->resize(0);
             _seq_key->resize(0);
-            return LexemeSequenceState::HAS_BOUNDARIES;
+            return LexemeSequence::STATE_HAS_BOUNDARIES;
         }
         _lexemes->append(idx_lexeme);
         // FIXME: test packing routine
@@ -72,10 +72,10 @@ LexemeSequenceState LexemeSequence::build_sequence(const Text *text, ulong offse
             _seq_key->append((char)(idx_lexeme & (0xFF << j) >> j));
         }
     }
-    return LexemeSequenceState::OK;
+    return LexemeSequence::STATE_OK;
 }
 
-LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, ulong n, ulong boundary)
+LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, ulong n, ulong boundary)
 {
     _boundary = boundary;
 
@@ -101,7 +101,7 @@ LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, ulong n,
     ;
     _score = _mi >= MIN_MUTUAL_INFORMATION? _llr : 0.0;
 
-    return LexemeSequenceState::OK;
+    return LexemeSequence::STATE_OK;
 }
 
 ulong LexemeSequence::frequency(const Text *text, ulong offset, ulong n) const
@@ -118,9 +118,9 @@ ulong LexemeSequence::frequency(const Text *text, ulong offset, ulong n) const
 bool LexemeSequence::is_sequence(const Text *text, ulong text_offset, ulong sequence_offset, ulong n) const
 {
     /* NB! sequence_offset and n are always correlated and won't lead to out-of-range errors */
-    if (text_offset + n > text->offsets()->length())
+    if (text_offset + n > (ulong)text->offsets()->length())
         return false;
-    for (int i = 0; i < n; i++)
+    for (ulong i = 0; i < n; i++)
         if (text->offsets()->at(text_offset + i) != _lexemes->at(sequence_offset + i))
             return false;
     return true;
@@ -128,7 +128,7 @@ bool LexemeSequence::is_sequence(const Text *text, ulong text_offset, ulong sequ
 
 void LexemeSequence::_initialize()
 {
-    _state    = LexemeSequenceState::EMPTY;
+    _state    = LexemeSequence::STATE_EMPTY;
     _boundary = 0;
     _k1       = 0;
     _n1       = 0;

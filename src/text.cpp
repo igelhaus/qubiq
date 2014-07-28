@@ -150,7 +150,7 @@ bool Text::process_token(const QStringRef &token)
         if (!idx_lexemes->contains(*normalized)) {
             Lexeme *lexeme = new Lexeme(*normalized, is_boundary);
             _lexemes->append(lexeme);
-            idx_lexemes->insert(*normalized, lexemes->length() - 1);
+            idx_lexemes->insert(*normalized, _lexemes->length() - 1);
         }
 
         idx_lexeme = idx_lexemes->value(*normalized);
@@ -160,7 +160,7 @@ bool Text::process_token(const QStringRef &token)
     }
 
     _offsets->append(idx_lexeme);
-    _lexemes->at(idx_lexeme)->addForm(form, offsets->length() - 1);
+    _lexemes->at(idx_lexeme)->addForm(form, _offsets->length() - 1);
 
     return true;
 }
