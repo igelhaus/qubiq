@@ -2,11 +2,9 @@ QT += core testlib
 QT -= gui
 
 TARGET    = test_qubiq
-
 CONFIG   += console
 CONFIG   -= app_bundle
-
-TEMPLATE = app
+TEMPLATE  = app
 
 INCLUDEPATH += "../include"
 
