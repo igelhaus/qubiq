@@ -16,8 +16,9 @@ private:
     /* Each lexeme is represented in a text as a set of its forms
      * occuring in certain text positions, counted as offsets relative to
      * the first word in the text: */
-    QVector<QString> *_forms;
-    QVector<ulong>   *_offsets;
+    QVector<QString>  *_forms;
+    QVector<ulong>    *_offsets;
+    QHash<ulong, int> *_idx_offsets; // Ensure that offsets are unique
 
 public:
     Lexeme(const QString &lexeme, bool is_boundary);
@@ -30,7 +31,7 @@ public:
     inline const QVector<QString>* forms()   const { return _forms; }
     inline const QVector<ulong>*   offsets() const { return _offsets; }
 
-    void addForm(const QString &form, ulong offset);
+    bool addForm(const QString &form, ulong offset, bool overwrite = false);
 };
 
 #endif // _LEXEME_H_
