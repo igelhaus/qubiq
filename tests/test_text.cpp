@@ -9,6 +9,8 @@ class TestText: public QObject
 private slots:
     void emptyText();
     void simpleSentence();
+    void simpleSentenceFromFile();
+    void appendFromNonExistentFile();
 };
 
 void TestText::emptyText()
@@ -35,6 +37,18 @@ void TestText::simpleSentence()
     QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
     QCOMPARE(text.numUniqueForms(), (ulong)9);
     QCOMPARE(text.numLexemes(), (ulong)9);
+}
+
+void TestText::simpleSentenceFromFile()
+{
+    QSKIP("not implemented ");
+// FIXME: QTemporaryFile
+}
+
+void TestText::appendFromNonExistentFile()
+{
+    Text text;
+    QCOMPARE(text.appendFile("non-existent.txt"), false);
 }
 
 QTEST_MAIN(TestText)
