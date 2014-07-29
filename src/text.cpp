@@ -111,11 +111,9 @@ QString* Text::normalize_token(const QStringRef &token, bool is_boundary)
     if (is_boundary) {
         normalized = new QString(token.toString());
     } else {
-        normalized = new QString(token.toString());
-        /* 2DO:
-         * * add capitalization normalization
-         * * add morphology routines
-        */
+        // FIXME: add locale-dependent toLower()
+        // 2DO: add an entry point morphology routines
+        normalized = new QString(token.toString().toLower());
     }
 
     return normalized;
@@ -140,9 +138,10 @@ bool Text::process_token(const QStringRef &token)
         num_forms++;
 
     ulong idx_lexeme;
-    QString form = token.toString();
-    if (idx_forms->contains(form)) {
-        idx_lexeme = idx_forms->value(form);
+    QString form     = token.toString();
+    QString form_key = form.toLower(); // FIXME: add locale-dependent toLower()
+    if (idx_forms->contains(form_key)) {
+        idx_lexeme = idx_forms->value(form_key);
     } else {
         QString *normalized = normalize_token(token, is_boundary);
 
@@ -153,7 +152,7 @@ bool Text::process_token(const QStringRef &token)
         }
 
         idx_lexeme = idx_lexemes->value(*normalized);
-        idx_forms->insert(form, idx_lexeme);
+        idx_forms->insert(form_key, idx_lexeme);
 
         delete normalized;
     }

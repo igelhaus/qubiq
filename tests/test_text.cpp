@@ -1,0 +1,41 @@
+#include <QtTest/QtTest>
+
+#include <qubiq/text.h>
+
+class TestText: public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void emptyText();
+    void simpleSentence();
+};
+
+void TestText::emptyText()
+{
+    Text text;
+
+    QCOMPARE(text.length(), (ulong)0);
+    QCOMPARE(text.numForms(), (ulong)0);
+    QCOMPARE(text.numUniqueForms(), (ulong)0);
+    QCOMPARE(text.numBoundaries(), (ulong)0);
+    QCOMPARE(text.numLexemes(), (ulong)0);
+}
+
+void TestText::simpleSentence()
+{
+    Text text;
+
+    QCOMPARE(text.append(QString(
+       "The quick brown fox jumps over the lazy dog."
+    )), true);
+
+    QCOMPARE(text.length(), (ulong)10);       // Total number of tokens
+    QCOMPARE(text.numForms(), (ulong)9);      // Number of non-boundary *tokens*
+    QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
+    QCOMPARE(text.numUniqueForms(), (ulong)9);
+    QCOMPARE(text.numLexemes(), (ulong)9);
+}
+
+QTEST_MAIN(TestText)
+#include "test_text.moc"
