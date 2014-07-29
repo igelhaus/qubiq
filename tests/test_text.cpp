@@ -10,6 +10,7 @@ private slots:
     void emptyText();
     void simpleSentence();
     void simpleSentenceFromFile();
+    void longSentenceFromFile();
     void appendFromNonExistentFile();
 };
 
@@ -41,8 +42,38 @@ void TestText::simpleSentence()
 
 void TestText::simpleSentenceFromFile()
 {
-    QSKIP("not implemented ");
-// FIXME: QTemporaryFile
+    QTemporaryFile text_file;
+    text_file.open();
+    text_file.write("The quick brown fox\n");
+    text_file.write("jumps over the lazy dog.");
+    text_file.close();
+
+    Text text;
+    QCOMPARE(text.appendFile(text_file.fileName()), true);
+
+    QCOMPARE(text.length(), (ulong)10);       // Total number of tokens
+    QCOMPARE(text.numForms(), (ulong)9);      // Number of non-boundary *tokens*
+    QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
+    QCOMPARE(text.numUniqueForms(), (ulong)9);
+    QCOMPARE(text.numLexemes(), (ulong)9);
+}
+
+void TestText::longSentenceFromFile()
+{
+    // NB! This test depends on DEFAULT_READ_BUFFER_SIZE value
+    QTemporaryFile text_file;
+    text_file.open();
+    text_file.write("The quick brown fox jumps over the laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaazy dog.");
+    text_file.close();
+
+    Text text;
+    QCOMPARE(text.appendFile(text_file.fileName()), true);
+
+    QCOMPARE(text.length(), (ulong)10);       // Total number of tokens
+    QCOMPARE(text.numForms(), (ulong)9);      // Number of non-boundary *tokens*
+    QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
+    QCOMPARE(text.numUniqueForms(), (ulong)9);
+    QCOMPARE(text.numLexemes(), (ulong)9);
 }
 
 void TestText::appendFromNonExistentFile()

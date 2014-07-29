@@ -1,7 +1,5 @@
 #include <qubiq/text.h>
 
-const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
-
 Text::Text() {
     _lexemes    = new QVector<Lexeme*>();
     _offsets    = new QVector<ulong>();
@@ -30,7 +28,7 @@ bool Text::appendFile(const QString &fname)
     }
 
     QTextStream file_stream(&file);
-    QString     buffer = file_stream.readLine(DEFAULT_READ_BUFFER_SIZE);
+    QString     buffer = file_stream.read(DEFAULT_READ_BUFFER_SIZE);
     QString     token_part;
     while (buffer.length() > 0) {
         QTextBoundaryFinder *boundary_finder = new QTextBoundaryFinder(
@@ -47,12 +45,13 @@ bool Text::appendFile(const QString &fname)
                 process_token(token);
             } else {
                 token_part = token.toString();
+                qDebug() << "token_part = " << token_part;
             }
         };
         delete boundary_finder;
 
         buffer.clear();
-        QString _buffer = file_stream.readLine(DEFAULT_READ_BUFFER_SIZE);
+        QString _buffer = file_stream.read(DEFAULT_READ_BUFFER_SIZE);
         if (!_buffer.isNull()) {
             buffer.append(token_part).append(_buffer);
         } else {

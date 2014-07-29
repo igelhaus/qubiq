@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <qubiq/lexeme.h>
 
+const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
+
 // FIXME: enhance debugging
 // FIXME: add dumping function
 
