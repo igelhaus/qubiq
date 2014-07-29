@@ -11,7 +11,7 @@ class Text: public QObject {
     Q_OBJECT
 
 private:
-    QVector<Lexeme*>      *_lexemes;    /* vector of all lexeme in the text */
+    QVector<Lexeme*>      *_lexemes;    /* vector of all lexemes in the text */
     QVector<ulong>        *_offsets;    /* offset of a form in the text -> offset of its lexeme in the vector */
     QHash<QString, ulong> *idx_forms;   /* form   -> offset of its lexeme in the vector */
     QHash<QString, ulong> *idx_lexemes; /* lexeme -> its offset in the vector */

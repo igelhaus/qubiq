@@ -26,7 +26,6 @@ bool Text::appendFile(const QString &fname)
 {
     QFile file(fname);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        // Error: unable to append from file
         return false;
     }
 
