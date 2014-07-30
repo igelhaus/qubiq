@@ -13,12 +13,24 @@ class LexemeSequence: public QObject {
     Q_OBJECT
 
 public:
+    enum LexemeSequenceState {
+        STATE_OK             = 0,
+        STATE_EMPTY          = 1,
+        STATE_UNIGRAM        = 2,
+        STATE_BAD_BOUNDARY   = 3,
+        STATE_BAD_OFFSET     = 4,
+        STATE_BAD_OFFSET_N   = 5,
+        STATE_HAS_BOUNDARIES = 6
+    };
+
     LexemeSequence();
     LexemeSequence(const LexemeSequence &other);
     LexemeSequence(const Text *text, ulong offset, ulong n, ulong boundary);
     ~LexemeSequence();
 
     LexemeSequence &operator =(const LexemeSequence &other);
+
+    inline LexemeSequenceState state() const { return _state; }
 
     inline bool  isValid()  const { return _state == LexemeSequence::STATE_OK; }
     inline ulong length()   const { return _lexemes->length(); }
@@ -30,16 +42,6 @@ public:
     inline double mi()    const { return _mi; }
     inline double llr()   const { return _llr; }
     inline double score() const { return _score; }
-
-    enum LexemeSequenceState {
-        STATE_OK             = 0,
-        STATE_EMPTY          = 1,
-        STATE_UNIGRAM        = 2,
-        STATE_BAD_BOUNDARY   = 3,
-        STATE_BAD_OFFSET     = 4,
-        STATE_BAD_OFFSET_N   = 5,
-        STATE_HAS_BOUNDARIES = 6
-    };
 
 private:
     LexemeSequenceState _state;
