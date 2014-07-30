@@ -112,10 +112,10 @@ void TestLexemeSequence::simpleSequence()
     QCOMPARE(sequence.length(), (ulong)3);
     QCOMPARE(sequence.boundary(), (ulong)2);
     QCOMPARE(sequence.lexemes()->length(), 3);
-//    QCOMPARE(sequence.sequenceKey()->length(), 0);
-    QCOMPARE(sequence.mi(), (double)(2.0 / (3.0 * 3.0)));
+    QCOMPARE(sequence.sequenceKey()->length(), (int)(3 * sizeof(ulong)));
+    QCOMPARE(sequence.mi(), 46 * (double)(2.0 / (3.0 * 3.0)));
 //    QCOMPARE(sequence.llr(), 0.0);
-//    QCOMPARE(sequence.score(), sequence.llr());
+    QCOMPARE(sequence.score(), sequence.llr());
 }
 
 QTEST_MAIN(TestLexemeSequence)

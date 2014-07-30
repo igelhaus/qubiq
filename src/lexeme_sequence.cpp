@@ -93,7 +93,7 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text
     // NB! _k1 must *NOT* be 0 here
     // NB! _k1 <= _n1 *MUST* hold here
 
-    _mi  = (double)_k1 / (double)_n1 / (double)f_y;
+    _mi  = text->length() * (double)_k1 / (double)_n1 / (double)f_y;
     _llr = ll((double)_k1 / (double)_n1, _k1, _n1)
         +  ll((double)_k2 / (double)_n2, _k2, _n2)
         -  ll((double)(_k1 + _k2) / (double)(_n1 + _n2), _k1, _n1)
