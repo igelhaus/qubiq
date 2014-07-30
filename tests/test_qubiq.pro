@@ -1,1 +1,6 @@
+#
+# Unit tests for qubiq
+#
+
 TEMPLATE = subdirs
+SUBDIRS  = test_lexeme.pro test_text.pro test_lexeme_sequence.pro

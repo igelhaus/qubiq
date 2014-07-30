@@ -7,6 +7,9 @@
 const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
 
 // FIXME: enhance debugging
+// FIXME: pass text properties: language (eventually locale setting)
+// FIXME: implement lemmatizing interface
+// FIXME: tokenization with lemmatization vs. tokenization before lemmatization
 // FIXME: add dumping function
 
 class Text: public QObject {

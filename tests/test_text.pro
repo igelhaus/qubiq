@@ -5,7 +5,7 @@
 QT += core testlib
 QT -= gui
 
-TARGET    = test_qubiq
+TARGET    = test_text
 CONFIG   += console
 CONFIG   -= app_bundle
 TEMPLATE  = app
