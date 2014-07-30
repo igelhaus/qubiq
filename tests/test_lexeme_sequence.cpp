@@ -3,7 +3,6 @@
 #include <qubiq/lexeme_sequence.h>
 
 // FIXME: test non-empty sequences
-// FIXME: test mi, llr, score
 // FIXME: test hashing
 
 class TestLexemeSequence: public QObject
@@ -25,6 +24,9 @@ void TestLexemeSequence::emptySequence()
     QCOMPARE(sequence.boundary(), (ulong)0);
     QCOMPARE(sequence.lexemes()->length(), 0);
     QCOMPARE(sequence.sequenceKey()->length(), 0);
+    QCOMPARE(sequence.mi(), 0.0);
+    QCOMPARE(sequence.llr(), 0.0);
+    QCOMPARE(sequence.score(), 0.0);
 }
 
 void TestLexemeSequence::emptySequenceCopy()
@@ -38,6 +40,9 @@ void TestLexemeSequence::emptySequenceCopy()
     QCOMPARE(sequence2.boundary(), (ulong)0);
     QCOMPARE(sequence2.lexemes()->length(), 0);
     QCOMPARE(sequence2.sequenceKey()->length(), 0);
+    QCOMPARE(sequence2.mi(), 0.0);
+    QCOMPARE(sequence2.llr(), 0.0);
+    QCOMPARE(sequence2.score(), 0.0);
 }
 
 void TestLexemeSequence::emptySequenceAssignment()
@@ -53,6 +58,9 @@ void TestLexemeSequence::emptySequenceAssignment()
     QCOMPARE(sequence2.boundary(), (ulong)0);
     QCOMPARE(sequence2.lexemes()->length(), 0);
     QCOMPARE(sequence2.sequenceKey()->length(), 0);
+    QCOMPARE(sequence2.mi(), 0.0);
+    QCOMPARE(sequence2.llr(), 0.0);
+    QCOMPARE(sequence2.score(), 0.0);
 }
 
 QTEST_MAIN(TestLexemeSequence)
