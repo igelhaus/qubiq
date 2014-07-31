@@ -2,8 +2,6 @@
 
 #include <qubiq/lexeme_sequence.h>
 
-// FIXME: test sets of sequences
-
 const char *_text =
    "A database connection string is a special format string "     // 00 .. 08
    "that is passed to the database driver each time a "           // 09 .. 18
@@ -22,7 +20,9 @@ private slots:
     void emptySequenceAssignment();
     void badSequenceStates();
     void simpleSequence();
+    void comparisonOperator();
     void hashOfSequences();
+    void setOfSequences();
 };
 
 void TestLexemeSequence::emptySequence()
@@ -118,37 +118,75 @@ void TestLexemeSequence::simpleSequence()
     QCOMPARE(sequence.score(), sequence.llr());
 }
 
-void TestLexemeSequence::hashOfSequences()
+void TestLexemeSequence::comparisonOperator()
 {
     Text text;
     text.append(QString(_text));
-
-    QHash<LexemeSequence, bool> sequences;
 
     /* Extract a trigram: (datbase connection, string) */
     LexemeSequence sequence1(&text, 1, 3, 2);
     /* Extract the same trigram, but from another offset */
     LexemeSequence sequence2(&text, 34, 3, 2);
-
-    sequences.insert(sequence1, true);
-
-    QCOMPARE(sequence1 == sequence2, true);
-    QCOMPARE(sequences.contains(sequence1), true);
-    QCOMPARE(sequences.contains(sequence2), true);
-
     /* Extract a different trigram: (connection string, is) */
     LexemeSequence sequence3(&text, 2, 3, 2);
 
+    QCOMPARE(sequence1 == sequence2, true);
     QCOMPARE(sequence1 == sequence3, false);
+
+    QCOMPARE(qHash(sequence1, 0) == qHash(sequence2, 0), true);
+    QCOMPARE(qHash(sequence1, 0) == qHash(sequence3, 0), false);
+    // FIXME: test fails
+    //    QCOMPARE(sequence1.sequenceKey() == sequence2.sequenceKey(), true);
+}
+
+void TestLexemeSequence::hashOfSequences()
+{
+    Text text;
+    text.append(QString(_text));
+
+    /* Extract a trigram: (datbase connection, string) */
+    LexemeSequence sequence1(&text, 1, 3, 2);
+    /* Extract the same trigram, but from another offset */
+    LexemeSequence sequence2(&text, 34, 3, 2);
+    /* Extract a different trigram: (connection string, is) */
+    LexemeSequence sequence3(&text, 2, 3, 2);
+
+    QHash<LexemeSequence, bool> sequences;
+
+    sequences.insert(sequence1, true);
+    QCOMPARE(sequences.keys().length(), 1);
+    QCOMPARE(sequences.contains(sequence1), true);
+    QCOMPARE(sequences.contains(sequence2), true);
     QCOMPARE(sequences.contains(sequence3), false);
 
-    QCOMPARE(sequences.keys().length(), 1);
     sequences.insert(sequence3, true);
     QCOMPARE(sequences.keys().length(), 2);
-
-// FIXME: test fails
-//    QCOMPARE(sequence1.sequenceKey() == sequence2.sequenceKey(), true);
 }
+
+void TestLexemeSequence::setOfSequences()
+{
+    Text text;
+    text.append(QString(_text));
+
+    /* Extract a trigram: (datbase connection, string) */
+    LexemeSequence sequence1(&text, 1, 3, 2);
+    /* Extract the same trigram, but from another offset */
+    LexemeSequence sequence2(&text, 34, 3, 2);
+    /* Extract a different trigram: (connection string, is) */
+    LexemeSequence sequence3(&text, 2, 3, 2);
+
+    QSet<LexemeSequence> sequences;
+
+    sequences.insert(sequence1);
+    QCOMPARE(sequences.size(), 1);
+    QCOMPARE(sequences.contains(sequence1), true);
+    QCOMPARE(sequences.contains(sequence2), true);
+    QCOMPARE(sequences.contains(sequence3), false);
+
+    sequences.insert(sequence3);
+    QCOMPARE(sequences.size(), 2);
+}
+
 
 QTEST_MAIN(TestLexemeSequence)
 #include "test_lexeme_sequence.moc"
