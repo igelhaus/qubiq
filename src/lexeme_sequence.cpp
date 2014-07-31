@@ -67,7 +67,6 @@ LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *t
             return LexemeSequence::STATE_HAS_BOUNDARIES;
         }
         _lexemes->append(idx_lexeme);
-        // FIXME: test packing routine
         for (int j = 0; j != sizeof(idx_lexeme); ++j) {
             _seq_key->append((char)(idx_lexeme & (0xFF << j) >> j));
         }
