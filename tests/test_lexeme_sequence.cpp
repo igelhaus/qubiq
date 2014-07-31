@@ -135,8 +135,8 @@ void TestLexemeSequence::comparisonOperator()
 
     QCOMPARE(qHash(sequence1, 0) == qHash(sequence2, 0), true);
     QCOMPARE(qHash(sequence1, 0) == qHash(sequence3, 0), false);
-    // FIXME: test fails
-    //    QCOMPARE(sequence1.sequenceKey() == sequence2.sequenceKey(), true);
+    QCOMPARE(*(sequence1.sequenceKey()) == *(sequence2.sequenceKey()), true);
+    QCOMPARE(*(sequence1.sequenceKey()) == *(sequence3.sequenceKey()), false);
 }
 
 void TestLexemeSequence::hashOfSequences()
