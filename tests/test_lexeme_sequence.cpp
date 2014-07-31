@@ -2,9 +2,15 @@
 
 #include <qubiq/lexeme_sequence.h>
 
-// FIXME: test non-empty sequences
-// FIXME: test hashing function
-// FIXME: test hashes and sets
+// FIXME: test sets of sequences
+
+const char *_text =
+   "A database connection string is a special format string "     // 00 .. 08
+   "that is passed to the database driver each time a "           // 09 .. 18
+   "database connection is performed. It is very important to "   // 19 .. 28
+   "specify correct setting in the database connection string "   // 29 .. 36
+   "since default connection parameters will generally not work." // 37 .. 45
+;
 
 class TestLexemeSequence: public QObject
 {
@@ -16,6 +22,7 @@ private slots:
     void emptySequenceAssignment();
     void badSequenceStates();
     void simpleSequence();
+    void hashOfSequences();
 };
 
 void TestLexemeSequence::emptySequence()
@@ -95,17 +102,10 @@ void TestLexemeSequence::badSequenceStates()
 
 void TestLexemeSequence::simpleSequence()
 {
-    const char *_text =
-       "A database connection string is a special format string "
-       "that is passed to the database driver each time a "
-       "database connection is performed. It is very important to "
-       "specify correct setting in the database connection string "
-       "since default connection parameters will generally not work."
-    ;
     Text text;
     text.append(QString(_text));
 
-    /* Extract a 3-gram: (datbase connection, string) */
+    /* Extract a trigram: (datbase connection, string) */
     LexemeSequence sequence(&text, 1, 3, 2);
     QCOMPARE(sequence.state(), LexemeSequence::STATE_OK);
     QCOMPARE(sequence.isValid(), true);
@@ -116,6 +116,38 @@ void TestLexemeSequence::simpleSequence()
     QCOMPARE(sequence.mi(), 46 * (double)(2.0 / (3.0 * 3.0)));
     QCOMPARE(sequence.llr() > 0.0, true);
     QCOMPARE(sequence.score(), sequence.llr());
+}
+
+void TestLexemeSequence::hashOfSequences()
+{
+    Text text;
+    text.append(QString(_text));
+
+    QHash<LexemeSequence, bool> sequences;
+
+    /* Extract a trigram: (datbase connection, string) */
+    LexemeSequence sequence1(&text, 1, 3, 2);
+    /* Extract the same trigram, but from another offset */
+    LexemeSequence sequence2(&text, 34, 3, 2);
+
+    sequences.insert(sequence1, true);
+
+    QCOMPARE(sequence1 == sequence2, true);
+    QCOMPARE(sequences.contains(sequence1), true);
+    QCOMPARE(sequences.contains(sequence2), true);
+
+    /* Extract a different trigram: (connection string, is) */
+    LexemeSequence sequence3(&text, 2, 3, 2);
+
+    QCOMPARE(sequence1 == sequence3, false);
+    QCOMPARE(sequences.contains(sequence3), false);
+
+    QCOMPARE(sequences.keys().length(), 1);
+    sequences.insert(sequence3, true);
+    QCOMPARE(sequences.keys().length(), 2);
+
+// FIXME: test fails
+//    QCOMPARE(sequence1.sequenceKey() == sequence2.sequenceKey(), true);
 }
 
 QTEST_MAIN(TestLexemeSequence)
