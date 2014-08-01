@@ -2,9 +2,9 @@
 
 Text::Text() {
     _lexemes    = new QVector<Lexeme*>();
-    _offsets    = new QVector<ulong>();
-    idx_forms   = new QHash<QString, ulong>();
-    idx_lexemes = new QHash<QString, ulong>();
+    _offsets    = new QVector<int>();
+    idx_forms   = new QHash<QString, int>();
+    idx_lexemes = new QHash<QString, int>();
 
     num_forms      = 0;
     num_boundaries = 0;
@@ -136,7 +136,7 @@ bool Text::process_token(const QStringRef &token)
     else
         num_forms++;
 
-    ulong idx_lexeme;
+    int idx_lexeme;
     QString form     = token.toString();
     QString form_key = form.toLower(); // FIXME: add locale-dependent toLower()
     if (idx_forms->contains(form_key)) {

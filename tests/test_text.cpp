@@ -18,11 +18,11 @@ void TestText::emptyText()
 {
     Text text;
 
-    QCOMPARE(text.length(), (ulong)0);
-    QCOMPARE(text.numForms(), (ulong)0);
-    QCOMPARE(text.numUniqueForms(), (ulong)0);
-    QCOMPARE(text.numBoundaries(), (ulong)0);
-    QCOMPARE(text.numLexemes(), (ulong)0);
+    QCOMPARE(text.length(), 0);
+    QCOMPARE(text.numForms(), 0);
+    QCOMPARE(text.numUniqueForms(), 0);
+    QCOMPARE(text.numBoundaries(), 0);
+    QCOMPARE(text.numLexemes(), 0);
 }
 
 void TestText::simpleSentence()
@@ -33,21 +33,21 @@ void TestText::simpleSentence()
        "The quick brown fox jumps over the lazy dog."
     )), true);
 
-    QCOMPARE(text.length(), (ulong)10);       // Total number of tokens
-    QCOMPARE(text.numForms(), (ulong)9);      // Number of non-boundary *tokens*
-    QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
-    QCOMPARE(text.numUniqueForms(), (ulong)9);
-    QCOMPARE(text.numLexemes(), (ulong)9);
+    QCOMPARE(text.length(), 10);       // Total number of tokens
+    QCOMPARE(text.numForms(), 9);      // Number of non-boundary *tokens*
+    QCOMPARE(text.numBoundaries(), 1); // Number of boundary *tokens*
+    QCOMPARE(text.numUniqueForms(), 9);
+    QCOMPARE(text.numLexemes(), 9);
 
-    QCOMPARE(text.offsets()->at(0), (ulong)0);
-    QCOMPARE(text.offsets()->at(6), (ulong)0);
+    QCOMPARE(text.offsets()->at(0), 0);
+    QCOMPARE(text.offsets()->at(6), 0);
     QCOMPARE(text.lexemes()->at(0)->offsets()->length(), 2);
-    QCOMPARE(text.indexLexemes()->value("the"), (ulong)0);
-    QCOMPARE(text.indexLexemes()->value("jumps"), (ulong)4);
-    QCOMPARE(text.indexLexemes()->value("."), (ulong)8);
-    QCOMPARE(text.indexForms()->value("the"), (ulong)0);
-    QCOMPARE(text.indexForms()->value("jumps"), (ulong)4);
-    QCOMPARE(text.indexForms()->value("."), (ulong)8);
+    QCOMPARE(text.indexLexemes()->value("the"), 0);
+    QCOMPARE(text.indexLexemes()->value("jumps"), 4);
+    QCOMPARE(text.indexLexemes()->value("."), 8);
+    QCOMPARE(text.indexForms()->value("the"), 0);
+    QCOMPARE(text.indexForms()->value("jumps"), 4);
+    QCOMPARE(text.indexForms()->value("."), 8);
 }
 
 void TestText::simpleSentenceFromFile()
@@ -61,21 +61,21 @@ void TestText::simpleSentenceFromFile()
     Text text;
     QCOMPARE(text.appendFile(text_file.fileName()), true);
 
-    QCOMPARE(text.length(), (ulong)10);       // Total number of tokens
-    QCOMPARE(text.numForms(), (ulong)9);      // Number of non-boundary *tokens*
-    QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
-    QCOMPARE(text.numUniqueForms(), (ulong)9);
-    QCOMPARE(text.numLexemes(), (ulong)9);
+    QCOMPARE(text.length(), 10);       // Total number of tokens
+    QCOMPARE(text.numForms(), 9);      // Number of non-boundary *tokens*
+    QCOMPARE(text.numBoundaries(), 1); // Number of boundary *tokens*
+    QCOMPARE(text.numUniqueForms(), 9);
+    QCOMPARE(text.numLexemes(), 9);
 
-    QCOMPARE(text.offsets()->at(0), (ulong)0);
-    QCOMPARE(text.offsets()->at(6), (ulong)0);
+    QCOMPARE(text.offsets()->at(0), 0);
+    QCOMPARE(text.offsets()->at(6), 0);
     QCOMPARE(text.lexemes()->at(0)->offsets()->length(), 2);
-    QCOMPARE(text.indexLexemes()->value("the"), (ulong)0);
-    QCOMPARE(text.indexLexemes()->value("jumps"), (ulong)4);
-    QCOMPARE(text.indexLexemes()->value("."), (ulong)8);
-    QCOMPARE(text.indexForms()->value("the"), (ulong)0);
-    QCOMPARE(text.indexForms()->value("jumps"), (ulong)4);
-    QCOMPARE(text.indexForms()->value("."), (ulong)8);
+    QCOMPARE(text.indexLexemes()->value("the"), 0);
+    QCOMPARE(text.indexLexemes()->value("jumps"), 4);
+    QCOMPARE(text.indexLexemes()->value("."), 8);
+    QCOMPARE(text.indexForms()->value("the"), 0);
+    QCOMPARE(text.indexForms()->value("jumps"), 4);
+    QCOMPARE(text.indexForms()->value("."), 8);
 }
 
 void TestText::longSentenceFromFile()
@@ -89,11 +89,11 @@ void TestText::longSentenceFromFile()
     Text text;
     QCOMPARE(text.appendFile(text_file.fileName()), true);
 
-    QCOMPARE(text.length(), (ulong)10);       // Total number of tokens
-    QCOMPARE(text.numForms(), (ulong)9);      // Number of non-boundary *tokens*
-    QCOMPARE(text.numBoundaries(), (ulong)1); // Number of boundary *tokens*
-    QCOMPARE(text.numUniqueForms(), (ulong)9);
-    QCOMPARE(text.numLexemes(), (ulong)9);
+    QCOMPARE(text.length(), 10);       // Total number of tokens
+    QCOMPARE(text.numForms(), 9);      // Number of non-boundary *tokens*
+    QCOMPARE(text.numBoundaries(), 1); // Number of boundary *tokens*
+    QCOMPARE(text.numUniqueForms(), 9);
+    QCOMPARE(text.numLexemes(), 9);
 }
 
 void TestText::appendFromNonExistentFile()

@@ -16,13 +16,13 @@ class Text: public QObject {
     Q_OBJECT
 
 private:
-    QVector<Lexeme*>      *_lexemes;    /* vector of all lexemes in the text */
-    QVector<ulong>        *_offsets;    /* offset of a form in the text -> offset of its lexeme in the vector */
-    QHash<QString, ulong> *idx_forms;   /* form   -> offset of its lexeme in the vector */
-    QHash<QString, ulong> *idx_lexemes; /* lexeme -> its offset in the vector */
+    QVector<Lexeme*>    *_lexemes;    /* vector of all lexemes in the text */
+    QVector<int>        *_offsets;    /* offset of a form in the text -> offset of its lexeme in the vector */
+    QHash<QString, int> *idx_forms;   /* form   -> offset of its lexeme in the vector */
+    QHash<QString, int> *idx_lexemes; /* lexeme -> its offset in the vector */
 
-    ulong num_forms;
-    ulong num_boundaries;
+    int num_forms;
+    int num_boundaries;
 
     bool     is_boundary_token  (const QStringRef &token);
     bool     is_whitespace_token(const QStringRef &token);
@@ -33,17 +33,17 @@ public:
     Text();
     ~Text();
 
-    inline ulong length()         const { return _offsets->length(); }
-    inline ulong numForms()       const { return num_forms; }
-    inline ulong numUniqueForms() const { return idx_forms->keys().length(); }
-    inline ulong numBoundaries()  const { return num_boundaries; }
-    inline ulong numLexemes()     const { return _lexemes->length(); }
+    inline int length()         const { return _offsets->length(); }
+    inline int numForms()       const { return num_forms; }
+    inline int numUniqueForms() const { return idx_forms->keys().length(); }
+    inline int numBoundaries()  const { return num_boundaries; }
+    inline int numLexemes()     const { return _lexemes->length(); }
 
     // FIXME: It is unsafe to pass pointer to vector of *pointers* to Lexeme
-    inline const QVector<Lexeme*>* lexemes()           const { return _lexemes; }
-    inline const QVector<ulong>* offsets()             const { return _offsets; }
-    inline const QHash<QString, ulong>* indexForms()   const { return idx_forms; }
-    inline const QHash<QString, ulong>* indexLexemes() const { return idx_lexemes; }
+    inline const QVector<Lexeme*>* lexemes()         const { return _lexemes; }
+    inline const QVector<int>* offsets()             const { return _offsets; }
+    inline const QHash<QString, int>* indexForms()   const { return idx_forms; }
+    inline const QHash<QString, int>* indexLexemes() const { return idx_lexemes; }
 
     bool appendFile(const QString &fname);
     bool append    (const QString &buffer);
