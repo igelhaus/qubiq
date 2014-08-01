@@ -63,12 +63,12 @@ LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *t
         if (lexeme->isBoundary()) {
             /* For invalid sequences we shrink containers to 0: */
             _lexemes->resize(0);
-            _seq_key->resize(0);
+            _key->resize(0);
             return LexemeSequence::STATE_HAS_BOUNDARIES;
         }
         _lexemes->append(idx_lexeme);
         for (int j = 0; j != sizeof(idx_lexeme); ++j) {
-            _seq_key->append((char)(idx_lexeme & (0xFF << j) >> j));
+            _key->append((char)(idx_lexeme & (0xFF << j) >> j));
         }
     }
     return LexemeSequence::STATE_OK;
@@ -144,7 +144,7 @@ void LexemeSequence::_initialize()
     _red      = 0;
     _lexemes  = new QVector<int>;
     _offsets  = new QVector<int>;
-    _seq_key  = new QByteArray;
+    _key      = new QByteArray;
 }
 
 void LexemeSequence::_assign(const LexemeSequence &other)
@@ -162,12 +162,12 @@ void LexemeSequence::_assign(const LexemeSequence &other)
     _red      = other._red;
     _lexemes  = new QVector<int>(*(other._lexemes));
     _offsets  = new QVector<int>(*(other._offsets));
-    _seq_key  = new QByteArray(*(other._seq_key));
+    _key      = new QByteArray(*(other._key));
 }
 
 void LexemeSequence::_destroy()
 {
     delete _lexemes;
     delete _offsets;
-    delete _seq_key;
+    delete _key;
 }

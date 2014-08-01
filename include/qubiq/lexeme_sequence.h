@@ -36,9 +36,9 @@ public:
     inline int  length()   const { return _lexemes->length(); }
     inline int  boundary() const { return _boundary; }
 
-    inline const QVector<int>* lexemes()     const { return _lexemes; }
-    inline const QVector<int>* offsets()     const { return _offsets; }
-    inline const QByteArray*   sequenceKey() const { return _seq_key; } // FIXME: rename to key?
+    inline const QVector<int>* lexemes() const { return _lexemes; }
+    inline const QVector<int>* offsets() const { return _offsets; }
+    inline const QByteArray*   key()     const { return _key; }
 
     inline int frequency() const { return _offsets->length(); }
 
@@ -77,7 +77,7 @@ private:
 
     QVector<int> *_lexemes;
     QVector<int> *_offsets;
-    QByteArray   *_seq_key; // Sequence key for hashing
+    QByteArray   *_key; /* Sequence key for hashing */
 
     /* aux function for counting log-likelihood ratio: */
     inline double ll(double p, int k, int n) {
@@ -109,8 +109,8 @@ inline bool operator ==(const LexemeSequence &s1, const LexemeSequence &s2)
     return true;
 }
 
-inline uint qHash(const LexemeSequence &key, uint seed) {
-    return qHash(*(key.sequenceKey()), seed);
+inline uint qHash(const LexemeSequence &sequence, uint seed) {
+    return qHash(*(sequence.key()), seed);
 }
 
 #endif // _LEXEME_SEQUENCE_H_
