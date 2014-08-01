@@ -55,19 +55,19 @@ void TestLexeme::fillWithForms()
     QCOMPARE(lexeme.forms()->length(), 3);
     QCOMPARE(lexeme.offsets()->length(), 3);
     QCOMPARE(lexeme.forms()->at(1), form2);
-    QCOMPARE(lexeme.offsets()->at(1), (ulong)42);
+    QCOMPARE(lexeme.offsets()->at(1), 42);
 
     lexeme.addForm(form4, 42);
     QCOMPARE(lexeme.forms()->length(), 3);
     QCOMPARE(lexeme.offsets()->length(), 3);
     QCOMPARE(lexeme.forms()->at(1), form2);
-    QCOMPARE(lexeme.offsets()->at(1), (ulong)42);
+    QCOMPARE(lexeme.offsets()->at(1), 42);
 
     lexeme.addForm(form5, 42, true);
     QCOMPARE(lexeme.forms()->length(), 3);
     QCOMPARE(lexeme.offsets()->length(), 3);
     QCOMPARE(lexeme.forms()->at(1), form5);
-    QCOMPARE(lexeme.offsets()->at(1), (ulong)42);
+    QCOMPARE(lexeme.offsets()->at(1), 42);
 }
 
 QTEST_MAIN(TestLexeme)

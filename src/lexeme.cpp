@@ -5,8 +5,8 @@ Lexeme::Lexeme(const QString &lexeme, bool is_boundary)
     _lexeme      = lexeme;
     _is_boundary = is_boundary;
     _forms       = new QVector<QString>();
-    _offsets     = new QVector<ulong>();
-    _idx_offsets = new QHash<ulong, int>;
+    _offsets     = new QVector<int>();
+    _idx_offsets = new QHash<int, int>;
 }
 
 Lexeme::~Lexeme()
@@ -16,7 +16,7 @@ Lexeme::~Lexeme()
     delete _idx_offsets;
 }
 
-bool Lexeme::addForm(const QString &form, ulong offset, bool overwrite /* = false */)
+bool Lexeme::addForm(const QString &form, int offset, bool overwrite /* = false */)
 {
     if (_idx_offsets->contains(offset)) {
         if (!overwrite)
