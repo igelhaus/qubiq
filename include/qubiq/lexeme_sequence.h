@@ -5,9 +5,11 @@
 #include <QtCore>
 #include <qubiq/text.h>
 
-const ulong  MIN_COUNT              =   3;
+const int    MIN_COUNT              =   3;
 const double MIN_MUTUAL_INFORMATION = 2.5;
 const double MIN_LLR                = 5.0;
+
+// FIXME: cache offsets where actual sequence starts
 
 class LexemeSequence: public QObject {
     Q_OBJECT
@@ -25,33 +27,40 @@ public:
 
     LexemeSequence();
     LexemeSequence(const LexemeSequence &other);
-    LexemeSequence(const Text *text, ulong offset, ulong n, ulong boundary);
+    LexemeSequence(const Text *text, int offset, int n, int boundary);
     ~LexemeSequence();
 
     LexemeSequence &operator =(const LexemeSequence &other);
 
     inline LexemeSequenceState state() const { return _state; }
 
-    inline bool  isValid()  const { return _state == LexemeSequence::STATE_OK; }
-    inline ulong length()   const { return _lexemes->length(); }
-    inline ulong boundary() const { return _boundary; }
+    inline bool isValid() const { return _state == LexemeSequence::STATE_OK; }
+    inline int length()   const { return _lexemes->length(); }
+    inline int boundary() const { return _boundary; }
 
-    inline const QVector<ulong>* lexemes()     const { return _lexemes; }
-    inline const QByteArray*     sequenceKey() const { return _seq_key; }
+    inline const QVector<int>* lexemes()     const { return _lexemes; }
+    inline const QVector<int>* offsets()     const { return _offsets; }
+    inline const QByteArray*   sequenceKey() const { return _seq_key; } // FIXME: rename to key?
 
     inline double mi()    const { return _mi; }
     inline double llr()   const { return _llr; }
     inline double score() const { return _score; }
 
+    inline int leftExpansionDistance()  const { return _led; }
+    inline int rightExpansionDistance() const { return _red; }
+
+    inline void  incLeftExpansionDistance(int n = 1) { _led += n; }
+    inline void incRightExpansionDistance(int n = 1) { _red += n; }
+
 private:
     LexemeSequenceState _state;
 
-    ulong _boundary;
+    int _boundary;
 
-    ulong _k1;
-    ulong _n1;
-    ulong _k2;
-    ulong _n2;
+    int _k1;
+    int _n1;
+    int _k2;
+    int _n2;
 
     /* Metrics of a lexeme sequence:
      * 1) Mutual information
@@ -62,11 +71,16 @@ private:
     double _llr;
     double _score;
 
-    QVector<ulong> *_lexemes;
-    QByteArray     *_seq_key; // Sequence key for hashing
+    // Expansion history of the sequence
+    int _led; /* Left Expansion Distance */
+    int _red; /* Right Expansion Disatnce */
+
+    QVector<int> *_lexemes;
+    QVector<int> *_offsets;
+    QByteArray   *_seq_key; // Sequence key for hashing
 
     /* aux function for counting log-likelihood ratio: */
-    inline double ll(double p, ulong k, ulong n) {
+    inline double ll(double p, int k, int n) {
         return k * log(p) + (n - k) * log(1 - p);
     }
 
@@ -74,18 +88,18 @@ private:
     void _destroy();
     void _assign(const LexemeSequence &other);
 
-    LexemeSequenceState calculate_state  (const Text *text, ulong offset, ulong n, ulong boundary);
-    LexemeSequenceState build_sequence   (const Text *text, ulong offset, ulong n);
-    LexemeSequenceState calculate_metrics(const Text *text, ulong n, ulong boundary);
+    LexemeSequenceState calculate_state  (const Text *text, int offset, int n, int boundary);
+    LexemeSequenceState build_sequence   (const Text *text, int offset, int n);
+    LexemeSequenceState calculate_metrics(const Text *text, int n, int boundary);
 
-    ulong frequency  (const Text *text, ulong offset, ulong n) const;
-    bool  is_sequence(const Text *text, ulong text_offset, ulong sequence_offset, ulong n) const;
+    int  frequency  (const Text *text, int offset, int n) const;
+    bool is_sequence(const Text *text, int text_offset, int sequence_offset, int n) const;
 };
 
 inline bool operator ==(const LexemeSequence &s1, const LexemeSequence &s2)
 {
-    const QVector<ulong> *l1 = s1.lexemes();
-    const QVector<ulong> *l2 = s2.lexemes();
+    const QVector<int> *l1 = s1.lexemes();
+    const QVector<int> *l2 = s2.lexemes();
     if (l1->length() != l2->length())
         return false;
     for (int i = 0; i < l1->length(); i++) {
