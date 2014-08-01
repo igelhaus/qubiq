@@ -9,8 +9,6 @@ const int    MIN_COUNT              =   3;
 const double MIN_MUTUAL_INFORMATION = 2.5;
 const double MIN_LLR                = 5.0;
 
-// FIXME: cache offsets where actual sequence starts
-
 class LexemeSequence: public QObject {
     Q_OBJECT
 
@@ -34,13 +32,15 @@ public:
 
     inline LexemeSequenceState state() const { return _state; }
 
-    inline bool isValid() const { return _state == LexemeSequence::STATE_OK; }
-    inline int length()   const { return _lexemes->length(); }
-    inline int boundary() const { return _boundary; }
+    inline bool isValid()  const { return _state == LexemeSequence::STATE_OK; }
+    inline int  length()   const { return _lexemes->length(); }
+    inline int  boundary() const { return _boundary; }
 
     inline const QVector<int>* lexemes()     const { return _lexemes; }
     inline const QVector<int>* offsets()     const { return _offsets; }
     inline const QByteArray*   sequenceKey() const { return _seq_key; } // FIXME: rename to key?
+
+    inline int frequency() const { return _offsets->length(); }
 
     inline double mi()    const { return _mi; }
     inline double llr()   const { return _llr; }
@@ -92,8 +92,8 @@ private:
     LexemeSequenceState build_sequence   (const Text *text, int offset, int n);
     LexemeSequenceState calculate_metrics(const Text *text, int n, int boundary);
 
-    int  frequency  (const Text *text, int offset, int n) const;
-    bool is_sequence(const Text *text, int text_offset, int sequence_offset, int n) const;
+    int  calculate_frequency(const Text *text, int offset, int n, bool collect_offsets = false);
+    bool is_sequence        (const Text *text, int text_offset, int sequence_offset, int n) const;
 };
 
 inline bool operator ==(const LexemeSequence &s1, const LexemeSequence &s2)

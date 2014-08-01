@@ -78,11 +78,11 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text
 {
     _boundary = boundary;
 
-    _k1 = frequency(text, 0, n);        /* frequency of the whole sequence */
-    _n1 = frequency(text, 0, boundary); /* frequency of the first subsequence */
+    _k1 = calculate_frequency(text, 0, n, true);  /* frequency of the whole sequence */
+    _n1 = calculate_frequency(text, 0, boundary); /* frequency of the first subsequence */
 
     /* _k2: frequency of the second subsequence adjacent to anything but the first subsequence */
-    int f_y = frequency(text, boundary, n - boundary);
+    int f_y = calculate_frequency(text, boundary, n - boundary);
     _k2 = f_y - _k1;
 
     /* _n2: number of offsets that do not start the first subsequence
@@ -103,14 +103,16 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text
     return LexemeSequence::STATE_OK;
 }
 
-int LexemeSequence::frequency(const Text *text, int offset, int n) const
+int LexemeSequence::calculate_frequency(const Text *text, int offset, int n, bool collect_offsets)
 {
     const QVector<int>* first = text->lexemes()->at(_lexemes->at(offset))->offsets();
     int f = first->length();
     for (int i = 0; i < first->length(); i++) {
-        if (!is_sequence(text, first->at(i), offset, n))
+        if (!is_sequence(text, first->at(i), offset, n)) {
             f--;
-        else
+            continue;
+        }
+        if (collect_offsets)
             _offsets->append(first->at(i));
     }
     return f;
