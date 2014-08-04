@@ -25,27 +25,25 @@ bool Extractor::extract()
         return false;
     int i = 0;
 
-    // FIXME: add method for fetching led and red
-
     while (i < _candidates->size()) {
-        LexemeSequence &candidate = _candidates->at(i);
+        const LexemeSequence &candidate = _candidates->at(i);
         int num_expanded_left  = 0;
         int num_expanded_right = 0;
         int num_expansions     = 0;
 
         if (candidate.leftExpansionDistance() < _max_led)
-            num_expanded_left = expand_left(i);
+            num_expanded_left = expand_left(candidate);
 
         if (candidate.rightExpansionDistance() < _max_red)
-            num_expanded_right = expand_right(i);
+            num_expanded_right = expand_right(candidate);
 
         num_expansions = num_expanded_left + num_expanded_right;
         if (num_expansions > 0) {
             // At least one expansion done
-            if (treat_bigram_as_term(i, num_expansions)) {
+            if (treat_as_term(candidate, num_expansions)) {
                 i++;
             } else {
-                _extracted->remove(*(candidate.sequenceKey()));
+                _extracted->remove(*(candidate.key()));
                 _candidates->removeAt(i);
             }
         } else {
@@ -63,34 +61,78 @@ bool Extractor::collect_good_bigrams()
         LexemeSequence bigram(_text, i, 2, 1);
         if (!bigram.isValid())
             continue;
-        QByteArray *seq_key = bigram.sequenceKey();
-        if (!_extracted->contains(*seq_key) && is_good_bigram(bigram)) {
-            _extracted->insert(*seq_key);
+        const QByteArray *key = bigram.key();
+        if (!_extracted->contains(*key) && is_good_bigram(bigram)) {
+            _extracted->insert(*key);
             _candidates->append(bigram);
         }
     }
     return _extracted->size() > 0;
 }
 
-bool Extractor::is_good_bigram(const LexemeSequence &bigram)
+bool Extractor::is_good_bigram(const LexemeSequence &bigram) const
 {
-    // FIXME: add method for bigram frequency
     return bigram.frequency() >= _min_bf;
 }
 
-// FIXME: if most occurrences of c in the corpus have not been extended then add c to E.
-bool Extractor::treat_bigram_as_term(int i, int num_expansions)
+bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansions) const
 {
-    // return num_expansions / frequency <= _ber;
-    return true;
+    // If most occurrences of a candidate in the corpus have not been extended then treat it as a term.
+    return (double)num_expansions / (double)candidate.frequency() <= _ber;
 }
 
-int Extractor::expand_left(int i)
+int Extractor::expand_left(const LexemeSequence &candidate)
 {
+    int num_expanded = 0;
+    const QVector<int> *first_lexeme_entries = candidate.offsets();
 
+    for (int i = 0; i < first_lexeme_entries->size(); i++) {
+        LexemeSequence expanded(
+            _text, first_lexeme_entries->at(i) - 1, candidate.length() + 1, 1
+        );
+        if (!expanded.isValid()) {
+            continue;
+        }
+        if (_extracted->contains(*(expanded.key()))) {
+            continue;
+        }
+        if (has_better_score(expanded, candidate)) {
+            expanded.incLeftExpansionDistance (candidate.leftExpansionDistance() + 1);
+            expanded.incRightExpansionDistance(candidate.rightExpansionDistance());
+            _candidates->append(expanded);
+            num_expanded++;
+        }
+    }
+    return num_expanded;
 }
 
-int Extractor::expand_right(int i)
+int Extractor::expand_right(const LexemeSequence &candidate)
 {
+    int num_expanded = 0;
+    const QVector<int> *first_lexeme_entries = candidate.offsets();
 
+    for (int i = 0; i < first_lexeme_entries->size(); i++) {
+        LexemeSequence expanded(
+            _text, first_lexeme_entries->at(i), candidate.length() + 1, candidate.length()
+        );
+        if (!expanded.isValid()) {
+            continue;
+        }
+        if (_extracted->contains(*(expanded.key()))) {
+            continue;
+        }
+        if (has_better_score(expanded, candidate)) {
+            expanded.incLeftExpansionDistance (candidate.leftExpansionDistance());
+            expanded.incRightExpansionDistance(candidate.rightExpansionDistance() + 1);
+            _candidates->append(expanded);
+            num_expanded++;
+        }
+    }
+    return num_expanded;
+}
+
+bool Extractor::has_better_score(const LexemeSequence &expanded, const LexemeSequence &source) const
+{
+    // FIXME: zero expanded score?
+    return expanded.score() > 0.0 && expanded.score() > source.score() - _qdt;
 }
