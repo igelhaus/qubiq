@@ -22,7 +22,7 @@ public:
     bool extract();
 
     inline int    minBigramFrequency()        const { return _min_bf; }
-    inline double bigramExtractionrate()      const { return _ber; }
+    inline double bigramExtractionRate()      const { return _ber; }
     inline int    maxLeftExpansionDistance()  const { return _max_led; }
     inline int    maxRightExpansionDistance() const { return _max_red; }
     inline double qualityDecreaseThreshold()  const { return _qdt; }

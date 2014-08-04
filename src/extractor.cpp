@@ -38,6 +38,8 @@ bool Extractor::extract()
             num_expanded_right = expand_right(candidate);
 
         num_expansions = num_expanded_left + num_expanded_right;
+        qDebug() << "num_expansions = " << num_expansions;
+
         if (num_expansions > 0) {
             // At least one expansion done
             if (treat_as_term(candidate, num_expansions)) {
@@ -50,6 +52,16 @@ bool Extractor::extract()
             // No expansion: simply leave current candidate as a term
             i++;
         }
+    }
+
+    for (int i = 0; i < _candidates->size(); i++) {
+        const LexemeSequence &candidate = _candidates->at(i);
+        QString image("");
+        for (int j = 0; j < candidate.length(); j++) {
+            image.append(_text->lexemes()->at(candidate.lexemes()->at(j))->forms()->at(0));
+            image.append(" ");
+        }
+        qDebug() << image;
     }
 
     return true;
@@ -65,6 +77,7 @@ bool Extractor::collect_good_bigrams()
         if (!_extracted->contains(*key) && is_good_bigram(bigram)) {
             _extracted->insert(*key);
             _candidates->append(bigram);
+            qDebug() << "extracted at offset " << i;
         }
     }
     return _extracted->size() > 0;

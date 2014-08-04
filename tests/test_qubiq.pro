@@ -3,4 +3,4 @@
 #
 
 TEMPLATE = subdirs
-SUBDIRS  = test_lexeme.pro test_text.pro test_lexeme_sequence.pro
+SUBDIRS  = test_lexeme.pro test_text.pro test_lexeme_sequence.pro test_extractor.pro
