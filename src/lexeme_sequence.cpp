@@ -10,16 +10,16 @@ LexemeSequence::LexemeSequence(const LexemeSequence &other)
     _assign(other);
 }
 
-LexemeSequence::LexemeSequence(const Text *text, int offset, int n, int boundary)
+LexemeSequence::LexemeSequence(const Text *text, int offset, int n, int n1)
 {
     _initialize();
 
-    _state = calculate_state(text, offset, n, boundary);
+    _state = calculate_state(text, offset, n, n1);
 
     if (_state == LexemeSequence::STATE_OK) {
         _state = build_sequence(text, offset, n);
         if (_state == LexemeSequence::STATE_OK) {
-            calculate_metrics(text, n, boundary);
+            calculate_metrics(text, n, n1);
         }
     }
 }
@@ -38,18 +38,18 @@ LexemeSequence &LexemeSequence::operator =(const LexemeSequence &other)
     return *this;
 }
 
-LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *text, int offset, int n, int boundary)
+LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *text, int offset, int n, int n1)
 {
     if (n < 2)
         return LexemeSequence::STATE_UNIGRAM;
 
-    if (boundary < 1 || boundary >= n)
+    if (n1 < 1 || n1 >= n)
         return LexemeSequence::STATE_BAD_BOUNDARY;
 
-    if (offset >= text->offsets()->length())
+    if (offset < 0 || offset >= text->length())
         return LexemeSequence::STATE_BAD_OFFSET;
 
-    if (offset + n > text->offsets()->length())
+    if (offset + n > text->length())
         return LexemeSequence::STATE_BAD_OFFSET_N;
 
     return LexemeSequence::STATE_OK;
@@ -74,29 +74,39 @@ LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *t
     return LexemeSequence::STATE_OK;
 }
 
-LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, int n, int boundary)
+LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, int n, int n1)
 {
-    _boundary = boundary;
+    /* N tokens of the input text are split into two sets:
+     *  1) f1:     Tokens that start the first subsequence
+     *  2) not_f1: Tokens that do not start the first subsequence
+     * Tokens from f1 are split into two sets:
+     *  1) Successfull tokens, f: Tokens that start the whole sequence
+     *  2) Failure tokens: Tokens that do not start the whole sequence
+     * Tokens from not_f1 are split into two sets:
+     *  1) Successfull tokens, f2_not_f1: Tokens that start the second subsequence
+     *  2) Failure tokens: Tokens that do not start the second subsequence
+     * Our test is:
+     * H0: The first and the second subsequences are linguistically related, i.e.
+     * f/f1 and f2_not_f1/not_f1 are different probabilities.
+     * H1: The first and the second subsequences are linguistically unrelated, i.e.
+     * probability of the second subsequence is the same in the entire text.
+    */
+    int f         = calculate_frequency(text, 0, n, true); /* frequency of the whole sequence */
+    int f1        = calculate_frequency(text, 0, n1);      /* frequency of the first subsequence */
+    int f2        = calculate_frequency(text, n1, n - n1); /* frequency of the second subsequence */
+    int N         = text->length();
+    int not_f1    = N - f1; /* number of offsets that do not start the first subsequence */
+    int f2_not_f1 = f2 - f; /* frequency of the second subsequence adjacent to anything but the first subsequence */
+    double p1_H0  = (double)f         / (double)f1;
+    double p2_H0  = (double)f2_not_f1 / (double)not_f1;
+    double  p_H1  = (double)f2        / (double)N;
 
-    _k1 = calculate_frequency(text, 0, n, true);  /* frequency of the whole sequence */
-    _n1 = calculate_frequency(text, 0, boundary); /* frequency of the first subsequence */
-
-    /* _k2: frequency of the second subsequence adjacent to anything but the first subsequence */
-    int f_y = calculate_frequency(text, boundary, n - boundary);
-    _k2 = f_y - _k1;
-
-    /* _n2: number of offsets that do not start the first subsequence
-     * and do not belong to the first subsequence */
-    _n2 = text->length() - boundary * _n1;
-
-    // NB! _k1 must *NOT* be 0 here
-    // NB! _k1 <= _n1 *MUST* hold here
-
-    _mi  = text->length() * (double)_k1 / (double)_n1 / (double)f_y;
-    _llr = ll((double)_k1 / (double)_n1, _k1, _n1)
-        +  ll((double)_k2 / (double)_n2, _k2, _n2)
-        -  ll((double)(_k1 + _k2) / (double)(_n1 + _n2), _k1, _n1)
-        -  ll((double)(_k1 + _k2) / (double)(_n1 + _n2), _k2, _n2)
+    _n1  = n1;
+    _mi  = (double)N * (double)f / (double)f1 / (double)f2;
+    _llr = ll(p1_H0, f, f1)
+        +  ll(p2_H0, f2_not_f1, not_f1)
+        -  ll( p_H1, f, f1)
+        -  ll( p_H1, f2_not_f1, not_f1)
     ;
     _score = _mi >= MIN_MUTUAL_INFORMATION? _llr : 0.0;
 
@@ -132,11 +142,7 @@ bool LexemeSequence::is_sequence(const Text *text, int text_offset, int sequence
 void LexemeSequence::_initialize()
 {
     _state    = LexemeSequence::STATE_EMPTY;
-    _boundary = 0;
-    _k1       = 0;
     _n1       = 0;
-    _k2       = 0;
-    _n2       = 0;
     _mi       = 0.0;
     _llr      = 0.0;
     _score    = 0.0;
@@ -150,11 +156,7 @@ void LexemeSequence::_initialize()
 void LexemeSequence::_assign(const LexemeSequence &other)
 {
     _state    = other._state;
-    _boundary = other._boundary;
-    _k1       = other._k1;
     _n1       = other._n1;
-    _k2       = other._k2;
-    _n2       = other._n2;
     _mi       = other._mi;
     _llr      = other._llr;
     _score    = other._score;

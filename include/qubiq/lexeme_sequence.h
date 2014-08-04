@@ -25,7 +25,7 @@ public:
 
     LexemeSequence();
     LexemeSequence(const LexemeSequence &other);
-    LexemeSequence(const Text *text, int offset, int n, int boundary);
+    LexemeSequence(const Text *text, int offset, int n, int n1);
     ~LexemeSequence();
 
     LexemeSequence &operator =(const LexemeSequence &other);
@@ -34,13 +34,12 @@ public:
 
     inline bool isValid()  const { return _state == LexemeSequence::STATE_OK; }
     inline int  length()   const { return _lexemes->length(); }
-    inline int  boundary() const { return _boundary; }
+    inline int  n1()       const { return _n1; }
+    inline int frequency() const { return _offsets->length(); }
 
     inline const QVector<int>* lexemes() const { return _lexemes; }
     inline const QVector<int>* offsets() const { return _offsets; }
     inline const QByteArray*   key()     const { return _key; }
-
-    inline int frequency() const { return _offsets->length(); }
 
     inline double mi()    const { return _mi; }
     inline double llr()   const { return _llr; }
@@ -55,12 +54,7 @@ public:
 private:
     LexemeSequenceState _state;
 
-    int _boundary;
-
-    int _k1;
     int _n1;
-    int _k2;
-    int _n2;
 
     /* Metrics of a lexeme sequence:
      * 1) Mutual information
@@ -80,7 +74,7 @@ private:
     QByteArray   *_key; /* Sequence key for hashing */
 
     /* aux function for counting log-likelihood ratio: */
-    inline double ll(double p, int k, int n) {
+    inline double ll(double p, int k, int n) const {
         return k * log(p) + (n - k) * log(1 - p);
     }
 
@@ -88,9 +82,9 @@ private:
     void _destroy();
     void _assign(const LexemeSequence &other);
 
-    LexemeSequenceState calculate_state  (const Text *text, int offset, int n, int boundary);
+    LexemeSequenceState calculate_state  (const Text *text, int offset, int n, int n1);
     LexemeSequenceState build_sequence   (const Text *text, int offset, int n);
-    LexemeSequenceState calculate_metrics(const Text *text, int n, int boundary);
+    LexemeSequenceState calculate_metrics(const Text *text, int n, int n1);
 
     int  calculate_frequency(const Text *text, int offset, int n, bool collect_offsets = false);
     bool is_sequence        (const Text *text, int text_offset, int sequence_offset, int n) const;

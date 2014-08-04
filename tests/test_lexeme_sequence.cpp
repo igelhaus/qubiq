@@ -30,10 +30,10 @@ void TestLexemeSequence::emptySequence()
     LexemeSequence sequence;
     QCOMPARE(sequence.state(), LexemeSequence::STATE_EMPTY);
     QCOMPARE(sequence.isValid(), false);
-    QCOMPARE(sequence.length(), (ulong)0);
-    QCOMPARE(sequence.boundary(), (ulong)0);
+    QCOMPARE(sequence.length(), 0);
+    QCOMPARE(sequence.n1(), 0);
     QCOMPARE(sequence.lexemes()->length(), 0);
-    QCOMPARE(sequence.sequenceKey()->length(), 0);
+    QCOMPARE(sequence.key()->length(), 0);
     QCOMPARE(sequence.mi(), 0.0);
     QCOMPARE(sequence.llr(), 0.0);
     QCOMPARE(sequence.score(), 0.0);
@@ -46,10 +46,10 @@ void TestLexemeSequence::emptySequenceCopy()
 
     QCOMPARE(sequence2.state(), LexemeSequence::STATE_EMPTY);
     QCOMPARE(sequence2.isValid(), false);
-    QCOMPARE(sequence2.length(), (ulong)0);
-    QCOMPARE(sequence2.boundary(), (ulong)0);
+    QCOMPARE(sequence2.length(), 0);
+    QCOMPARE(sequence2.n1(), 0);
     QCOMPARE(sequence2.lexemes()->length(), 0);
-    QCOMPARE(sequence2.sequenceKey()->length(), 0);
+    QCOMPARE(sequence2.key()->length(), 0);
     QCOMPARE(sequence2.mi(), 0.0);
     QCOMPARE(sequence2.llr(), 0.0);
     QCOMPARE(sequence2.score(), 0.0);
@@ -64,10 +64,10 @@ void TestLexemeSequence::emptySequenceAssignment()
 
     QCOMPARE(sequence2.state(), LexemeSequence::STATE_EMPTY);
     QCOMPARE(sequence2.isValid(), false);
-    QCOMPARE(sequence2.length(), (ulong)0);
-    QCOMPARE(sequence2.boundary(), (ulong)0);
+    QCOMPARE(sequence2.length(), 0);
+    QCOMPARE(sequence2.n1(), 0);
     QCOMPARE(sequence2.lexemes()->length(), 0);
-    QCOMPARE(sequence2.sequenceKey()->length(), 0);
+    QCOMPARE(sequence2.key()->length(), 0);
     QCOMPARE(sequence2.mi(), 0.0);
     QCOMPARE(sequence2.llr(), 0.0);
     QCOMPARE(sequence2.score(), 0.0);
@@ -78,8 +78,6 @@ void TestLexemeSequence::badSequenceStates()
     Text text;
 
     text.append(QString("The quick brown fox jumps over the lazy dog."));
-
-    // FIXME: rename boundary to n1? left_len?
 
     LexemeSequence sequence1(&text, 1, 1, 1);
     QCOMPARE(sequence1.state(), LexemeSequence::STATE_UNIGRAM);
@@ -109,10 +107,13 @@ void TestLexemeSequence::simpleSequence()
     LexemeSequence sequence(&text, 1, 3, 2);
     QCOMPARE(sequence.state(), LexemeSequence::STATE_OK);
     QCOMPARE(sequence.isValid(), true);
-    QCOMPARE(sequence.length(), (ulong)3);
-    QCOMPARE(sequence.boundary(), (ulong)2);
+    QCOMPARE(sequence.length(), 3);
+    QCOMPARE(sequence.n1(), 2);
     QCOMPARE(sequence.lexemes()->length(), 3);
-    QCOMPARE(sequence.sequenceKey()->length(), (int)(3 * sizeof(ulong)));
+    QCOMPARE(sequence.key()->length(), (int)(3 * sizeof(int)));
+    QCOMPARE(sequence.frequency(), 2);
+    QCOMPARE(sequence.offsets()->at(0), 1);
+    QCOMPARE(sequence.offsets()->at(1), 34);
     QCOMPARE(sequence.mi(), 46 * (double)(2.0 / (3.0 * 3.0)));
     QCOMPARE(sequence.llr() > 0.0, true);
     QCOMPARE(sequence.score(), sequence.llr());
@@ -133,8 +134,8 @@ void TestLexemeSequence::comparisonOperator()
     QCOMPARE(sequence1 == sequence2, true);
     QCOMPARE(sequence1 == sequence3, false);
 
-    QCOMPARE(*(sequence1.sequenceKey()) == *(sequence2.sequenceKey()), true);
-    QCOMPARE(*(sequence1.sequenceKey()) == *(sequence3.sequenceKey()), false);
+    QCOMPARE(*(sequence1.key()) == *(sequence2.key()), true);
+    QCOMPARE(*(sequence1.key()) == *(sequence3.key()), false);
     QCOMPARE(qHash(sequence1, 0) == qHash(sequence2, 0), true);
     QCOMPARE(qHash(sequence1, 0) == qHash(sequence3, 0), false);
 }
@@ -186,7 +187,6 @@ void TestLexemeSequence::setOfSequences()
     sequences.insert(sequence3);
     QCOMPARE(sequences.size(), 2);
 }
-
 
 QTEST_MAIN(TestLexemeSequence)
 #include "test_lexeme_sequence.moc"
