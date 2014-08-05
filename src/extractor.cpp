@@ -4,23 +4,24 @@ Extractor::Extractor(const Text *text)
 {
     _text    = text;
     _min_bf  = DEFAULT_MIN_BIGRAM_FREQUENCY;
-    _ber     = DEFAULT_BIGRAM_EXTRACTION_RATE;
+    _max_ser = DEFAULT_MAX_SOURCE_EXTRACTION_RATE;
     _max_led = DEFAULT_MAX_LEFT_EXPANSION_DISTANCE;
     _max_red = DEFAULT_MAX_RIGHT_EXPANSION_DISTANCE;
     _qdt     = DEFAULT_QUALITY_DECREASE_THRESHOLD;
 
-    _candidates = new QList<LexemeSequence>;
-    _extracted  = new QSet<QByteArray>;
+    _initialize();
 }
 
 Extractor::~Extractor()
 {
-    delete _candidates;
-    delete _extracted;
+    _destroy();
 }
 
 bool Extractor::extract()
 {
+    _destroy();
+    _initialize();
+
     if (!collect_good_bigrams())
         return false;
     int i = 0;
@@ -81,7 +82,7 @@ bool Extractor::is_good_bigram(const LexemeSequence &bigram) const
 bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansions) const
 {
     // If most occurrences of a candidate in the corpus have not been extended then treat it as a term.
-    return (double)num_expansions / (double)candidate.frequency() <= _ber;
+    return (double)num_expansions / (double)candidate.frequency() <= _max_ser;
 }
 
 int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
@@ -136,4 +137,16 @@ int Extractor::store_expanded(LexemeSequence *expanded, const LexemeSequence &so
     _extracted->insert (*(expanded->key()));
 
     return 1;
+}
+
+void Extractor::_initialize()
+{
+    _candidates = new QList<LexemeSequence>;
+    _extracted  = new QSet<QByteArray>;
+}
+
+void Extractor::_destroy()
+{
+    delete _candidates;
+    delete _extracted;
 }

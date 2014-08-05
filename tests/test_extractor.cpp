@@ -26,7 +26,7 @@ void TestExtractor::emptyExtractor()
 
     Extractor extractor(&text);
     QCOMPARE(extractor.minBigramFrequency(),        DEFAULT_MIN_BIGRAM_FREQUENCY);
-    QCOMPARE(extractor.bigramExtractionRate(),      DEFAULT_BIGRAM_EXTRACTION_RATE);
+    QCOMPARE(extractor.maxSourceExtractionRate(),   DEFAULT_MAX_SOURCE_EXTRACTION_RATE);
     QCOMPARE(extractor.maxLeftExpansionDistance(),  DEFAULT_MAX_LEFT_EXPANSION_DISTANCE);
     QCOMPARE(extractor.maxRightExpansionDistance(), DEFAULT_MAX_RIGHT_EXPANSION_DISTANCE);
     QCOMPARE(extractor.qualityDecreaseThreshold(),  DEFAULT_QUALITY_DECREASE_THRESHOLD);
@@ -38,11 +38,29 @@ void TestExtractor::simpleExtractor()
     text.append(QString(_text));
 
     Extractor extractor(&text);
-    QCOMPARE(extractor.extract(), true);
+    const QList<LexemeSequence> *extracted;
 
-    const QList<LexemeSequence> *extracted = extractor.extracted();
-    for (int i = 0; i < extracted->size(); i++)
-        qDebug() << extracted->at(i).image(extractor.text());
+    QCOMPARE(extractor.extract(), true);
+    extracted = extractor.extracted();
+    for (int i = 0; i < extracted->size(); i++) {
+        const LexemeSequence &term = extracted->at(i);
+        qDebug() << term.image(extractor.text()) << " " << term.mi() << " " << term.llr();
+    }
+    extractor.setMaxLeftExpansionDistance(0);
+    QCOMPARE(extractor.extract(), true);
+    extracted = extractor.extracted();
+    for (int i = 0; i < extracted->size(); i++) {
+        const LexemeSequence &term = extracted->at(i);
+        qDebug() << term.image(extractor.text()) << " " << term.mi() << " " << term.llr();
+    }
+
+    extractor.setMaxSourceExtractionRate(0.5);
+    QCOMPARE(extractor.extract(), true);
+    extracted = extractor.extracted();
+    for (int i = 0; i < extracted->size(); i++) {
+        const LexemeSequence &term = extracted->at(i);
+        qDebug() << term.image(extractor.text()) << " " << term.mi() << " " << term.llr();
+    }
 }
 
 QTEST_MAIN(TestExtractor)
