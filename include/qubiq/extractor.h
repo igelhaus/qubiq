@@ -47,11 +47,10 @@ private:
     bool collect_good_bigrams();
     bool is_good_bigram   (const LexemeSequence &bigram) const;
     bool treat_as_term    (const LexemeSequence &bigram, int num_expansions) const;
-    int  expand_left      (const LexemeSequence &candidate);
-    int  expand_right     (const LexemeSequence &candidate);
+    int  expand           (const LexemeSequence &candidate, bool is_left_expanded);
     bool validate_expanded(const LexemeSequence &expanded, const LexemeSequence &source) const;
     bool has_better_score (const LexemeSequence &expanded, const LexemeSequence &source) const;
-    int  store_extracted  (LexemeSequence *expanded, const LexemeSequence &source, bool is_left_expanded);
+    int  store_expanded   (LexemeSequence *expanded, const LexemeSequence &source, bool is_left_expanded);
 };
 
 #endif // _EXTRACTOR_H_

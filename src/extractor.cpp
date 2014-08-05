@@ -32,10 +32,10 @@ bool Extractor::extract()
         int num_expansions     = 0;
 
         if (candidate.leftExpansionDistance() < _max_led)
-            num_expanded_left = expand_left(candidate);
+            num_expanded_left = expand(candidate, true);
 
         if (candidate.rightExpansionDistance() < _max_red)
-            num_expanded_right = expand_right(candidate);
+            num_expanded_right = expand(candidate, false);
 
         num_expansions = num_expanded_left + num_expanded_right;
         qDebug() << "num_expansions = " << num_expansions;
@@ -89,34 +89,23 @@ bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansion
     return (double)num_expansions / (double)candidate.frequency() <= _ber;
 }
 
-int Extractor::expand_left(const LexemeSequence &candidate)
+int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
 {
     int num_expanded = 0;
     const QVector<int> *first_lexeme_entries = candidate.offsets();
     int n  = candidate.length() + 1;
-    int n1 = 1;
+    int n1 = is_left_expanded? 1 : candidate.length();
 
     for (int i = 0; i < first_lexeme_entries->size(); i++) {
-        LexemeSequence expanded(_text, first_lexeme_entries->at(i) - 1, n, n1);
+        int offset = first_lexeme_entries->at(i);
+        if (is_left_expanded)
+            offset--;
+
+        LexemeSequence expanded(_text, offset, n, n1);
         if (!validate_expanded(expanded, candidate))
             continue;
-        num_expanded += store_extracted(&expanded, candidate, true);
-    }
-    return num_expanded;
-}
 
-int Extractor::expand_right(const LexemeSequence &candidate)
-{
-    int num_expanded = 0;
-    const QVector<int> *first_lexeme_entries = candidate.offsets();
-    int n  = candidate.length() + 1;
-    int n1 = candidate.length();
-
-    for (int i = 0; i < first_lexeme_entries->size(); i++) {
-        LexemeSequence expanded(_text, first_lexeme_entries->at(i), n, n1);
-        if (!validate_expanded(expanded, candidate))
-            continue;
-        num_expanded += store_extracted(&expanded, candidate, false);
+        num_expanded += store_expanded(&expanded, candidate, false);
     }
     return num_expanded;
 }
@@ -138,7 +127,7 @@ bool Extractor::has_better_score(const LexemeSequence &expanded, const LexemeSeq
     return expanded.score() > 0.0 && expanded.score() > source.score() - _qdt;
 }
 
-int Extractor::store_extracted(LexemeSequence *expanded, const LexemeSequence &source, bool is_left_expanded)
+int Extractor::store_expanded(LexemeSequence *expanded, const LexemeSequence &source, bool is_left_expanded)
 {
     expanded->incLeftExpansionDistance (source.leftExpansionDistance());
     expanded->incRightExpansionDistance(source.rightExpansionDistance());
