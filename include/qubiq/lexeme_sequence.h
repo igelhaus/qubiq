@@ -32,10 +32,10 @@ public:
 
     inline LexemeSequenceState state() const { return _state; }
 
-    inline bool isValid()  const { return _state == LexemeSequence::STATE_OK; }
-    inline int  length()   const { return _lexemes->length(); }
-    inline int  n1()       const { return _n1; }
-    inline int frequency() const { return _offsets->length(); }
+    inline bool isValid()   const { return _state == LexemeSequence::STATE_OK; }
+    inline int  length()    const { return _lexemes->length(); }
+    inline int  n1()        const { return _n1; }
+    inline int  frequency() const { return _offsets->length(); }
 
     inline const QVector<int>* lexemes() const { return _lexemes; }
     inline const QVector<int>* offsets() const { return _offsets; }
@@ -50,6 +50,8 @@ public:
 
     inline void  incLeftExpansionDistance(int n = 1) { _led += n; }
     inline void incRightExpansionDistance(int n = 1) { _red += n; }
+
+    QString image(const Text *text) const;
 
 private:
     LexemeSequenceState _state;

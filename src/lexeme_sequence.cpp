@@ -38,6 +38,19 @@ LexemeSequence &LexemeSequence::operator =(const LexemeSequence &other)
     return *this;
 }
 
+QString LexemeSequence::image(const Text *text) const
+{
+    QString _image;
+    int idx_first_offset = _offsets->at(0);
+    for (int i = 0; i < _lexemes->length(); i++) {
+        int idx_lexeme = text->offsets()->at(idx_first_offset + i);
+        Lexeme *lexeme = text->lexemes()->at(idx_lexeme);
+        _image.append(lexeme->forms()->at(0));
+        _image.append(" ");
+    }
+    return _image;
+}
+
 LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *text, int offset, int n, int n1)
 {
     if (n < 2)

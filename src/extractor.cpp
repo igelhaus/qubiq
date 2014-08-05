@@ -56,12 +56,7 @@ bool Extractor::extract()
 
     for (int i = 0; i < _candidates->size(); i++) {
         const LexemeSequence &candidate = _candidates->at(i);
-        QString image("");
-        for (int j = 0; j < candidate.length(); j++) {
-            image.append(_text->lexemes()->at(candidate.lexemes()->at(j))->forms()->at(0));
-            image.append(" ");
-        }
-        qDebug() << image;
+        qDebug() << candidate.image(_text);
     }
 
     return true;
