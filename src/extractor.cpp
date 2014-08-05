@@ -93,25 +93,14 @@ int Extractor::expand_left(const LexemeSequence &candidate)
 {
     int num_expanded = 0;
     const QVector<int> *first_lexeme_entries = candidate.offsets();
+    int n  = candidate.length() + 1;
+    int n1 = 1;
 
     for (int i = 0; i < first_lexeme_entries->size(); i++) {
-        LexemeSequence expanded(
-            _text, first_lexeme_entries->at(i) - 1, candidate.length() + 1, 1
-        );
-        if (!expanded.isValid()) {
+        LexemeSequence expanded(_text, first_lexeme_entries->at(i) - 1, n, n1);
+        if (!validate_expanded(expanded, candidate))
             continue;
-        }
-        const QByteArray *exp_key = expanded.key();
-        if (_extracted->contains(*exp_key)) {
-            continue;
-        }
-        if (has_better_score(expanded, candidate)) {
-            expanded.incLeftExpansionDistance (candidate.leftExpansionDistance() + 1);
-            expanded.incRightExpansionDistance(candidate.rightExpansionDistance());
-            _candidates->append(expanded);
-            _extracted->insert(*exp_key);
-            num_expanded++;
-        }
+        num_expanded += store_extracted(&expanded, candidate, true);
     }
     return num_expanded;
 }
@@ -120,29 +109,47 @@ int Extractor::expand_right(const LexemeSequence &candidate)
 {
     int num_expanded = 0;
     const QVector<int> *first_lexeme_entries = candidate.offsets();
+    int n  = candidate.length() + 1;
+    int n1 = candidate.length();
 
     for (int i = 0; i < first_lexeme_entries->size(); i++) {
-        LexemeSequence expanded(
-            _text, first_lexeme_entries->at(i), candidate.length() + 1, candidate.length()
-        );
-        if (!expanded.isValid()) {
+        LexemeSequence expanded(_text, first_lexeme_entries->at(i), n, n1);
+        if (!validate_expanded(expanded, candidate))
             continue;
-        }
-        if (_extracted->contains(*(expanded.key()))) {
-            continue;
-        }
-        if (has_better_score(expanded, candidate)) {
-            expanded.incLeftExpansionDistance (candidate.leftExpansionDistance());
-            expanded.incRightExpansionDistance(candidate.rightExpansionDistance() + 1);
-            _candidates->append(expanded);
-            num_expanded++;
-        }
+        num_expanded += store_extracted(&expanded, candidate, false);
     }
     return num_expanded;
+}
+
+bool Extractor::validate_expanded(const LexemeSequence &expanded, const LexemeSequence &source) const
+{
+    if (!expanded.isValid())
+        return false;
+
+    if (_extracted->contains(*(expanded.key())))
+        return false;
+
+    return has_better_score(expanded, source);
 }
 
 bool Extractor::has_better_score(const LexemeSequence &expanded, const LexemeSequence &source) const
 {
     // FIXME: zero expanded score?
     return expanded.score() > 0.0 && expanded.score() > source.score() - _qdt;
+}
+
+int Extractor::store_extracted(LexemeSequence *expanded, const LexemeSequence &source, bool is_left_expanded)
+{
+    expanded->incLeftExpansionDistance (source.leftExpansionDistance());
+    expanded->incRightExpansionDistance(source.rightExpansionDistance());
+
+    if (is_left_expanded)
+        expanded->incLeftExpansionDistance();
+    else
+        expanded->incRightExpansionDistance();
+
+    _candidates->append(*expanded);
+    _extracted->insert (*(expanded->key()));
+
+    return 1;
 }
