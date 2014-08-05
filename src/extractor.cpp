@@ -54,11 +54,6 @@ bool Extractor::extract()
         }
     }
 
-    for (int i = 0; i < _candidates->size(); i++) {
-        const LexemeSequence &candidate = _candidates->at(i);
-        qDebug() << candidate.image(_text);
-    }
-
     return true;
 }
 

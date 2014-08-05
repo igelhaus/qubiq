@@ -33,6 +33,9 @@ public:
     inline void setMaxRightExpansionDistance(int max_red) { _max_red = max_red; }
     inline void setQualityDecreaseThreshold(double qdt)   { _qdt = qdt; }
 
+    inline const Text *text() const { return _text; }
+    inline const QList<LexemeSequence> *extracted() const { return _candidates; }
+
 private:
     const Text *_text;
     int    _min_bf; /* Minimum bigram frequency */

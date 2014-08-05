@@ -38,7 +38,11 @@ void TestExtractor::simpleExtractor()
     text.append(QString(_text));
 
     Extractor extractor(&text);
-    extractor.extract();
+    QCOMPARE(extractor.extract(), true);
+
+    const QList<LexemeSequence> *extracted = extractor.extracted();
+    for (int i = 0; i < extracted->size(); i++)
+        qDebug() << extracted->at(i).image(extractor.text());
 }
 
 QTEST_MAIN(TestExtractor)
