@@ -101,13 +101,15 @@ int Extractor::expand_left(const LexemeSequence &candidate)
         if (!expanded.isValid()) {
             continue;
         }
-        if (_extracted->contains(*(expanded.key()))) {
+        const QByteArray *exp_key = expanded.key();
+        if (_extracted->contains(*exp_key)) {
             continue;
         }
         if (has_better_score(expanded, candidate)) {
             expanded.incLeftExpansionDistance (candidate.leftExpansionDistance() + 1);
             expanded.incRightExpansionDistance(candidate.rightExpansionDistance());
             _candidates->append(expanded);
+            _extracted->insert(*exp_key);
             num_expanded++;
         }
     }
