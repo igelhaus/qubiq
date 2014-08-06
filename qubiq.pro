@@ -4,26 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       += core
-QT       -= gui
+TEMPLATE = subdirs
+SUBDIRS  = core 3rdparty/cutelogger
 
-TARGET    = qubiq
-
-CONFIG   += console
-CONFIG   -= app_bundle
-
-TEMPLATE = app
-
-INCLUDEPATH += "include"
-HEADERS     += \
-    include/qubiq/extractor.h       \
-    include/qubiq/lexeme.h          \
-    include/qubiq/lexeme_sequence.h \
-    include/qubiq/text.h
-
-SOURCES += main.cpp          \
-    src/extractor.cpp        \
-    src/lexeme.cpp           \
-    src/lexeme_sequence.cpp  \
-    src/text.cpp
-
+cutelogger.depends =
+core.depends = 3rdparty/cutelogger

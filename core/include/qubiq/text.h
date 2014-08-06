@@ -2,6 +2,7 @@
 #define _TEXT_H_
 
 #include <QtCore>
+#include <qubiq/global.h>
 #include <qubiq/lexeme.h>
 
 const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
@@ -12,7 +13,7 @@ const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
 // FIXME: tokenization with lemmatization vs. tokenization before lemmatization
 // FIXME: add dumping function
 
-class Text: public QObject {
+class QUBIQSHARED_EXPORT Text: public QObject {
     Q_OBJECT
 
 private:

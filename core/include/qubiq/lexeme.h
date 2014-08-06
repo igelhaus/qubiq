@@ -2,10 +2,11 @@
 #define _LEXEME_H_
 
 #include <QtCore>
+#include <qubiq/global.h>
 
 // 2DO: describe arbitrary lexeme features as a free-form QHash?
 
-class Lexeme: public QObject {
+class QUBIQSHARED_EXPORT Lexeme: public QObject {
     Q_OBJECT
 
 private:

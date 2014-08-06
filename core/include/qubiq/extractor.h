@@ -2,6 +2,7 @@
 #define _EXTRACTOR_H_
 
 #include <QtCore>
+#include <qubiq/global.h>
 #include <qubiq/lexeme.h>
 #include <qubiq/text.h>
 #include <qubiq/lexeme_sequence.h>
@@ -12,7 +13,7 @@ const int    DEFAULT_MAX_LEFT_EXPANSION_DISTANCE  = 2;
 const int    DEFAULT_MAX_RIGHT_EXPANSION_DISTANCE = 2;
 const double DEFAULT_QUALITY_DECREASE_THRESHOLD   = 3.0; // FIXME: adjust me
 
-class Extractor : public QObject {
+class QUBIQSHARED_EXPORT Extractor : public QObject {
     Q_OBJECT
 
 public:

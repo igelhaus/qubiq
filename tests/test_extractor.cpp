@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 
 #include <qubiq/extractor.h>
+#include <cutelogger/include/FileAppender.h>
 
 const char *_text =
    "A database connection string is a special format string "     // 00 .. 08
@@ -15,9 +16,17 @@ class TestExtractor: public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void emptyExtractor();
     void simpleExtractor();
 };
+
+void TestExtractor::initTestCase()
+{
+    FileAppender* appender = new FileAppender("test_extractor.log");
+    Logger::registerAppender(appender);
+    LOG_INFO("Starting tests");
+}
 
 void TestExtractor::emptyExtractor()
 {

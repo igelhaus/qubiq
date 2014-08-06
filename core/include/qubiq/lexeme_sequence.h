@@ -3,13 +3,14 @@
 
 #include <math.h>
 #include <QtCore>
+#include <qubiq/global.h>
 #include <qubiq/text.h>
 
 const int    MIN_COUNT              =   3;
 const double MIN_MUTUAL_INFORMATION = 2.5;
 const double MIN_LLR                = 5.0;
 
-class LexemeSequence: public QObject {
+class QUBIQSHARED_EXPORT LexemeSequence: public QObject {
     Q_OBJECT
 
 public:
