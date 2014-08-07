@@ -11,7 +11,7 @@ DEFINES  += QUBIQ_LIBRARY
 TEMPLATE  = lib
 LIBS     += -L../3rdparty/cutelogger -lLogger
 
-INCLUDEPATH += "include"
+INCLUDEPATH += "include" "../3rdparty"
 HEADERS     += \
     include/qubiq/global.h          \
     include/qubiq/extractor.h       \

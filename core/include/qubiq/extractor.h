@@ -2,6 +2,7 @@
 #define _EXTRACTOR_H_
 
 #include <QtCore>
+#include <cutelogger/include/Logger.h>
 #include <qubiq/global.h>
 #include <qubiq/lexeme.h>
 #include <qubiq/text.h>

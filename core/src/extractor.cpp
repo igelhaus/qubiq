@@ -19,13 +19,19 @@ Extractor::~Extractor()
 
 bool Extractor::extract()
 {
+    LOG_INFO("Starting extraction");
+
     _destroy();
     _initialize();
 
-    if (!collect_good_bigrams())
+    if (!collect_good_bigrams()) {
+        LOG_WARNING("No good bigrams collected, consider adjusting minBigramFrequency");
         return false;
-    int i = 0;
+    }
 
+    LOG_INFO("Starting expandindg good bigrams");
+
+    int i = 0;
     while (i < _candidates->size()) {
         const LexemeSequence &candidate = _candidates->at(i);
         int num_expanded_left  = 0;
@@ -39,38 +45,40 @@ bool Extractor::extract()
             num_expanded_right = expand(candidate, false);
 
         num_expansions = num_expanded_left + num_expanded_right;
-        qDebug() << "num_expansions = " << num_expansions;
+        LOG_DEBUG("Expanding candidate: ", candidate.image(_text).toStdWString().data());
+        LOG_DEBUG("Expansions made (left, right, total): ", num_expanded_left, num_expanded_right, num_expansions);
 
-        if (num_expansions > 0) {
-            // At least one expansion done
-            if (treat_as_term(candidate, num_expansions)) {
-                i++;
-            } else {
-                _extracted->remove(*(candidate.key()));
-                _candidates->removeAt(i);
-            }
-        } else {
-            // No expansion: simply leave current candidate as a term
+        // No expansions: Leave current candidate as a term and go to next
+        // At least one expansion: Decide whether we can leave current candidate as a term
+        if (num_expansions == 0 || treat_as_term(candidate, num_expansions)) {
             i++;
+            continue;
         }
+        // Current candidate is not a good term, remove it from the list:
+        _extracted->remove(*(candidate.key()));
+        _candidates->removeAt(i);
     }
+
+    LOG_INFO("Extraction finished");
 
     return true;
 }
 
 bool Extractor::collect_good_bigrams()
 {
+    LOG_INFO("Starting collecting good bigrams");
     for (int i = 0; i < _text->length(); i++) {
         LexemeSequence bigram(_text, i, 2, 1);
         if (!bigram.isValid())
             continue;
         const QByteArray *key = bigram.key();
         if (!_extracted->contains(*key) && is_good_bigram(bigram)) {
+            LOG_DEBUG("Found at offset ", i);
             _extracted->insert(*key);
             _candidates->append(bigram);
-            qDebug() << "extracted at offset " << i;
         }
     }
+    LOG_INFO("Good bigrams collected");
     return _extracted->size() > 0;
 }
 
@@ -82,7 +90,9 @@ bool Extractor::is_good_bigram(const LexemeSequence &bigram) const
 bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansions) const
 {
     // If most occurrences of a candidate in the corpus have not been extended then treat it as a term.
-    return (double)num_expansions / (double)candidate.frequency() <= _max_ser;
+    double exp_ratio = (double)num_expansions / (double)candidate.frequency();
+    LOG_DEBUG("Expansion ratio: ", exp_ratio);
+    return exp_ratio <= _max_ser;
 }
 
 int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
