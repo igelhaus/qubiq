@@ -45,8 +45,11 @@ bool Extractor::extract()
             num_expanded_right = expand(candidate, false);
 
         num_expansions = num_expanded_left + num_expanded_right;
-        LOG_DEBUG("Expanding candidate: ", candidate.image(_text).toStdWString().data());
-        LOG_DEBUG("Expansions made (left, right, total): ", num_expanded_left, num_expanded_right, num_expansions);
+        LOG_DEBUG() << "Expanding candidate:" << candidate.image(_text);
+        LOG_DEBUG() << "Expansions made (left, right, total):"
+                    << num_expanded_left
+                    << num_expanded_right
+                    << num_expansions;
 
         // No expansions: Leave current candidate as a term and go to next
         // At least one expansion: Decide whether we can leave current candidate as a term
@@ -73,7 +76,7 @@ bool Extractor::collect_good_bigrams()
             continue;
         const QByteArray *key = bigram.key();
         if (!_extracted->contains(*key) && is_good_bigram(bigram)) {
-            LOG_DEBUG("Found at offset ", i);
+            LOG_DEBUG() << "Found at offset" << i;
             _extracted->insert(*key);
             _candidates->append(bigram);
         }
@@ -91,7 +94,7 @@ bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansion
 {
     // If most occurrences of a candidate in the corpus have not been extended then treat it as a term.
     double exp_ratio = (double)num_expansions / (double)candidate.frequency();
-    LOG_DEBUG("Expansion ratio: ", exp_ratio);
+    LOG_DEBUG() << "Expansion ratio:" << exp_ratio;
     return exp_ratio <= _max_ser;
 }
 

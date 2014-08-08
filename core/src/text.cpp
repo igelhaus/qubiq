@@ -22,7 +22,7 @@ Text::~Text() {
 
 bool Text::appendFile(const QString &fname)
 {
-    LOG_INFO("Starting indexing file ", fname.toStdWString().data());
+    LOG_INFO() << "Starting indexing file" << fname;
 
     QFile file(fname);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -44,11 +44,11 @@ bool Text::appendFile(const QString &fname)
             pos_start = pos_end;
             pos_end   = boundary_finder->toNextBoundary();
             if (pos_end != -1) {
-                LOG_DEBUG("token = ", toLoggable(token));
+                LOG_DEBUG() << "token =" << token;
                 process_token(token);
             } else {
                 token_part = token.toString();
-                LOG_DEBUG("token_part = ", toLoggable(token_part));
+                LOG_DEBUG() << "token_part =" << token_part;
             }
         };
         delete boundary_finder;
@@ -59,7 +59,7 @@ bool Text::appendFile(const QString &fname)
             buffer.append(token_part).append(_buffer);
         } else {
             /* Last chunk is guaranteed to be a valid token, process it: */
-            LOG_DEBUG("very_last_token = ", toLoggable(token_part));
+            LOG_DEBUG() << "very_last_token =" << (token_part);
             QStringRef token = token_part.midRef(0, token_part.length());
             process_token(token);
         }
@@ -81,7 +81,7 @@ bool Text::append(const QString &buffer)
         QStringRef token = buffer.midRef(pos_start, pos_end - pos_start);
         pos_start = pos_end;
         pos_end   = boundary_finder->toNextBoundary();
-        LOG_DEBUG("token = ", toLoggable(token));
+        LOG_DEBUG() << "token =" << token;
         process_token(token);
     };
     delete boundary_finder;
