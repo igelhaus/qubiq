@@ -4,8 +4,30 @@
 #
 #-------------------------------------------------
 
+#
+# All subprojects (including 3rd party components and tests):
+#
+
 TEMPLATE = subdirs
-SUBDIRS  = core 3rdparty/cutelogger
+SUBDIRS  = core \
+    3rdparty/cutelogger        \
+    tests/test_lexeme          \
+    tests/test_text            \
+    tests/test_lexeme_sequence \
+    tests/test_extractor
+
+#
+# Core dependencies:
+#
 
 cutelogger.depends =
-core.depends = 3rdparty/cutelogger
+core.depends       = 3rdparty/cutelogger
+
+#
+# Test dependencies:
+#
+
+test_lexeme.depends          = core
+test_text.depends            = core
+test_lexeme_sequence.depends = core
+test_extractor.depends       = core

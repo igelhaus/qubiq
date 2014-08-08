@@ -11,6 +11,8 @@ DEFINES  += QUBIQ_LIBRARY
 TEMPLATE  = lib
 LIBS     += -L../3rdparty/cutelogger -lLogger
 
+DESTDIR   = ..
+
 INCLUDEPATH += "include" "../3rdparty"
 HEADERS     += \
     include/qubiq/global.h          \
@@ -24,3 +26,8 @@ SOURCES += \
     src/lexeme.cpp           \
     src/lexeme_sequence.cpp  \
     src/text.cpp
+
+mac {
+    # Copy 3rd party libs to common dest dir to run tests:
+    QMAKE_POST_LINK += cp -R $$[OUT_PWD]../3rdparty/cutelogger/libLogger.* $$DESTDIR
+}
