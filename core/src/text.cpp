@@ -1,5 +1,14 @@
 #include <qubiq/text.h>
 
+/**
+ * \class Text
+ *
+ * \brief The Text class provides means for indexing a text before further processing.
+ *
+ * \sa LexemeSequence
+ */
+
+//! Constructs a Text object.
 Text::Text() {
     _lexemes    = new QVector<Lexeme*>();
     _offsets    = new QVector<int>();
@@ -10,6 +19,7 @@ Text::Text() {
     num_boundaries = 0;
 }
 
+//! Destructs the Text object.
 Text::~Text() {
     for (int i = 0; i < _lexemes->length(); i++)
         delete _lexemes->at(i);
@@ -20,6 +30,17 @@ Text::~Text() {
     delete idx_lexemes;
 }
 
+/**
+ * Appends contents of a file referenced by its name to the text.
+ *
+ * \param[in] fname Name of the file to append to the text.
+ *
+ * \returns \c true on success and \c false if the file is not accessible.
+ *
+ * \note
+ * The method will return \c true on empty files and files containing whitespace
+ * characters only.
+ */
 bool Text::appendFile(const QString &fname)
 {
     LOG_INFO() << "Starting indexing file" << fname;
@@ -70,8 +91,18 @@ bool Text::appendFile(const QString &fname)
     return true;
 }
 
+/**
+ * Appends contents of a string buffer to the text.
+ *
+ * \param[in] buffer Buffer to append to the text.
+ *
+ * \returns \c true on success and \c false if the buffer is a null/empty string.
+ */
 bool Text::append(const QString &buffer)
 {
+    if (buffer.isEmpty() || buffer.isNull())
+        return false;
+
     QTextBoundaryFinder *boundary_finder = new QTextBoundaryFinder(
         QTextBoundaryFinder::Word, buffer
     );
@@ -88,6 +119,13 @@ bool Text::append(const QString &buffer)
     return true;
 }
 
+/**
+ * Detects whether a token consists of whitespace characters only.
+ *
+ * \param[in] token Token to be checked.
+ *
+ * \returns \c true if a token consists of whitespace characters only and \c false otherwise.
+ */
 bool Text::is_whitespace_token(const QStringRef &token)
 {
     const QChar *chars = token.unicode();
@@ -98,6 +136,13 @@ bool Text::is_whitespace_token(const QStringRef &token)
     return true;
 }
 
+/**
+ * Detects whether a token is a boundary token.
+ *
+ * \param[in] token Token to be checked.
+ *
+ * \returns \c true if a token is a boundary token and \c false otherwise.
+ */
 bool Text::is_boundary_token(const QStringRef &token)
 {
     const QChar *chars = token.unicode();
@@ -123,11 +168,15 @@ QString* Text::normalize_token(const QStringRef &token, bool is_boundary)
     return normalized;
 }
 
-/* Process a token:
- * 1. Ignore a whitespace token
- * 2. If a token is normalized to a new lexeme, insert it into the index of lexemes
- * 3. Add information to the index of forms
- * 4. For the lexeme index entry, add
+/**
+ * Adds a token to the text indeces.
+ *
+ * All whitespace tokens are ignored. If the token is lemmatized to a new lexeme
+ * it is inserted into the index of lexemes.
+ *
+ * \param[in] token Token to process.
+ *
+ * \returns \c true if a token consists of whitespace characters only and \c false otherwise.
  */
 bool Text::process_token(const QStringRef &token)
 {
