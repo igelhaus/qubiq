@@ -19,25 +19,74 @@ public:
     Text();
     ~Text();
 
-    inline int length()           const { return _offsets->length(); }
-    inline int numNonBoundaries() const { return num_forms; }
-    inline int numBoundaries()    const { return num_boundaries; }
-    inline int numUniqueTokens()  const { return idx_forms->keys().length(); }
-    inline int numLexemes()       const { return _lexemes->length(); }
+    //! Returns length of the text expressed in tokens.
+    //! \sa numNonBoundaries
+    //! \sa numBoundaries
+    //! \sa numUniqueTokens
+    //! \sa numLexemes
+    inline int length() const { return _offsets->length(); }
 
-    inline const QVector<Lexeme*>* lexemes()         const { return _lexemes; }
-    inline const QVector<int>* offsets()             const { return _offsets; }
-    inline const QHash<QString, int>* indexForms()   const { return idx_forms; }
+    //! Returns number of non-boundary tokens in the text.
+    //! \sa length
+    //! \sa numBoundaries
+    //! \sa numUniqueTokens
+    //! \sa numLexemes
+    inline int numNonBoundaries() const { return num_forms; }
+
+    //! Returns number of boundary tokens in the text.
+    //! \sa length
+    //! \sa numNonBoundaries
+    //! \sa numUniqueTokens
+    //! \sa numLexemes
+    inline int numBoundaries() const { return num_boundaries; }
+
+    //! Returns number of unique tokens (both boundaries and non-boundaries) in the text.
+    //! \sa length
+    //! \sa numNonBoundaries
+    //! \sa numBoundaries
+    //! \sa numLexemes
+    inline int numUniqueTokens() const { return idx_forms->keys().length(); }
+
+    //! Returns number of lexemes in the text.
+    //! \sa length
+    //! \sa numNonBoundaries
+    //! \sa numBoundaries
+    //! \sa numUniqueTokens
+    inline int numLexemes() const { return _lexemes->length(); }
+
+    //! Returns pointer to the vector of all lexemes of the text.
+    //! \sa offsets
+    //! \sa indexForms
+    //! \sa indexLexemes
+    inline const QVector<Lexeme*>* lexemes() const { return _lexemes; }
+
+    //! Returns pointer to the vector mapping token offsets to corresponding lexemes.
+    //! \sa lexemes
+    //! \sa indexForms
+    //! \sa indexLexemes
+    inline const QVector<int>* offsets() const { return _offsets; }
+
+    //! Returns pointer to the index mapping word forms to corresponding lexemes.
+    //! \sa lexemes
+    //! \sa offsets
+    //! \sa indexLexemes
+    inline const QHash<QString, int>* indexForms() const { return idx_forms; }
+
+    //! Returns pointer to the index mapping string representations of lexemes
+    //! to their offsets in the \c lexemes vector.
+    //! \sa lexemes
+    //! \sa offsets
+    //! \sa indexForms
     inline const QHash<QString, int>* indexLexemes() const { return idx_lexemes; }
 
     bool appendFile(const QString &fname);
     bool append    (const QString &buffer);
 
 private:
-    QVector<Lexeme*>    *_lexemes;    /* vector of all lexemes in the text */
-    QVector<int>        *_offsets;    /* offset of a form in the text -> offset of its lexeme in the vector */
-    QHash<QString, int> *idx_forms;   /* form   -> offset of its lexeme in the vector */
-    QHash<QString, int> *idx_lexemes; /* lexeme -> its offset in the vector */
+    QVector<Lexeme*>    *_lexemes;   //!< vector of all lexemes in the text
+    QVector<int>        *_offsets;   //!< token's offset in the text -> offset of its lexeme in \c _lexemes
+    QHash<QString, int> *idx_forms;  //!< token  (string) -> offset of its lexeme in \c _lexemes
+    QHash<QString, int> *idx_lexemes;//!< lexeme (string) -> its offset in \c _lexemes
 
     int num_forms;
     int num_boundaries;
