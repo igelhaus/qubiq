@@ -1,15 +1,41 @@
 #include <qubiq/lexeme_sequence.h>
 
+/**
+ * \class LexemeSequence
+ *
+ * \brief The LexemeSequence class representates a sequence of lexemes in the given text.
+ *
+ * The LexemeSequence class implements a sequence of lexemes in the text and
+ * calculates metrics of the sequence needed for further term extraction. These
+ * metrics are: mutual information, log-likelihood ratio and overall sequence
+ * score which is calculated using the first two metrics.
+ *
+ * It is always assumed that the sequence consists of two subsequences, which
+ * is crucial for calculating the metrics mentionred above.
+ *
+ * \sa Text
+ * \sa Lexeme
+ */
+
+//! Constructs an empty LexemeSequence object.
 LexemeSequence::LexemeSequence()
 {
     _initialize();
 }
 
+//! Copy constructor. Constructs a LexemeSequence object from the other LexemeSequence object.
 LexemeSequence::LexemeSequence(const LexemeSequence &other)
 {
     _assign(other);
 }
 
+/**
+ * \brief Constructs a real lexeme sequence consisting of two subsequences from the text.
+ * \param[in] text   Text to extract the sequence from.
+ * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n      Length of the sequence.
+ * \param[in] n1     Length of the first subsequence.
+ */
 LexemeSequence::LexemeSequence(const Text *text, int offset, int n, int n1)
 {
     _initialize();
@@ -24,11 +50,17 @@ LexemeSequence::LexemeSequence(const Text *text, int offset, int n, int n1)
     }
 }
 
+//! Destructs the LexemeSequence object.
 LexemeSequence::~LexemeSequence()
 {
     _destroy();
 }
 
+/**
+ * \brief Assignment operator.
+ * \param[in] other Another lexeme sequence to assign to the current object.
+ * \returns Reference to the original object after assignment.
+ */
 LexemeSequence &LexemeSequence::operator =(const LexemeSequence &other)
 {
     if (this != &other) {
@@ -38,6 +70,11 @@ LexemeSequence &LexemeSequence::operator =(const LexemeSequence &other)
     return *this;
 }
 
+/**
+ * \brief Constructs a string representation of the sequence.
+ * \param[in] text Text the sequence was extracted from.
+ * \returns A string representing the sequence.
+ */
 QString LexemeSequence::image(const Text *text) const
 {
     QString _image;
@@ -51,6 +88,14 @@ QString LexemeSequence::image(const Text *text) const
     return _image;
 }
 
+/**
+ * \brief Calculates sequence state while constructing it from the source text.
+ * \param[in] text   Text to extract the sequence from.
+ * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n      Length of the sequence.
+ * \param[in] n1     Length of the first subsequence.
+ * \returns          Sequence state.
+ */
 LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *text, int offset, int n, int n1)
 {
     if (n < 2)
@@ -68,6 +113,13 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *
     return LexemeSequence::STATE_OK;
 }
 
+/**
+ * \brief Constructs a sequence from the source text.
+ * \param[in] text   Text to extract the sequence from.
+ * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n      Length of the sequence.
+ * \returns          Sequence state indicating sequence validity.
+ */
 LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *text, int offset, int n)
 {
     for (int i = 0; i < n; i++) {
@@ -87,23 +139,43 @@ LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *t
     return LexemeSequence::STATE_OK;
 }
 
+/**
+ * \brief Calculates metrics of the sequence.
+ *
+ * This method calculates mutual information (MI) between two subsequences composing
+ * a sequence, their log-likelihood ration (LLR) and overall score.
+ *
+ * The sense of the metrics in this context is to measure how much the two
+ * subsequences are related to each other.
+ *
+ * MI is calculated in a straightforward way.
+ *
+ * LLR is calculated as follows:
+ *
+ * - N tokens of the input text are split into two sets:
+ *    -# \c f1:     Tokens that start the first subsequence
+ *    -# \c not_f1: Tokens that do not start the first subsequence
+ * - Tokens from \c f1 are split into two sets:
+ *    -# Successfull tokens, \c f: Tokens that start the whole sequence
+ *    -# Failure tokens: Tokens that do not start the whole sequence
+ * - Tokens from \c not_f1 are split into two sets:
+ *    -# Successfull tokens, \c f2_not_f1: Tokens that start the second subsequence
+ *    -# Failure tokens: Tokens that do not start the second subsequence
+ *
+ * Our hypotesis test is:
+ * - \c H0: The first and the second subsequences are linguistically related, i.e.
+ * f/f1 and f2_not_f1/not_f1 are different probabilities.
+ * - \c H1: The first and the second subsequences are linguistically unrelated, i.e.
+ * probability of the second subsequence is the same in the entire text.
+ *
+ * \param[in] text   Text to extract the sequence from.
+ * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n      Length of the sequence.
+ * \param[in] n1     Length of the first subsequence.
+ * \returns          Currently always returns \c LexemeSequence::LexemeSequenceState::STATE_OK.
+ */
 LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, int n, int n1)
 {
-    /* N tokens of the input text are split into two sets:
-     *  1) f1:     Tokens that start the first subsequence
-     *  2) not_f1: Tokens that do not start the first subsequence
-     * Tokens from f1 are split into two sets:
-     *  1) Successfull tokens, f: Tokens that start the whole sequence
-     *  2) Failure tokens: Tokens that do not start the whole sequence
-     * Tokens from not_f1 are split into two sets:
-     *  1) Successfull tokens, f2_not_f1: Tokens that start the second subsequence
-     *  2) Failure tokens: Tokens that do not start the second subsequence
-     * Our test is:
-     * H0: The first and the second subsequences are linguistically related, i.e.
-     * f/f1 and f2_not_f1/not_f1 are different probabilities.
-     * H1: The first and the second subsequences are linguistically unrelated, i.e.
-     * probability of the second subsequence is the same in the entire text.
-    */
     int f         = calculate_frequency(text, 0, n, true); /* frequency of the whole sequence */
     int f1        = calculate_frequency(text, 0, n1);      /* frequency of the first subsequence */
     int f2        = calculate_frequency(text, n1, n - n1); /* frequency of the second subsequence */
@@ -126,6 +198,14 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text
     return LexemeSequence::STATE_OK;
 }
 
+/**
+ * \brief Calculates frequency of a sequence in the source text.
+ * \param[in] text            Text to extract the sequence from.
+ * \param[in] offset          Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n               Length of the sequence.
+ * \param[in] collect_offsets Set to \c true if offsets that start the sequences should be preserved internally.
+ * \returns Number of occurences of the sequence in the \c text.
+ */
 int LexemeSequence::calculate_frequency(const Text *text, int offset, int n, bool collect_offsets)
 {
     const QVector<int>* first = text->lexemes()->at(_lexemes->at(offset))->offsets();
@@ -141,6 +221,19 @@ int LexemeSequence::calculate_frequency(const Text *text, int offset, int n, boo
     return f;
 }
 
+/**
+ * \brief Checks equality of two sequences in the source text.
+ *
+ * This methods checks whether arbitrary \c n tokens starting from the
+ * \c text_offset in the text are equal the source sequence which is defined as
+ * \c n tokens starting from the \c sequence_offset in the \c text.
+ *
+ * \param[in] text            Text to extract the sequence from.
+ * \param[in] text_offset     Offset (expressed in tokens) of the tested sequence.
+ * \param[in] sequence_offset Offset (expressed in tokens) of the initial sequence.
+ * \param[in] n               Length of the sequence.
+ * \returns \c true if two sequences map to the same sequence of lexemes and \c false otherwise.
+ */
 bool LexemeSequence::is_sequence(const Text *text, int text_offset, int sequence_offset, int n) const
 {
     /* NB! sequence_offset and n are always correlated and won't lead to out-of-range errors */
@@ -152,6 +245,7 @@ bool LexemeSequence::is_sequence(const Text *text, int text_offset, int sequence
     return true;
 }
 
+//! \internal Initializes class members.
 void LexemeSequence::_initialize()
 {
     _state    = LexemeSequence::STATE_EMPTY;
@@ -166,6 +260,7 @@ void LexemeSequence::_initialize()
     _key      = new QByteArray;
 }
 
+//! \internal Assigns \c other members to \c this members.
 void LexemeSequence::_assign(const LexemeSequence &other)
 {
     _state    = other._state;
@@ -180,6 +275,7 @@ void LexemeSequence::_assign(const LexemeSequence &other)
     _key      = new QByteArray(*(other._key));
 }
 
+//! \internal Frees memory occupied by class members.
 void LexemeSequence::_destroy()
 {
     delete _lexemes;
