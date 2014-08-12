@@ -1,5 +1,9 @@
 #include <qubiq/extractor.h>
 
+/**
+ * \brief Constructs an Extractor object.
+ * \param[in] text Text to extract terms from.
+ */
 Extractor::Extractor(const Text *text)
 {
     _text    = text;
@@ -12,11 +16,34 @@ Extractor::Extractor(const Text *text)
     _initialize();
 }
 
+//! Destructs the Extrator object.
 Extractor::~Extractor()
 {
     _destroy();
 }
 
+/**
+ * \brief Extracts terms from the text.
+ *
+ * This is the main routine for term extraction. Without some details,
+ * the process of extraction is done in the following way:
+ *
+ * -# Method intializes internal buffers for storing intermediate and final results.
+ * -# Then all good bigrams are collected into a list of term candidates. A bigram
+ *    is good if it is a valid sequence of two lexemes with frequency more or
+ *    equal to \c minBigramFrequency. Each good bigram is extracted only once.
+ * -# Method attempts to expand each good bigram to check whether expanded sequences
+ *    for a good term. Expansion is done by appending all possible left and right-adjacent
+ *    lexemes to the bigram and measuring the scores of the resulting sequences.
+ * -# All good expansions are added to the list of term candidates.
+ * -# Method continues processing the list of candidates trying to expand new candidates.
+ *    Expansions are limited with \c maxLeftExpansionDistance and
+ *    \c maxRightExpansionDistance values, so at a certain step new expansions
+ *    will not be generated and all candidates will be processed.
+ * -# Sequences that reside in the candidate list are extracted terms.
+ *
+ * \returns \c true if at least one term was extracted and \false otherwise.
+ */
 bool Extractor::extract()
 {
     LOG_INFO("Starting extraction");
@@ -67,6 +94,13 @@ bool Extractor::extract()
     return true;
 }
 
+/**
+ * \brief Collects good bigrams into the list of term candidates for further expansion.
+ * \returns \c true if at least one bigram was extracted and \c false otherwise.
+ * \sa minBigramFrequency
+ * \sa setMinBigramFrequency
+ * \sa is_good_bigram
+ */
 bool Extractor::collect_good_bigrams()
 {
     LOG_INFO("Starting collecting good bigrams");
@@ -85,19 +119,45 @@ bool Extractor::collect_good_bigrams()
     return _extracted->size() > 0;
 }
 
+/**
+ * \brief Evaluates quality of a bigram.
+ * \param[in] bigram Bigram to be evaluated.
+ * \returns \c true if the bigram is considered good and \c false otherwise.
+ * \sa minBigramFrequency
+ * \sa setMinBigramFrequency
+ * \sa collect_good_bigrams
+ */
 bool Extractor::is_good_bigram(const LexemeSequence &bigram) const
 {
     return bigram.frequency() >= _min_bf;
 }
 
+/**
+ * \brief Evaluates whether a sequence (of any length) should be treated as a term.
+ *
+ * This method calculates a ratio of number of expansions produced by the
+ * evaluated sequence to frequency of the sequence in the source text. If this
+ * ratio is less or equal to \c maxSourceExtractionRate then the sequence is
+ * treated as a term. Rationale: If most occurrences of a candidate in the text
+ * have not been expanded then it is probably a term.
+ *
+ * \param[in] candidate      Candidate sequence to evaluate.
+ * \param[in] num_expansions Number of expansions produced by the candidate.
+ * \returns \c true if the candidate is a term and \c false otherwise.
+ */
 bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansions) const
 {
-    // If most occurrences of a candidate in the corpus have not been extended then treat it as a term.
     double exp_ratio = (double)num_expansions / (double)candidate.frequency();
     LOG_DEBUG() << "Expansion ratio:" << exp_ratio;
     return exp_ratio <= _max_ser;
 }
 
+/**
+ * \brief Expands a sequence (of any length) by one lexeme left or right.
+ * \param[in] candidate        Sequence to be expanded (aka source sequence).
+ * \param[in] is_left_expanded Expansion direction: left (\c true) or right (\c false).
+ * \returns Number of produced expansions.
+ */
 int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
 {
     int num_expanded = 0;
