@@ -9,7 +9,7 @@
 #
 
 TEMPLATE = subdirs
-SUBDIRS  = core \
+SUBDIRS  = core et \
     3rdparty/cutelogger        \
     tests/test_lexeme          \
     tests/test_text            \
@@ -22,6 +22,7 @@ SUBDIRS  = core \
 
 cutelogger.depends =
 core.depends       = 3rdparty/cutelogger
+et.depends         = core
 
 #
 # Test dependencies:
