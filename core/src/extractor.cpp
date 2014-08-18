@@ -91,6 +91,11 @@ bool Extractor::extract()
 
     LOG_INFO("Extraction finished");
 
+    // FIXME: make optional
+    if (_candidates->size() > 0)
+        std::sort(_candidates->begin(), _candidates->end(), hasBetterSequence);
+
+
     return true;
 }
 

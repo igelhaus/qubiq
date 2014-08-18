@@ -1,6 +1,7 @@
 #ifndef _EXTRACTOR_H_
 #define _EXTRACTOR_H_
 
+#include <algorithm>
 #include <QtCore>
 #include <cutelogger/include/Logger.h>
 #include <qubiq/global.h>

@@ -3,6 +3,8 @@
 #include <cutelogger/include/FileAppender.h>
 #include <qubiq/extractor.h>
 
+#include <iostream>
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -57,8 +59,8 @@ int main(int argc, char *argv[])
 
     parser.process(app);
 
+    // FIXME: read from stdin if no files specified
     Text text;
-
     const QStringList files = parser.values(optFiles);
     for (int i = 0; i < files.size(); i++) {
         text.appendFile(files.at(i));
@@ -88,7 +90,19 @@ int main(int argc, char *argv[])
     if (is_converted)
         extractor.setQualityDecreaseThreshold(qdt);
 
-    extractor.extract();
+    bool extracted = extractor.extract();
+
+    if (extracted) {
+        const QList<LexemeSequence> *terms = extractor.extracted();
+        for (int i = 0; i < terms->size(); i++) {
+            std::cout
+                << terms->at(i).image(&text).toUtf8().data()
+                << "\t"
+                << terms->at(i).score()
+                << std::endl
+            ;
+        }
+    }
 
     return 1;
 }

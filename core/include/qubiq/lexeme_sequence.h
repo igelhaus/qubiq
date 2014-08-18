@@ -169,6 +169,17 @@ inline bool operator ==(const LexemeSequence &s1, const LexemeSequence &s2)
 }
 
 /**
+ * \brief Compares quality of two sequences.
+ * \param[in] s1 First sequence.
+ * \param[in] s2 Second sequence.
+ * \returns \c true if the first sequence has higher score, \c false otherwise.
+ */
+inline bool hasBetterSequence(const LexemeSequence &s1, const LexemeSequence &s2)
+{
+    return s1.score() > s2.score();
+}
+
+/**
  * \brief Overloaded qHash function for calculating hash value of the sequence
  * \param sequence Lexeme sequence.
  * \param seed     Seed to initialize hashing procedure.
