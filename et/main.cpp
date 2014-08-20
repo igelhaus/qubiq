@@ -11,10 +11,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("extract-terms");
     QCoreApplication::setApplicationVersion("0.1");
 
-    FileAppender *log_file = new FileAppender("extract-terms.log");
-    log_file->setDetailsLevel("info");
-    logger->registerAppender(log_file);
-
     QCommandLineParser parser;
     parser.setApplicationDescription(
         "extract-terms: Simple command-line utility"
@@ -23,7 +19,12 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption optFiles("file",
+    QCommandLineOption optLogLevel("log-level",
+        "[STRING] Level of logging. Recognized values are:"
+        " trace, debug, info (default), warning, error, fatal",
+        "log-level",
+        "info"
+    ), optFiles("file",
         "[STRING, MULTIPLE] Path to file(s) to extract terms from.",
         "file"
     ), optMinBigramFrequency("mbf",
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
         " only if score(expanded) >= score(source) - qdt.",
         "qdt"
     );
+    parser.addOption(optLogLevel);
     parser.addOption(optFiles);
     parser.addOption(optMinBigramFrequency);
     parser.addOption(optMaxSourceExtractionRate);
@@ -58,6 +60,10 @@ int main(int argc, char *argv[])
     parser.addOption(optQualityDecreaseThreshold);
 
     parser.process(app);
+
+    FileAppender *log_file = new FileAppender("extract-terms.log");
+    log_file->setDetailsLevel(parser.value(optLogLevel));
+    logger->registerAppender(log_file);
 
     // FIXME: read from stdin if no files specified
     Text text;
