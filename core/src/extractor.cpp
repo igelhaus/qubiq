@@ -47,6 +47,11 @@ Extractor::~Extractor()
 bool Extractor::extract()
 {
     LOG_INFO("Starting extraction");
+    LOG_INFO() << "min_bf  =" << _min_bf;
+    LOG_INFO() << "max_ser =" << _max_ser;
+    LOG_INFO() << "max_led =" << _max_led;
+    LOG_INFO() << "max_red =" << _max_red;
+    LOG_INFO() << "qdt     =" << _qdt;
 
     _destroy();
     _initialize();
@@ -115,12 +120,14 @@ bool Extractor::collect_good_bigrams()
             continue;
         const QByteArray *key = bigram.key();
         if (!_extracted->contains(*key) && is_good_bigram(bigram)) {
-            LOG_DEBUG() << "Found at offset" << i;
+            LOG_DEBUG()
+                << "Found at offset" << i << ": "
+                << bigram.image(_text) << "\t" << bigram.score();
             _extracted->insert(*key);
             _candidates->append(bigram);
         }
     }
-    LOG_INFO("Good bigrams collected");
+    LOG_INFO() << _extracted->size() << "good bigrams collected";
     return _extracted->size() > 0;
 }
 
