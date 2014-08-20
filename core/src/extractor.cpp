@@ -6,13 +6,13 @@
  */
 Extractor::Extractor(const Text *text)
 {
-    _text      = text;
-    _min_bf    = DEFAULT_MIN_BIGRAM_FREQUENCY;
-    _min_score = DEFAULT_MIN_SCORE;
-    _max_ser   = DEFAULT_MAX_SOURCE_EXTRACTION_RATE;
-    _max_led   = DEFAULT_MAX_LEFT_EXPANSION_DISTANCE;
-    _max_red   = DEFAULT_MAX_RIGHT_EXPANSION_DISTANCE;
-    _qdt       = DEFAULT_QUALITY_DECREASE_THRESHOLD;
+    _text    = text;
+    _min_bf  = DEFAULT_MIN_BIGRAM_FREQUENCY;
+    _min_bs  = DEFAULT_MIN_BIGRAM_SCORE;
+    _max_ser = DEFAULT_MAX_SOURCE_EXTRACTION_RATE;
+    _max_led = DEFAULT_MAX_LEFT_EXPANSION_DISTANCE;
+    _max_red = DEFAULT_MAX_RIGHT_EXPANSION_DISTANCE;
+    _qdt     = DEFAULT_QUALITY_DECREASE_THRESHOLD;
 
     _initialize();
 }
@@ -49,12 +49,12 @@ Extractor::~Extractor()
 bool Extractor::extract()
 {
     LOG_INFO("Starting extraction");
-    LOG_INFO() << "min_bf    =" << _min_bf;
-    LOG_INFO() << "min_score =" << _min_score;
-    LOG_INFO() << "max_ser   =" << _max_ser;
-    LOG_INFO() << "max_led   =" << _max_led;
-    LOG_INFO() << "max_red   =" << _max_red;
-    LOG_INFO() << "qdt       =" << _qdt;
+    LOG_INFO() << "min_bf  =" << _min_bf;
+    LOG_INFO() << "min_bs  =" << _min_bs;
+    LOG_INFO() << "max_ser =" << _max_ser;
+    LOG_INFO() << "max_led =" << _max_led;
+    LOG_INFO() << "max_red =" << _max_red;
+    LOG_INFO() << "qdt     =" << _qdt;
 
     _destroy();
     _initialize();
@@ -148,7 +148,7 @@ bool Extractor::collect_good_bigrams()
  */
 bool Extractor::is_good_bigram(const LexemeSequence &bigram) const
 {
-    return bigram.frequency() >= _min_bf && bigram.score() >= _min_score;
+    return bigram.frequency() >= _min_bf && bigram.score() >= _min_bs;
 }
 
 /**
