@@ -12,6 +12,7 @@ private slots:
     void simpleSentenceFromFile();
     void longSentenceFromFile();
     void appendFromNonExistentFile();
+    void nonEnglishLocale();
 };
 
 void TestText::emptyText()
@@ -30,7 +31,7 @@ void TestText::simpleSentence()
     Text text;
 
     QCOMPARE(text.append(QString(
-       "The quick brown fox jumps over the lazy dog."
+        "The quick brown fox jumps over the lazy dog."
     )), true);
 
     QCOMPARE(text.length(),          10);
@@ -100,6 +101,33 @@ void TestText::appendFromNonExistentFile()
 {
     Text text;
     QCOMPARE(text.appendFile("non-existent.txt"), false);
+}
+
+void TestText::nonEnglishLocale()
+{
+    Text text(QLocale("ru"));
+
+    QCOMPARE(text.append(QString( // A parody to one of the famous Pushkin's poems:)
+        "Быть может быть, а может и не быть." // 00..09
+        " А может быть, она и БЫТЬ не может." // 10..19
+        " А может быть, она и может быть."    // 20..28
+    )), true);
+
+    QCOMPARE(text.length(),           29);
+    QCOMPARE(text.numNonBoundaries(), 23);
+    QCOMPARE(text.numBoundaries(),     6);
+    QCOMPARE(text.numUniqueTokens(),   8);
+    QCOMPARE(text.numLexemes(),        8);
+
+    QCOMPARE(text.offsets()->at(0), 0);
+    QCOMPARE(text.offsets()->at(2), 0);
+    QCOMPARE(text.lexemes()->at(0)->offsets()->length(), 7);
+    QCOMPARE(text.indexLexemes()->value("быть"), 0);
+    QCOMPARE(text.indexLexemes()->value("а"), 3);
+    QCOMPARE(text.indexLexemes()->value("."), 6);
+    QCOMPARE(text.indexForms()->value("быть"), 0);
+    QCOMPARE(text.indexForms()->value("а"), 3);
+    QCOMPARE(text.indexForms()->value("."), 6);
 }
 
 QTEST_MAIN(TestText)
