@@ -24,7 +24,12 @@ int main(int argc, char *argv[])
         " trace, debug, info (default), warning, error, fatal",
         "log-level",
         "info"
-    ), optFiles("file",
+    ), optLanguage(QStringList() << "l" << "language",
+        "[STRING] Lowercase, two-letter, ISO 639 language code of the input."
+        " If omitted, English (or, more precisely, \"C\" locale) is assumed.",
+        "language"
+    ),
+    optFiles("file",
         "[STRING, MULTIPLE] Path to file(s) to extract terms from."
         " If omitted, text will be read from stdin.",
         "file"
@@ -59,6 +64,7 @@ int main(int argc, char *argv[])
         "qdt"
     );
     parser.addOption(optLogLevel);
+    parser.addOption(optLanguage);
     parser.addOption(optFiles);
     parser.addOption(optMinBigramFrequency);
     parser.addOption(optMinBigramScore);
@@ -73,7 +79,7 @@ int main(int argc, char *argv[])
     log_file->setDetailsLevel(parser.value(optLogLevel));
     logger->registerAppender(log_file);
 
-    Text text;
+    Text text(QLocale(parser.value(optLanguage)));
 
     const QStringList files = parser.values(optFiles);
     if (files.size() == 0) {
