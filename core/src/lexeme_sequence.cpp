@@ -182,9 +182,19 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text
     int N         = text->length();
     int not_f1    = N - f1; /* number of offsets that do not start the first subsequence */
     int f2_not_f1 = f2 - f; /* frequency of the second subsequence adjacent to anything but the first subsequence */
-    double p1_H0  = (double)f         / (double)f1;
-    double p2_H0  = (double)f2_not_f1 / (double)not_f1;
-    double  p_H1  = (double)f2        / (double)N;
+
+    if (f1 == N) /* Special case (very rare): artificial texts like "x x x x" */
+        not_f1 = 1;
+
+    double p1_H0 = (double)f         / (double)f1;
+    double p2_H0 = (double)f2_not_f1 / (double)not_f1;
+    double  p_H1 = (double)f2        / (double)N;
+
+    if (f == f1) /* Special case: the 1st subsequence is not present outside the sequence */
+        p1_H0 -= PROBABILITY_ADJUSTMENT;
+
+    if (f == f2) /* Special case: the 2nd subsequence is not present outside the sequence */
+        p2_H0 += PROBABILITY_ADJUSTMENT;
 
     _n1  = n1;
     _mi  = (double)N * (double)f / (double)f1 / (double)f2;

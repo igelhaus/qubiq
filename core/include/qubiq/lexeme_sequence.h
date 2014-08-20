@@ -6,9 +6,10 @@
 #include <qubiq/global.h>
 #include <qubiq/text.h>
 
-const int    MIN_COUNT              =   3;
+const double PROBABILITY_ADJUSTMENT = 0.001; //!< Adjustment for correcting extreme probability values (0 and 1)
+const int    MIN_COUNT              =   3; // FIXME: minbf
 const double MIN_MUTUAL_INFORMATION = 2.5;
-const double MIN_LLR                = 5.0;
+const double MIN_LLR                = 5.0; // FIXME: use this
 
 class QUBIQSHARED_EXPORT LexemeSequence: public QObject {
     Q_OBJECT
