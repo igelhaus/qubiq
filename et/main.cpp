@@ -25,12 +25,19 @@ int main(int argc, char *argv[])
         "log-level",
         "info"
     ), optFiles("file",
-        "[STRING, MULTIPLE] Path to file(s) to extract terms from.",
+        "[STRING, MULTIPLE] Path to file(s) to extract terms from."
+        " If omitted, text will be read from stdin.",
         "file"
     ), optMinBigramFrequency("mbf",
         "[INTEGER] Minimum bigram frequency: Only bigrams with frequency higher"
-        " or equal to this value will be extracted as term candidates.",
+        " or equal to this value will be extracted as term candidates."
+        " Used together with --mbs.",
         "mbf"
+    ), optMinBigramScore("mbs",
+        "[DOUBLE] Minimum bigram core: Only bigrams with score higher"
+        " or equal to this value will be extracted as term candidates."
+        " Used together with --mbf.",
+        "mbs"
     ), optMaxSourceExtractionRate("mser",
         "[DOUBLE] Maximum source extraction rate: Only sequences with (number_of_expansions / frequency)"
         " ratio lower or equal to this value will be treated as terms themselves"
@@ -54,6 +61,7 @@ int main(int argc, char *argv[])
     parser.addOption(optLogLevel);
     parser.addOption(optFiles);
     parser.addOption(optMinBigramFrequency);
+    parser.addOption(optMinBigramScore);
     parser.addOption(optMaxSourceExtractionRate);
     parser.addOption(optMaxLeftExpansionDistance);
     parser.addOption(optMaxRightExpansionDistance);
@@ -65,11 +73,15 @@ int main(int argc, char *argv[])
     log_file->setDetailsLevel(parser.value(optLogLevel));
     logger->registerAppender(log_file);
 
-    // FIXME: read from stdin if no files specified
     Text text;
+
     const QStringList files = parser.values(optFiles);
-    for (int i = 0; i < files.size(); i++) {
-        text.appendFile(files.at(i));
+    if (files.size() == 0) {
+        text.appendFile(stdin);
+    } else {
+        for (int i = 0; i < files.size(); i++) {
+            text.appendFile(files.at(i));
+        }
     }
 
     Extractor extractor(&text);
@@ -79,6 +91,10 @@ int main(int argc, char *argv[])
     int mbf = parser.value(optMinBigramFrequency).toInt(&is_converted);
     if (is_converted)
         extractor.setMinBigramFrequency(mbf);
+
+    double mbs = parser.value(optMinBigramScore).toDouble(&is_converted);
+    if (is_converted)
+        extractor.setMinBigramScore(mbs);
 
     double mser = parser.value(optMaxSourceExtractionRate).toDouble(&is_converted);
     if (is_converted)
