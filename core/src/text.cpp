@@ -8,15 +8,15 @@
  * \sa LexemeSequence
  */
 
-//! Constructs a Text object.
-Text::Text() {
-    _lexemes    = new QVector<Lexeme*>();
-    _offsets    = new QVector<int>();
-    idx_forms   = new QHash<QString, int>();
-    idx_lexemes = new QHash<QString, int>();
+//! Constructs a Text object in the "C" locale.
+Text::Text()
+{
+    _initialize(QLocale("C"));
+}
 
-    num_forms      = 0;
-    num_boundaries = 0;
+//! This is an overloaded constructor. Constructs a Text object in the given locale.
+Text::Text(const QLocale &locale) {
+    _initialize(locale);
 }
 
 //! Destructs the Text object.
@@ -191,9 +191,8 @@ QString* Text::normalize_token(const QStringRef &token, bool is_boundary)
     if (is_boundary) {
         normalized = new QString(token.toString());
     } else {
-        // FIXME: add locale-dependent toLower()
         // 2DO: add an entry point morphology routines
-        normalized = new QString(token.toString().toLower());
+        normalized = new QString(_locale.toLower(token.toString()));
     }
 
     return normalized;
@@ -223,7 +222,7 @@ bool Text::process_token(const QStringRef &token)
 
     int idx_lexeme;
     QString form     = token.toString();
-    QString form_key = form.toLower(); // FIXME: add locale-dependent toLower()
+    QString form_key = _locale.toLower(form);
     if (idx_forms->contains(form_key)) {
         idx_lexeme = idx_forms->value(form_key);
     } else {
@@ -245,4 +244,17 @@ bool Text::process_token(const QStringRef &token)
     _lexemes->at(idx_lexeme)->addForm(form, _offsets->length() - 1);
 
     return true;
+}
+
+//! \internal Initializes class members.
+void Text::_initialize(const QLocale &locale)
+{
+    _locale     = locale;
+    _lexemes    = new QVector<Lexeme*>();
+    _offsets    = new QVector<int>();
+    idx_forms   = new QHash<QString, int>();
+    idx_lexemes = new QHash<QString, int>();
+
+    num_forms      = 0;
+    num_boundaries = 0;
 }

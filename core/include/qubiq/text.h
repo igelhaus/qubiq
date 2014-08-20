@@ -16,6 +16,7 @@ class QUBIQSHARED_EXPORT Text: public QObject {
     Q_OBJECT
 
 public:
+    Text(const QLocale &locale);
     Text();
     ~Text();
 
@@ -84,6 +85,7 @@ public:
     bool append    (const QString &buffer);
 
 private:
+    QLocale _locale;
     QVector<Lexeme*>    *_lexemes;   //!< vector of all lexemes in the text
     QVector<int>        *_offsets;   //!< token's offset in the text -> offset of its lexeme in \c _lexemes
     QHash<QString, int> *idx_forms;  //!< token  (string) -> offset of its lexeme in \c _lexemes
@@ -98,6 +100,7 @@ private:
     QString* normalize_token    (const QStringRef &token, bool is_boundary);
     bool     process_token      (const QStringRef &token);
 
+    void _initialize(const QLocale &locale);
 };
 
 #endif // _TEXT_H_
