@@ -10,6 +10,7 @@
 #include <qubiq/lexeme_sequence.h>
 
 const int    DEFAULT_MIN_BIGRAM_FREQUENCY         = 3;
+const double DEFAULT_MIN_SCORE                    = 5.0; // FIXME: adjust me
 const double DEFAULT_MAX_SOURCE_EXTRACTION_RATE   = 0.3; // FIXME: adjust me
 const int    DEFAULT_MAX_LEFT_EXPANSION_DISTANCE  = 2;
 const int    DEFAULT_MAX_RIGHT_EXPANSION_DISTANCE = 2;
@@ -25,12 +26,14 @@ public:
     bool extract();
 
     inline int    minBigramFrequency()        const { return _min_bf; }
+    inline double minScore()                  const { return _min_score; }
     inline double maxSourceExtractionRate()   const { return _max_ser; }
     inline int    maxLeftExpansionDistance()  const { return _max_led; }
     inline int    maxRightExpansionDistance() const { return _max_red; }
     inline double qualityDecreaseThreshold()  const { return _qdt; }
 
     inline void setMinBigramFrequency(int bf)             { _min_bf = bf; }
+    inline void setMinScore(double score)                 { _min_score = score; }
     inline void setMaxSourceExtractionRate(double max_ser){ _max_ser = max_ser; }
     inline void setMaxLeftExpansionDistance (int max_led) { _max_led = max_led; }
     inline void setMaxRightExpansionDistance(int max_red) { _max_red = max_red; }
@@ -42,6 +45,7 @@ public:
 private:
     const Text *_text;
     int     _min_bf; /* Minimum bigram frequency */
+    double _min_score; /* Minimum score */
     double _max_ser; /* Maximum source extraction rate */
     int    _max_led; /* Maximum left expansion distance */
     int    _max_red; /* Maximum right expansion distance */
