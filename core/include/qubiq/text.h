@@ -80,6 +80,7 @@ public:
     inline const QHash<QString, int>* indexLexemes() const { return idx_lexemes; }
 
     bool appendFile(const QString &fname);
+    bool appendFile(FILE *fd);
     bool append    (const QString &buffer);
 
 private:
@@ -91,6 +92,7 @@ private:
     int num_forms;
     int num_boundaries;
 
+    bool     append_file        (QFile *file);
     bool     is_boundary_token  (const QStringRef &token);
     bool     is_whitespace_token(const QStringRef &token);
     QString* normalize_token    (const QStringRef &token, bool is_boundary);

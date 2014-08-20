@@ -51,7 +51,38 @@ bool Text::appendFile(const QString &fname)
         return false;
     }
 
-    QTextStream file_stream(&file);
+    return append_file(&file);
+}
+
+/**
+ * This is an overloaded function.
+ *
+ * Appends contents of a file referenced by its descriptor to the text.
+ *
+ * \param[in] fd Descriptor of the file to append to the text.
+ *
+ * \returns \c true on success and \c false if the file is not accessible.
+ *
+ * \note
+ * The method will return \c true on empty files and files containing whitespace
+ * characters only.
+ */
+bool Text::appendFile(FILE *fd)
+{
+    LOG_INFO() << "Starting indexing a file descriptor";
+
+    QFile file;
+    if (!file.open(fd, QIODevice::ReadOnly | QIODevice::Text)) {
+        LOG_WARNING("Unable to access file by file descriptor");
+        return false;
+    }
+
+    return append_file(&file);
+}
+
+bool Text::append_file(QFile *file)
+{
+    QTextStream file_stream(file);
     QString     buffer = file_stream.read(DEFAULT_READ_BUFFER_SIZE);
     QString     token_part;
     while (buffer.length() > 0) {
