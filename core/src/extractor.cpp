@@ -193,7 +193,7 @@ int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
         if (!validate_expanded(expanded, candidate))
             continue;
 
-        num_expanded += store_expanded(&expanded, candidate, false);
+        num_expanded += store_expanded(&expanded, candidate, is_left_expanded);
     }
     return num_expanded;
 }
