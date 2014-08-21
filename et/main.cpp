@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     if (is_converted)
         extractor.setQualityDecreaseThreshold(qdt);
 
-    bool extracted = extractor.extract();
+    bool extracted = extractor.extract(true);
 
     if (extracted) {
         const QList<LexemeSequence> *terms = extractor.extracted();

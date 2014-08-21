@@ -30,23 +30,25 @@ Extractor::~Extractor()
  * the process of extraction is done in the following way:
  *
  * -# Method intializes internal buffers for storing intermediate and final results.
- * -# Then all good bigrams are collected into a list of term candidates. A bigram
+ * -# All good bigrams are collected into a list of term candidates. A bigram
  *    is good if it is a valid sequence of two lexemes with frequency more or
- *    equal to \c minBigramFrequency and over score more or equal to \c minScore.
+ *    equal to \c minBigramFrequency and overall score more or equal to \c minScore.
  *    Each good bigram is extracted only once.
  * -# Method attempts to expand each good bigram to check whether expanded sequences
- *    for a good term. Expansion is done by appending all possible left and right-adjacent
+ *    form a good term. Expansion is done by appending all possible left and right-adjacent
  *    lexemes to the bigram and measuring the scores of the resulting sequences.
  * -# All good expansions are added to the list of term candidates.
+ * -# Sequences that produce good expansions, but do not comply with \c maxSourceExtractionRate
+ *    parameter are excluded from the list.
  * -# Method continues processing the list of candidates trying to expand new candidates.
  *    Expansions are limited with \c maxLeftExpansionDistance and
  *    \c maxRightExpansionDistance values, so at a certain step new expansions
  *    will not be generated and all candidates will be processed.
- * -# Sequences that reside in the candidate list are extracted terms.
+ * -# Sequences that finally reside in the candidate list are extracted terms.
  *
- * \returns \c true if at least one term was extracted and \false otherwise.
+ * \returns \c true if at least one term was extracted and \c false otherwise.
  */
-bool Extractor::extract()
+bool Extractor::extract(bool sort_terms /* = false */)
 {
     LOG_INFO("Starting extraction");
     LOG_INFO() << "min_bf  =" << _min_bf;
@@ -99,10 +101,8 @@ bool Extractor::extract()
 
     LOG_INFO("Extraction finished");
 
-    // FIXME: make optional
-    if (_candidates->size() > 0)
+    if (sort_terms && _candidates->size() > 0)
         std::sort(_candidates->begin(), _candidates->end(), hasBetterSequence);
-
 
     return true;
 }
@@ -112,8 +112,8 @@ bool Extractor::extract()
  * \returns \c true if at least one bigram was extracted and \c false otherwise.
  * \sa minBigramFrequency
  * \sa setMinBigramFrequency
- * \sa minScore
- * \sa setMinScore
+ * \sa minBigramScore
+ * \sa setMinBigramScore
  * \sa is_good_bigram
  */
 bool Extractor::collect_good_bigrams()
