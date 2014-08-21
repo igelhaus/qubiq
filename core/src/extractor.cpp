@@ -198,6 +198,18 @@ int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
     return num_expanded;
 }
 
+/**
+ * \brief Validates quality of the expanded sequence.
+ *
+ * Good expanded sequences should be valid sequences, should not be already extracted
+ * and should have better score than their source sequences with decrease threshold
+ * not more than \c qualityDecreaseThreshold.
+ *
+ * \param[in] expanded Expanded sequence.
+ * \param[in] source   Source sequence.
+ * \returns \c true if expanded sequence is good and \c false otherwise.
+ * \sa qualityDecreaseThreshold
+ */
 bool Extractor::validate_expanded(const LexemeSequence &expanded, const LexemeSequence &source) const
 {
     if (!expanded.isValid())
@@ -209,12 +221,25 @@ bool Extractor::validate_expanded(const LexemeSequence &expanded, const LexemeSe
     return has_better_score(expanded, source);
 }
 
+/**
+ * \brief Evaluates whether expanded sequence has a better score than its source sequence.
+ * \param[in] expanded Expanded sequence.
+ * \param[in] source   Source sequence.
+ * \returns \c true if expanded sequence has better score and \c false otherwise.
+ * \sa qualityDecreaseThreshold
+ */
 bool Extractor::has_better_score(const LexemeSequence &expanded, const LexemeSequence &source) const
 {
-    // FIXME: zero expanded score?
     return expanded.score() > 0.0 && expanded.score() > source.score() - _qdt;
 }
 
+/**
+ * \brief Stores good expanded sequences in the list of candidates/terms.
+ * \param[in] expanded         Expanded sequence.
+ * \param[in] source           Source sequence.
+ * \param[in] is_left_expanded Expansion direction: left (\c true) or right (\c false).
+ * \returns \c 1.
+ */
 int Extractor::store_expanded(LexemeSequence *expanded, const LexemeSequence &source, bool is_left_expanded)
 {
     expanded->incLeftExpansionDistance (source.leftExpansionDistance());
@@ -226,17 +251,19 @@ int Extractor::store_expanded(LexemeSequence *expanded, const LexemeSequence &so
         expanded->incRightExpansionDistance();
 
     _candidates->append(*expanded);
-    _extracted->insert (*(expanded->key()));
+    _extracted->insert(*(expanded->key()));
 
     return 1;
 }
 
+//! \internal Initializes class members.
 void Extractor::_initialize()
 {
     _candidates = new QList<LexemeSequence>;
     _extracted  = new QSet<QByteArray>;
 }
 
+//! \internal Frees memory occupied by class members.
 void Extractor::_destroy()
 {
     delete _candidates;

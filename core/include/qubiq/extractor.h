@@ -101,9 +101,9 @@ public:
      *
      * \sa setQualityDecreaseThreshold
      */
-    inline double qualityDecreaseThreshold()  const { return _qdt; }
+    inline double qualityDecreaseThreshold() const { return _qdt; }
     //! Sets quality decrease threshold.
-    inline void setQualityDecreaseThreshold(double qdt)   { _qdt = qdt; }
+    inline void setQualityDecreaseThreshold(double qdt) { _qdt = qdt; }
 
     //! Returns pointer to the source text.
     inline const Text *text() const { return _text; }
