@@ -178,7 +178,13 @@ bool Text::is_boundary_token(const QStringRef &token)
 {
     const QChar *chars = token.unicode();
     for (int i = 0; i < token.length(); i++) {
-        if (!chars[i].isPunct())
+        bool is_punct_char = chars[i].isPunct()
+            ||  chars[i] < 0x30                     // includes chars like '*', '+', etc.
+            || (chars[i] > 0x39 && chars[i] < 0x41) // includes chars like '<', '>', etc.
+            || (chars[i] > 0x5A && chars[i] < 0x61) // includes chars like '^', '`', etc.
+            || (chars[i] > 0x7A && chars[i] < 0x7F) // includes chars like '|', '~', etc.
+        ;
+        if (!is_punct_char)
             return false;
     }
     return true;
