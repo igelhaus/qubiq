@@ -43,9 +43,9 @@ LexemeSequence::LexemeSequence(const Text *text, int offset, int n, int n1)
     _state = calculate_state(text, offset, n, n1);
 
     if (_state == LexemeSequence::STATE_OK) {
-        _state = build_sequence(text, offset, n);
+        _state = build_sequence(offset, n);
         if (_state == LexemeSequence::STATE_OK) {
-            calculate_metrics(text, n, n1);
+            calculate_metrics(n, n1);
         }
     }
 }
@@ -72,16 +72,18 @@ LexemeSequence &LexemeSequence::operator =(const LexemeSequence &other)
 
 /**
  * \brief Constructs a string representation of the sequence.
- * \param[in] text Text the sequence was extracted from.
  * \returns A string representing the sequence.
  */
-QString LexemeSequence::image(const Text *text) const
+QString LexemeSequence::image() const
 {
     QString _image;
+    if (_state != LexemeSequence::STATE_OK)
+        return _image;
+
     int idx_first_offset = _offsets->at(0);
     for (int i = 0; i < _lexemes->length(); i++) {
-        int idx_lexeme = text->offsets()->at(idx_first_offset + i);
-        Lexeme *lexeme = text->lexemes()->at(idx_lexeme);
+        int idx_lexeme = _text->offsets()->at(idx_first_offset + i);
+        Lexeme *lexeme = _text->lexemes()->at(idx_lexeme);
         _image.append(lexeme->forms()->at(0));
         _image.append(" ");
     }
@@ -98,16 +100,21 @@ QString LexemeSequence::image(const Text *text) const
  */
 LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *text, int offset, int n, int n1)
 {
+    if (text == NULL)
+        return LexemeSequence::STATE_BAD_TEXT;
+
+    _text = text;
+
     if (n < 2)
         return LexemeSequence::STATE_UNIGRAM;
 
     if (n1 < 1 || n1 >= n)
         return LexemeSequence::STATE_BAD_BOUNDARY;
 
-    if (offset < 0 || offset >= text->length())
+    if (offset < 0 || offset >= _text->length())
         return LexemeSequence::STATE_BAD_OFFSET;
 
-    if (offset + n > text->length())
+    if (offset + n > _text->length())
         return LexemeSequence::STATE_BAD_OFFSET_N;
 
     return LexemeSequence::STATE_OK;
@@ -115,16 +122,15 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *
 
 /**
  * \brief Constructs a sequence from the source text.
- * \param[in] text   Text to extract the sequence from.
  * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
  * \param[in] n      Length of the sequence.
  * \returns          Sequence state indicating sequence validity.
  */
-LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *text, int offset, int n)
+LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(int offset, int n)
 {
     for (int i = 0; i < n; i++) {
-        int  idx_lexeme = text->offsets()->at(offset + i);
-        Lexeme *lexeme  = text->lexemes()->at(idx_lexeme);
+        int  idx_lexeme = _text->offsets()->at(offset + i);
+        Lexeme *lexeme  = _text->lexemes()->at(idx_lexeme);
         if (lexeme->isBoundary()) {
             /* For invalid sequences we shrink containers to 0: */
             _lexemes->resize(0);
@@ -168,18 +174,16 @@ LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(const Text *t
  * - \c H1: The first and the second subsequences are linguistically unrelated, i.e.
  * probability of the second subsequence is the same in the entire text.
  *
- * \param[in] text   Text to extract the sequence from.
- * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
- * \param[in] n      Length of the sequence.
- * \param[in] n1     Length of the first subsequence.
- * \returns          Currently always returns \c LexemeSequence::LexemeSequenceState::STATE_OK.
+ * \param[in] n  Length of the sequence.
+ * \param[in] n1 Length of the first subsequence.
+ * \returns      Currently always returns \c LexemeSequence::LexemeSequenceState::STATE_OK.
  */
-LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text *text, int n, int n1)
+LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int n, int n1)
 {
-    int f         = calculate_frequency(text, 0, n, true); /* frequency of the whole sequence */
-    int f1        = calculate_frequency(text, 0, n1);      /* frequency of the first subsequence */
-    int f2        = calculate_frequency(text, n1, n - n1); /* frequency of the second subsequence */
-    int N         = text->length();
+    int f         = calculate_frequency(0, n, true); /* frequency of the whole sequence */
+    int f1        = calculate_frequency(0, n1);      /* frequency of the first subsequence */
+    int f2        = calculate_frequency(n1, n - n1); /* frequency of the second subsequence */
+    int N         = _text->length();
     int not_f1    = N - f1; /* number of offsets that do not start the first subsequence */
     int f2_not_f1 = f2 - f; /* frequency of the second subsequence adjacent to anything but the first subsequence */
 
@@ -210,18 +214,17 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(const Text
 
 /**
  * \brief Calculates frequency of a sequence in the source text.
- * \param[in] text            Text to extract the sequence from.
  * \param[in] offset          Offset (expressed in tokens) to start building the sequence at.
  * \param[in] n               Length of the sequence.
  * \param[in] collect_offsets Set to \c true if offsets that start the sequences should be preserved internally.
  * \returns Number of occurences of the sequence in the \c text.
  */
-int LexemeSequence::calculate_frequency(const Text *text, int offset, int n, bool collect_offsets)
+int LexemeSequence::calculate_frequency(int offset, int n, bool collect_offsets)
 {
-    const QVector<int>* first = text->lexemes()->at(_lexemes->at(offset))->offsets();
+    const QVector<int>* first = _text->lexemes()->at(_lexemes->at(offset))->offsets();
     int f = first->length();
     for (int i = 0; i < first->length(); i++) {
-        if (!is_sequence(text, first->at(i), offset, n)) {
+        if (!is_sequence(first->at(i), offset, n)) {
             f--;
             continue;
         }
@@ -238,19 +241,18 @@ int LexemeSequence::calculate_frequency(const Text *text, int offset, int n, boo
  * \c text_offset in the text are equal the source sequence which is defined as
  * \c n tokens starting from the \c sequence_offset in the \c text.
  *
- * \param[in] text            Text to extract the sequence from.
  * \param[in] text_offset     Offset (expressed in tokens) of the tested sequence.
  * \param[in] sequence_offset Offset (expressed in tokens) of the initial sequence.
  * \param[in] n               Length of the sequence.
  * \returns \c true if two sequences map to the same sequence of lexemes and \c false otherwise.
  */
-bool LexemeSequence::is_sequence(const Text *text, int text_offset, int sequence_offset, int n) const
+bool LexemeSequence::is_sequence(int text_offset, int sequence_offset, int n) const
 {
     /* NB! sequence_offset and n are always correlated and won't lead to out-of-range errors */
-    if (text_offset + n > text->length())
+    if (text_offset + n > _text->length())
         return false;
     for (int i = 0; i < n; i++)
-        if (text->offsets()->at(text_offset + i) != _lexemes->at(sequence_offset + i))
+        if (_text->offsets()->at(text_offset + i) != _lexemes->at(sequence_offset + i))
             return false;
     return true;
 }
@@ -258,6 +260,7 @@ bool LexemeSequence::is_sequence(const Text *text, int text_offset, int sequence
 //! \internal Initializes class members.
 void LexemeSequence::_initialize()
 {
+    _text     = NULL;
     _state    = LexemeSequence::STATE_EMPTY;
     _n1       = 0;
     _mi       = 0.0;
@@ -273,6 +276,7 @@ void LexemeSequence::_initialize()
 //! \internal Assigns \c other members to \c this members.
 void LexemeSequence::_assign(const LexemeSequence &other)
 {
+    _text     = other._text;
     _state    = other._state;
     _n1       = other._n1;
     _mi       = other._mi;

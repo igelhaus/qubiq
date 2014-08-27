@@ -82,7 +82,7 @@ bool Extractor::extract(bool sort_terms /* = false */)
             num_expanded_right = expand(candidate, false);
 
         num_expansions = num_expanded_left + num_expanded_right;
-        LOG_DEBUG() << "Expanding candidate:" << candidate.image(_text);
+        LOG_DEBUG() << "Expanding candidate:" << candidate.image();
         LOG_DEBUG() << "Expansions made (left, right, total):"
                     << num_expanded_left
                     << num_expanded_right
@@ -127,7 +127,7 @@ bool Extractor::collect_good_bigrams()
         if (!_extracted->contains(*key) && is_good_bigram(bigram)) {
             LOG_DEBUG()
                 << "Found at offset" << i << ": "
-                << bigram.image(_text) << "\t" << bigram.score();
+                << bigram.image() << "\t" << bigram.score();
             _extracted->insert(*key);
             _candidates->append(bigram);
         }

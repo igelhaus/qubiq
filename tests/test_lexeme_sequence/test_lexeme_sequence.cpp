@@ -80,23 +80,26 @@ void TestLexemeSequence::badSequenceStates()
 
     text.append(QString("The quick brown fox jumps over the lazy dog."));
 
-    LexemeSequence sequence1(&text, 1, 1, 1);
-    QCOMPARE(sequence1.state(), LexemeSequence::STATE_UNIGRAM);
+    LexemeSequence sequence1(NULL, 1, 2, 1);
+    QCOMPARE(sequence1.state(), LexemeSequence::STATE_BAD_TEXT);
 
-    LexemeSequence sequence2(&text, 1, 2, 0);
-    QCOMPARE(sequence2.state(), LexemeSequence::STATE_BAD_BOUNDARY);
+    LexemeSequence sequence2(&text, 1, 1, 1);
+    QCOMPARE(sequence2.state(), LexemeSequence::STATE_UNIGRAM);
 
-    LexemeSequence sequence3(&text, 1, 2, 2);
+    LexemeSequence sequence3(&text, 1, 2, 0);
     QCOMPARE(sequence3.state(), LexemeSequence::STATE_BAD_BOUNDARY);
 
-    LexemeSequence sequence4(&text, 10, 2, 1);
-    QCOMPARE(sequence4.state(), LexemeSequence::STATE_BAD_OFFSET);
+    LexemeSequence sequence4(&text, 1, 2, 2);
+    QCOMPARE(sequence4.state(), LexemeSequence::STATE_BAD_BOUNDARY);
 
-    LexemeSequence sequence5(&text, 8, 4, 1);
-    QCOMPARE(sequence5.state(), LexemeSequence::STATE_BAD_OFFSET_N);
+    LexemeSequence sequence5(&text, 10, 2, 1);
+    QCOMPARE(sequence5.state(), LexemeSequence::STATE_BAD_OFFSET);
 
-    LexemeSequence sequence6(&text, 8, 2, 1);
-    QCOMPARE(sequence6.state(), LexemeSequence::STATE_HAS_BOUNDARIES);
+    LexemeSequence sequence6(&text, 8, 4, 1);
+    QCOMPARE(sequence6.state(), LexemeSequence::STATE_BAD_OFFSET_N);
+
+    LexemeSequence sequence7(&text, 8, 2, 1);
+    QCOMPARE(sequence7.state(), LexemeSequence::STATE_HAS_BOUNDARIES);
 }
 
 void TestLexemeSequence::simpleSequence()

@@ -44,14 +44,14 @@ void TestExtractor::simpleExtractor()
     extracted = extractor.extracted();
     for (int i = 0; i < extracted->size(); i++) {
         const LexemeSequence &term = extracted->at(i);
-        qDebug() << term.image(extractor.text()) << " " << term.mi() << " " << term.llr();
+        qDebug() << term.image() << " " << term.mi() << " " << term.llr();
     }
     extractor.setMaxLeftExpansionDistance(0);
     QCOMPARE(extractor.extract(), true);
     extracted = extractor.extracted();
     for (int i = 0; i < extracted->size(); i++) {
         const LexemeSequence &term = extracted->at(i);
-        qDebug() << term.image(extractor.text()) << " " << term.mi() << " " << term.llr();
+        qDebug() << term.image() << " " << term.mi() << " " << term.llr();
     }
 
     extractor.setMaxSourceExtractionRate(0.5);
@@ -59,7 +59,7 @@ void TestExtractor::simpleExtractor()
     extracted = extractor.extracted();
     for (int i = 0; i < extracted->size(); i++) {
         const LexemeSequence &term = extracted->at(i);
-        qDebug() << term.image(extractor.text()) << " " << term.mi() << " " << term.llr();
+        qDebug() << term.image() << " " << term.mi() << " " << term.llr();
     }
 }
 

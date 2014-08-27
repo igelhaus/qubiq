@@ -16,12 +16,13 @@ public:
     //! LexemeSequenceState: enumeration for indicating states of the sequence.
     enum LexemeSequenceState {
         STATE_OK             = 0, //!< Valid sequence.
-        STATE_EMPTY          = 1, //!< Invalid: Sequence is empty.
-        STATE_UNIGRAM        = 2, //!< Invalid: Contains less than 2 lexemes.
-        STATE_BAD_BOUNDARY   = 3, //!< Invalid: Incorrectly split into subsequences.
-        STATE_BAD_OFFSET     = 4, //!< Invalid: Sequence offset does not fit the text length.
-        STATE_BAD_OFFSET_N   = 5, //!< Invalid: Offset + length do not fit the text length.
-        STATE_HAS_BOUNDARIES = 6  //!< Invalid: Sequence includes boundary lexemes.
+        STATE_BAD_TEXT       = 1, //!< Invalid: Pointer to text is NULL.
+        STATE_EMPTY          = 2, //!< Invalid: Sequence is empty.
+        STATE_UNIGRAM        = 3, //!< Invalid: Contains less than 2 lexemes.
+        STATE_BAD_BOUNDARY   = 4, //!< Invalid: Incorrectly split into subsequences.
+        STATE_BAD_OFFSET     = 5, //!< Invalid: Sequence offset does not fit the text length.
+        STATE_BAD_OFFSET_N   = 6, //!< Invalid: Offset + length do not fit the text length.
+        STATE_HAS_BOUNDARIES = 7  //!< Invalid: Sequence includes boundary lexemes.
     };
 
     LexemeSequence();
@@ -30,7 +31,7 @@ public:
     ~LexemeSequence();
 
     LexemeSequence &operator =(const LexemeSequence &other);
-    QString image(const Text *text) const;
+    QString image() const;
 
     //! Returns state of the sequence.
     //! \sa LexemeSequenceState
@@ -118,6 +119,7 @@ private:
     int _led; //!< Left Expansion Distance
     int _red; //!< Right Expansion Disatnce
 
+    const Text   *_text;    //!< Original text the sequence is extracted from.
     QVector<int> *_lexemes; //!< Offsets of the lexeme in the lexeme vector of the text
     QVector<int> *_offsets; //!< Offsets of the first lexeme of the sequence
     QByteArray   *_key;     //!< Sequence key for hashing
@@ -141,11 +143,11 @@ private:
     void _assign(const LexemeSequence &other);
 
     LexemeSequenceState calculate_state  (const Text *text, int offset, int n, int n1);
-    LexemeSequenceState build_sequence   (const Text *text, int offset, int n);
-    LexemeSequenceState calculate_metrics(const Text *text, int n, int n1);
+    LexemeSequenceState build_sequence   (int offset, int n);
+    LexemeSequenceState calculate_metrics(int n, int n1);
 
-    int  calculate_frequency(const Text *text, int offset, int n, bool collect_offsets = false);
-    bool is_sequence        (const Text *text, int text_offset, int sequence_offset, int n) const;
+    int  calculate_frequency(int offset, int n, bool collect_offsets = false);
+    bool is_sequence        (int text_offset, int sequence_offset, int n) const;
 };
 
 /**

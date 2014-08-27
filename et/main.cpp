@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
         const QList<LexemeSequence> *terms = extractor.extracted();
         for (int i = 0; i < terms->size(); i++) {
             std::cout
-                << terms->at(i).image(&text).toUtf8().data()
+                << terms->at(i).image().toUtf8().data()
                 << "\t"
                 << terms->at(i).score()
                 << std::endl
