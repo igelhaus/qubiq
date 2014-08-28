@@ -2,8 +2,180 @@
 #include <cutelogger/include/Logger.h>
 #include <cutelogger/include/FileAppender.h>
 #include <qubiq/extractor.h>
+#include <qubiq/abstract_term_filter.h>
 
 #include <iostream>
+
+class EnglishTermFilter: public AbstractTermFilter {
+public:
+    EnglishTermFilter();
+    virtual ~EnglishTermFilter();
+
+    virtual bool passes(const LexemeSequence &sequence);
+
+private:
+    QSet<QString> *_articles;
+    QSet<QString> *_conjunctions;
+    QSet<QString> *_prepositions;
+    QSet<QString> *_demonstratives;
+};
+
+EnglishTermFilter::EnglishTermFilter()
+{
+    _articles       = new QSet<QString>();
+    _conjunctions   = new QSet<QString>();
+    _prepositions   = new QSet<QString>();
+    _demonstratives = new QSet<QString>();
+
+    (*_articles) << "a" << "an" << "the";
+
+    (*_conjunctions) << "and" << "or";
+
+    (*_prepositions)
+            << "abaft"
+            << "abeam"
+            << "aboard"
+            << "about"
+            << "above"
+            << "absent"
+            << "across"
+            << "afore"
+            << "after"
+            << "against"
+            << "along"
+            << "alongside"
+            << "amid"
+            << "amidst"
+            << "among"
+            << "amongst"
+            << "anenst"
+            << "apropos"
+            << "apud"
+            << "around"
+            << "as"
+            << "aside"
+            << "astride"
+            << "at"
+            << "athwart"
+            << "atop"
+            << "barring"
+            << "before"
+            << "behind"
+            << "below"
+            << "beneath"
+            << "beside"
+            << "besides"
+            << "between"
+            << "beyond"
+            << "but"
+            << "by"
+            << "circa"
+            << "concerning"
+            << "despite"
+            << "down"
+            << "during"
+            << "except"
+            << "excluding"
+            << "failing"
+            << "following"
+            << "for"
+            << "forenenst"
+            << "from"
+            << "given"
+            << "in"
+            << "including"
+            << "inside"
+            << "into"
+            << "like"
+            << "mid"
+            << "midst"
+            << "minus"
+            << "modulo"
+            << "near"
+            << "next"
+            << "notwithstanding"
+            << "of"
+            << "off"
+            << "on"
+            << "onto"
+            << "opposite"
+            << "out"
+            << "outside"
+            << "over"
+            << "pace"
+            << "past"
+            << "per"
+            << "plus"
+            << "pro"
+            << "qua"
+            << "regarding"
+            << "round"
+            << "sans"
+            << "save"
+            << "since"
+            << "than"
+            << "through"
+            << "throughout"
+            << "till"
+            << "times"
+            << "to"
+            << "toward"
+            << "towards"
+            << "under"
+            << "underneath"
+            << "unlike"
+            << "until"
+            << "unto"
+            << "up"
+            << "upon"
+            << "versus"
+            << "via"
+            << "vice"
+            << "with"
+            << "within"
+            << "without"
+            << "worth"
+    ;
+
+    (*_demonstratives) << "this" << "these" << "that" << "those";
+}
+
+EnglishTermFilter::~EnglishTermFilter()
+{
+    delete _articles;
+    delete _conjunctions;
+    delete _prepositions;
+    delete _demonstratives;
+}
+
+bool EnglishTermFilter::passes(const LexemeSequence &sequence)
+{
+    const Text *text = sequence.text();
+
+    int idx_first_lexeme = sequence.lexemes()->at(0);
+    int idx_last_lexeme  = sequence.lexemes()->at(sequence.lexemes()->size() - 1);
+    QString first_lexeme = text->lexemes()->at(idx_first_lexeme)->lexeme();
+    QString last_lexeme  = text->lexemes()->at(idx_last_lexeme)->lexeme();
+
+    if (_prepositions->contains(first_lexeme) || _prepositions->contains(last_lexeme)) {
+//        LOG_DEBUG() << sequence.image() << " rejected: starts or ends with a preposition";
+        return false;
+    }
+
+    if (_conjunctions->contains(first_lexeme) || _conjunctions->contains(last_lexeme)) {
+        return false;
+    }
+
+    if (_articles->contains(first_lexeme) || _articles->contains(last_lexeme)) {
+        return false;
+    }
+
+    if (_demonstratives->contains(first_lexeme) || _demonstratives->contains(last_lexeme)) {
+        return false;
+    }
+
+    return true;
+}
 
 int main(int argc, char *argv[])
 {
@@ -79,7 +251,10 @@ int main(int argc, char *argv[])
     log_file->setDetailsLevel(parser.value(optLogLevel));
     logger->registerAppender(log_file);
 
-    Text text(QLocale(parser.value(optLanguage)));
+    QString language = parser.value(optLanguage);
+    QLocale locale(language);
+
+    Text text(locale);
 
     const QStringList files = parser.values(optFiles);
     if (files.size() == 0) {
@@ -91,6 +266,10 @@ int main(int argc, char *argv[])
     }
 
     Extractor extractor(&text);
+    EnglishTermFilter english_filter;
+
+    if (language.left(2).toLower() == "en")
+        extractor.setFilter(&english_filter);
 
     bool is_converted = true;
 

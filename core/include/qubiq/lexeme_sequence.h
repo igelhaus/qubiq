@@ -33,6 +33,9 @@ public:
     LexemeSequence &operator =(const LexemeSequence &other);
     QString image() const;
 
+    //! Returns pointer to the text the sequence was extracted from.
+    const Text* text() const { return _text; }
+
     //! Returns state of the sequence.
     //! \sa LexemeSequenceState
     //! \sa isValid
