@@ -7,6 +7,7 @@
 Extractor::Extractor(const Text *text)
 {
     _text    = text;
+    _filter  = NULL;
     _min_bf  = DEFAULT_MIN_BIGRAM_FREQUENCY;
     _min_bs  = DEFAULT_MIN_BIGRAM_SCORE;
     _max_ser = DEFAULT_MAX_SOURCE_EXTRACTION_RATE;
@@ -91,8 +92,10 @@ bool Extractor::extract(bool sort_terms /* = false */)
         // No expansions: Leave current candidate as a term and go to next
         // At least one expansion: Decide whether we can leave current candidate as a term
         if (num_expansions == 0 || treat_as_term(candidate, num_expansions)) {
-            i++;
-            continue;
+            if (_filter == NULL || _filter->passes(candidate)) {
+                i++;
+                continue;
+            }
         }
         // Current candidate is not a good term, remove it from the list:
         _extracted->remove(*(candidate.key()));

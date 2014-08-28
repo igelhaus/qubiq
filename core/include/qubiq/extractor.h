@@ -8,6 +8,7 @@
 #include <qubiq/lexeme.h>
 #include <qubiq/text.h>
 #include <qubiq/lexeme_sequence.h>
+#include <qubiq/abstract_term_filter.h>
 
 const int    DEFAULT_MIN_BIGRAM_FREQUENCY         = 3;   //!< Default minimum bigram frequency
 const double DEFAULT_MIN_BIGRAM_SCORE             = 5.0; //!< Default minimum bigram score
@@ -24,6 +25,12 @@ public:
     ~Extractor();
 
     bool extract(bool sort_terms = false);
+
+    //! Returns post-extraction filter currently associated with the extractor.
+    inline AbstractTermFilter* filter() const { return _filter; }
+
+    //! Associates a new post-extraction filter with the extractor.
+    inline void setFilter(AbstractTermFilter *filter) { _filter = filter; }
 
     /**
      * Returns minimum bigram frequency.
@@ -113,6 +120,8 @@ public:
 
 private:
     const Text *_text;
+    AbstractTermFilter *_filter;
+
     int     _min_bf; //!< Minimum bigram frequency
     double _min_bs;  //!< Minimum bigram score
     double _max_ser; //!< Maximum source extraction rate
