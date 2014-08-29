@@ -29,7 +29,7 @@ EnglishTermFilter::EnglishTermFilter()
 
     (*_articles) << "a" << "an" << "the";
 
-    (*_conjunctions) << "and" << "or";
+    (*_conjunctions) << "and" << "because" << "or";
 
     (*_prepositions)
             << "abaft"
@@ -158,19 +158,22 @@ bool EnglishTermFilter::passes(const LexemeSequence &sequence)
     QString last_lexeme  = text->lexemes()->at(idx_last_lexeme)->lexeme();
 
     if (_prepositions->contains(first_lexeme) || _prepositions->contains(last_lexeme)) {
-//        LOG_DEBUG() << sequence.image() << " rejected: starts or ends with a preposition";
+        LOG_DEBUG() << sequence.image() << "rejected: starts or ends with a preposition";
         return false;
     }
 
     if (_conjunctions->contains(first_lexeme) || _conjunctions->contains(last_lexeme)) {
+        LOG_DEBUG() << sequence.image() << "rejected: starts or ends with a conjunction";
         return false;
     }
 
     if (_articles->contains(first_lexeme) || _articles->contains(last_lexeme)) {
+        LOG_DEBUG() << sequence.image() << "rejected: starts or ends with an article";
         return false;
     }
 
     if (_demonstratives->contains(first_lexeme) || _demonstratives->contains(last_lexeme)) {
+        LOG_DEBUG() << sequence.image() << "rejected: starts or ends with a demonstrative pronomen";
         return false;
     }
 

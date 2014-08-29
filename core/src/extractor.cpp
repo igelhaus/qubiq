@@ -52,6 +52,14 @@ Extractor::~Extractor()
 bool Extractor::extract(bool sort_terms /* = false */)
 {
     LOG_INFO("Starting extraction");
+
+    LOG_INFO() << "==================== Text metrics ====================";
+    LOG_INFO() << "length             =" << _text->length();
+    LOG_INFO() << "num_unique_tokens  =" << _text->numUniqueTokens();
+    LOG_INFO() << "num_non_boundaries =" << _text->numNonBoundaries();
+    LOG_INFO() << "num_boundaries     =" << _text->numBoundaries();
+    LOG_INFO() << "num_lexemes        =" << _text->numLexemes();
+    LOG_INFO() << "==================== Extractor parameters ====================";
     LOG_INFO() << "min_bf  =" << _min_bf;
     LOG_INFO() << "min_bs  =" << _min_bs;
     LOG_INFO() << "max_ser =" << _max_ser;
@@ -103,6 +111,7 @@ bool Extractor::extract(bool sort_terms /* = false */)
     }
 
     LOG_INFO("Extraction finished");
+    LOG_INFO() << _extracted->size() << "terms extracted";
 
     if (sort_terms && _candidates->size() > 0)
         std::sort(_candidates->begin(), _candidates->end(), hasBetterSequence);
