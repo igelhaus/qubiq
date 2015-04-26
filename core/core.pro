@@ -23,9 +23,9 @@ HEADERS     += \
     include/qubiq/text.h
 
 SOURCES += \
-    src/extractor.cpp        \
-    src/lexeme.cpp           \
-    src/lexeme_sequence.cpp  \
+    src/extractor.cpp         \
+    src/lexeme.cpp            \
+    src/lexeme_sequence.cpp   \
     src/text.cpp
 
 mac {
