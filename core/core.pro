@@ -15,18 +15,22 @@ DESTDIR   = ..
 
 INCLUDEPATH += "include" "../3rdparty"
 HEADERS     += \
-    include/qubiq/abstract_term_filter.h \
-    include/qubiq/global.h          \
-    include/qubiq/extractor.h       \
-    include/qubiq/lexeme.h          \
-    include/qubiq/lexeme_sequence.h \
-    include/qubiq/text.h
+    include/qubiq/abstract_term_filter.h  \
+    include/qubiq/global.h                \
+    include/qubiq/extractor.h             \
+    include/qubiq/lexeme.h                \
+    include/qubiq/lexeme_sequence.h       \
+    include/qubiq/text.h                  \
+    include/qubiq/master_lemmatizer.h     \
+    include/qubiq/lemmatizer.h            \
+    include/qubiq/lemmatizer_interfaces.h
 
 SOURCES += \
     src/extractor.cpp         \
     src/lexeme.cpp            \
     src/lexeme_sequence.cpp   \
-    src/text.cpp
+    src/text.cpp              \
+    src/master_lemmatizer.cpp
 
 mac {
     # Copy 3rd party libs to common dest dir to run tests:
