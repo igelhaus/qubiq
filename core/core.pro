@@ -20,6 +20,7 @@ HEADERS     += \
     include/qubiq/extractor.h             \
     include/qubiq/lexeme.h                \
     include/qubiq/lexeme_sequence.h       \
+    include/qubiq/lexeme_index.h          \
     include/qubiq/text.h                  \
     include/qubiq/master_lemmatizer.h     \
     include/qubiq/lemmatizer.h            \
@@ -29,6 +30,7 @@ SOURCES += \
     src/extractor.cpp         \
     src/lexeme.cpp            \
     src/lexeme_sequence.cpp   \
+    src/lexeme_index.cpp      \
     src/text.cpp              \
     src/master_lemmatizer.cpp
 
