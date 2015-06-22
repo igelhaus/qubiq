@@ -26,13 +26,13 @@ LexemeIndex::~LexemeIndex()
     delete lex;
 }
 
-bool LexemeIndex::add(const QString &name, bool is_boundary, int pos)
+Lexeme* LexemeIndex::add(const QString &name, int pos)
 {
     if (pos < 0)
-        return false;
+        return NULL;
 
     if (!lex->contains(name)) {
-        init_entry(name, is_boundary);
+        init_entry(name);
     }
     Lexeme       *lexeme    = lex->value(name);
     QVector<int> *positions = lex2pos->value(name);
@@ -40,16 +40,16 @@ bool LexemeIndex::add(const QString &name, bool is_boundary, int pos)
     pos2lex->insert(pos, lexeme);
     positions->append(pos);
 
-    return true;
+    return lexeme;
 }
 
-bool LexemeIndex::add(const QString &name, bool is_boundary, const QVector<int> *pos)
+Lexeme* LexemeIndex::add(const QString &name, const QVector<int> *pos)
 {
     if (pos == NULL)
-        return false;
+        return NULL;
 
     if (!lex->contains(name)) {
-        init_entry(name, is_boundary);
+        init_entry(name);
     }
     Lexeme       *lexeme    = lex->value(name);
     QVector<int> *positions = lex2pos->value(name);
@@ -60,7 +60,7 @@ bool LexemeIndex::add(const QString &name, bool is_boundary, const QVector<int> 
         positions->append(_pos);
     }
 
-    return true;
+    return lexeme;
 }
 
 void LexemeIndex::merge(const LexemeIndex &other)
@@ -69,17 +69,13 @@ void LexemeIndex::merge(const LexemeIndex &other)
     QHash<QString, Lexeme*>::const_iterator it_l;
     for (it_l = lexemes->constBegin(); it_l != lexemes->constEnd(); ++it_l) {
         Lexeme *lexeme = *it_l;
-        this->add(
-            lexeme->lexeme(),
-            lexeme->isBoundary(),
-            other.positions(lexeme->lexeme())
-        );
+        add(lexeme->lexeme(), other.positions(lexeme->lexeme()));
     }
 }
 
-void LexemeIndex::init_entry(const QString &name, bool is_boundary)
+void LexemeIndex::init_entry(const QString &name)
 {
-    Lexeme *lexeme          = new Lexeme(name, is_boundary);
+    Lexeme *lexeme          = new Lexeme(name, false); // FIXME: Adjust Lexeme class
     QVector<int> *positions = new QVector<int>;
     lex->insert(name, lexeme);
     lex2pos->insert(name, positions);

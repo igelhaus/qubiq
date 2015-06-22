@@ -4,6 +4,8 @@
 #include <QtCore>
 #include <qubiq/lexeme.h>
 
+// FIXME: Add an ability to add from another lexeme (requires according changes in Lexeme)
+
 class LexemeIndex {
 
 public:
@@ -16,8 +18,8 @@ public:
     inline Lexeme* lexemeByName(const QString &name) const { return lex->value(name, NULL); }
     inline QVector<int>* positions(const QString &name) const { return lex2pos->value(name, NULL); }
 
-    bool add(const QString &name, bool is_boundary, int pos);
-    bool add(const QString &name, bool is_boundary, const QVector<int> *pos);
+    Lexeme* add(const QString &name, int pos);
+    Lexeme* add(const QString &name, const QVector<int> *pos);
     void merge(const LexemeIndex &other);
 
 private:
@@ -25,7 +27,7 @@ private:
     QHash<QString, QVector<int>*> *lex2pos;
     QHash<int, Lexeme*>           *pos2lex;
 
-    void init_entry(const QString &name, bool is_boundary);
+    void init_entry(const QString &name);
 };
 
 #endif // _LEXEME_INDEX_H_
