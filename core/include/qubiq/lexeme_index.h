@@ -10,15 +10,15 @@ public:
     LexemeIndex();
     ~LexemeIndex();
 
-    Lexeme* lexemeByPosition(int pos);
-    Lexeme* lexemeByName(const QString &name);
-    QVector<int>* positions(const QString &name);
+    inline QHash<QString, Lexeme*>* lexemes() const { return lex; }
 
-    QHash<QString, Lexeme*>* lexemes();
+    inline Lexeme* lexemeByPosition(int pos) const { return pos2lex->value(pos, NULL); }
+    inline Lexeme* lexemeByName(const QString &name) const { return lex->value(name, NULL); }
+    inline QVector<int>* positions(const QString &name) const { return lex2pos->value(name, NULL); }
 
     bool add(const QString &name, bool is_boundary, int pos);
-    bool add(const QString &name, bool is_boundary, QVector<int> *pos);
-    void merge(LexemeIndex *other);
+    bool add(const QString &name, bool is_boundary, const QVector<int> *pos);
+    void merge(const LexemeIndex &other);
 
 private:
     QHash<QString, Lexeme*>       *lex;

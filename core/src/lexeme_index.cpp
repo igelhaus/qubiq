@@ -26,26 +26,6 @@ LexemeIndex::~LexemeIndex()
     delete lex;
 }
 
-Lexeme* LexemeIndex::lexemeByName(const QString &name)
-{
-    return lex->value(name, NULL);
-}
-
-Lexeme* LexemeIndex::lexemeByPosition(int pos)
-{
-    return pos2lex->value(pos, NULL);
-}
-
-QVector<int>* LexemeIndex::positions(const QString &name)
-{
-    return lex2pos->value(name, NULL);
-}
-
-QHash<QString, Lexeme*>* LexemeIndex::lexemes()
-{
-    return lex;
-}
-
 bool LexemeIndex::add(const QString &name, bool is_boundary, int pos)
 {
     if (pos < 0)
@@ -63,7 +43,7 @@ bool LexemeIndex::add(const QString &name, bool is_boundary, int pos)
     return true;
 }
 
-bool LexemeIndex::add(const QString &name, bool is_boundary, QVector<int> *pos)
+bool LexemeIndex::add(const QString &name, bool is_boundary, const QVector<int> *pos)
 {
     if (pos == NULL)
         return false;
@@ -83,16 +63,16 @@ bool LexemeIndex::add(const QString &name, bool is_boundary, QVector<int> *pos)
     return true;
 }
 
-void LexemeIndex::merge(LexemeIndex *other)
+void LexemeIndex::merge(const LexemeIndex &other)
 {
-    QHash<QString, Lexeme*> *lexemes = other->lexemes();
+    QHash<QString, Lexeme*> *lexemes = other.lexemes();
     QHash<QString, Lexeme*>::const_iterator it_l;
     for (it_l = lexemes->constBegin(); it_l != lexemes->constEnd(); ++it_l) {
         Lexeme *lexeme = *it_l;
         this->add(
             lexeme->lexeme(),
             lexeme->isBoundary(),
-            other->positions(lexeme->lexeme())
+            other.positions(lexeme->lexeme())
         );
     }
 }
