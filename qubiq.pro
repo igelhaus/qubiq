@@ -12,8 +12,9 @@ TEMPLATE = subdirs
 SUBDIRS  = core et \
     3rdparty/cutelogger        \
     tests/test_lexeme          \
-    tests/test_text            \
+    tests/test_lexeme_index    \
     tests/test_lexeme_sequence \
+    tests/test_text            \
     tests/test_extractor
 
 #
@@ -29,6 +30,7 @@ et.depends         = core
 #
 
 test_lexeme.depends          = core
-test_text.depends            = core
+test_lexeme_index.depends    = core
 test_lexeme_sequence.depends = core
+test_text.depends            = core
 test_extractor.depends       = core

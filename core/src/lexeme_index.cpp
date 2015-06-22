@@ -13,20 +13,20 @@ LexemeIndex::~LexemeIndex()
 
     QHash<QString, QVector<int>*>::iterator l2p = lex2pos->begin();
     while (l2p != lex2pos->end()) {
-        delete (*l2p);
-        *l2p = NULL;
+        delete *l2p;
+        l2p = lex2pos->erase(l2p);
     }
     delete lex2pos;
 
     QHash<QString, Lexeme*>::iterator l = lex->begin();
     while (l != lex->end()) {
-        delete (*l);
-        *l = NULL;
+        delete *l;
+        l = lex->erase(l);
     }
     delete lex;
 }
 
-Lexeme* LexemeIndex::add(const QString &name, int pos)
+Lexeme* LexemeIndex::addPosition(const QString &name, int pos)
 {
     if (pos < 0)
         return NULL;
@@ -43,7 +43,7 @@ Lexeme* LexemeIndex::add(const QString &name, int pos)
     return lexeme;
 }
 
-Lexeme* LexemeIndex::add(const QString &name, const QVector<int> *pos)
+Lexeme* LexemeIndex::addPositions(const QString &name, const QVector<int> *pos)
 {
     if (pos == NULL)
         return NULL;
@@ -69,7 +69,7 @@ void LexemeIndex::merge(const LexemeIndex &other)
     QHash<QString, Lexeme*>::const_iterator it_l;
     for (it_l = lexemes->constBegin(); it_l != lexemes->constEnd(); ++it_l) {
         Lexeme *lexeme = *it_l;
-        add(lexeme->lexeme(), other.positions(lexeme->lexeme()));
+        addPositions(lexeme->lexeme(), other.positions(lexeme->lexeme()));
     }
 }
 

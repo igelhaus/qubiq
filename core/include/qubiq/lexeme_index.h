@@ -2,11 +2,13 @@
 #define _LEXEME_INDEX_H_
 
 #include <QtCore>
+#include <qubiq/global.h>
 #include <qubiq/lexeme.h>
 
 // FIXME: Add an ability to add from another lexeme (requires according changes in Lexeme)
 
-class LexemeIndex {
+class QUBIQSHARED_EXPORT LexemeIndex: public QObject {
+    Q_OBJECT
 
 public:
     LexemeIndex();
@@ -18,8 +20,8 @@ public:
     inline Lexeme* lexemeByName(const QString &name) const { return lex->value(name, NULL); }
     inline QVector<int>* positions(const QString &name) const { return lex2pos->value(name, NULL); }
 
-    Lexeme* add(const QString &name, int pos);
-    Lexeme* add(const QString &name, const QVector<int> *pos);
+    Lexeme* addPosition(const QString &name, int pos);
+    Lexeme* addPositions(const QString &name, const QVector<int> *pos);
     void merge(const LexemeIndex &other);
 
 private:
