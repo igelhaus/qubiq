@@ -7,8 +7,7 @@
 
 // FIXME: Add an ability to add from another lexeme (requires according changes in Lexeme)
 
-class QUBIQSHARED_EXPORT LexemeIndex: public QObject {
-    Q_OBJECT
+class QUBIQSHARED_EXPORT LexemeIndex {
 
 public:
     LexemeIndex();
@@ -16,8 +15,8 @@ public:
 
     inline QHash<QString, Lexeme*>* lexemes() const { return lex; }
 
-    inline Lexeme* lexemeByPosition(int pos) const { return pos2lex->value(pos, NULL); }
-    inline Lexeme* lexemeByName(const QString &name) const { return lex->value(name, NULL); }
+    inline Lexeme* findByPosition(int pos) const { return pos2lex->value(pos, NULL); }
+    inline Lexeme* findByName(const QString &name) const { return lex->value(name, NULL); }
     inline QVector<int>* positions(const QString &name) const { return lex2pos->value(name, NULL); }
 
     Lexeme* addPosition(const QString &name, int pos);

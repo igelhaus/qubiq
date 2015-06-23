@@ -17,9 +17,9 @@ void TestLexemeIndex::emptyIndex()
     LexemeIndex index;
 
     QCOMPARE(index.lexemes()->keys().size(), 0);
-    QCOMPARE(index.lexemeByName("")     == NULL, true);
-    QCOMPARE(index.lexemeByPosition(0)  == NULL, true);
-    QCOMPARE(index.lexemeByPosition(-1) == NULL, true);
+    QCOMPARE(index.findByName("")     == NULL, true);
+    QCOMPARE(index.findByPosition(0)  == NULL, true);
+    QCOMPARE(index.findByPosition(-1) == NULL, true);
 }
 
 void TestLexemeIndex::addPosition()
@@ -40,21 +40,21 @@ void TestLexemeIndex::addPosition()
     QCOMPARE(l0 != l2, true);
     QCOMPARE(l4 != l2, true);
 
-    QCOMPARE(index.lexemeByPosition(0) == l0, true);
-    QCOMPARE(index.lexemeByPosition(1) == l1, true);
-    QCOMPARE(index.lexemeByPosition(2) == l2, true);
-    QCOMPARE(index.lexemeByPosition(3) == l3, true);
-    QCOMPARE(index.lexemeByPosition(4) == l4, true);
+    QCOMPARE(index.findByPosition(0) == l0, true);
+    QCOMPARE(index.findByPosition(1) == l1, true);
+    QCOMPARE(index.findByPosition(2) == l2, true);
+    QCOMPARE(index.findByPosition(3) == l3, true);
+    QCOMPARE(index.findByPosition(4) == l4, true);
 
-    QCOMPARE(index.lexemeByPosition(-1) == NULL, true);
-    QCOMPARE(index.lexemeByPosition( 5) == NULL, true);
+    QCOMPARE(index.findByPosition(-1) == NULL, true);
+    QCOMPARE(index.findByPosition( 5) == NULL, true);
 
-    QCOMPARE(index.lexemeByName("a")   == l0, true);
-    QCOMPARE(index.lexemeByName("man") == l1, true);
-    QCOMPARE(index.lexemeByName("saw") == l2, true);
+    QCOMPARE(index.findByName("a")   == l0, true);
+    QCOMPARE(index.findByName("man") == l1, true);
+    QCOMPARE(index.findByName("saw") == l2, true);
 
-    QCOMPARE(index.lexemeByName("")    == NULL, true);
-    QCOMPARE(index.lexemeByName("see") == NULL, true);
+    QCOMPARE(index.findByName("")    == NULL, true);
+    QCOMPARE(index.findByName("see") == NULL, true);
 
     QVector<int>* pos0 = index.positions("a");
     QCOMPARE(pos0->size(), 2);
@@ -131,21 +131,21 @@ void TestLexemeIndex::mergeIndeces()
         }
     }
 
-    QCOMPARE(index1.lexemeByName("wants") != NULL, true);
-    QCOMPARE(index1.lexemeByName("will")  == NULL, true);
-    QCOMPARE(index1.lexemeByName("never") == NULL, true);
-    QCOMPARE(index2.lexemeByName("wants") == NULL, true);
-    QCOMPARE(index2.lexemeByName("will")  != NULL, true);
-    QCOMPARE(index2.lexemeByName("never") != NULL, true);
+    QCOMPARE(index1.findByName("wants") != NULL, true);
+    QCOMPARE(index1.findByName("will")  == NULL, true);
+    QCOMPARE(index1.findByName("never") == NULL, true);
+    QCOMPARE(index2.findByName("wants") == NULL, true);
+    QCOMPARE(index2.findByName("will")  != NULL, true);
+    QCOMPARE(index2.findByName("never") != NULL, true);
 
     index1.merge(index2);
 
-    QCOMPARE(index1.lexemeByName("wants") != NULL, true);
-    QCOMPARE(index1.lexemeByName("will")  != NULL, true);
-    QCOMPARE(index1.lexemeByName("never") != NULL, true);
-    QCOMPARE(index2.lexemeByName("wants") == NULL, true);
-    QCOMPARE(index2.lexemeByName("will")  != NULL, true);
-    QCOMPARE(index2.lexemeByName("never") != NULL, true);
+    QCOMPARE(index1.findByName("wants") != NULL, true);
+    QCOMPARE(index1.findByName("will")  != NULL, true);
+    QCOMPARE(index1.findByName("never") != NULL, true);
+    QCOMPARE(index2.findByName("wants") == NULL, true);
+    QCOMPARE(index2.findByName("will")  != NULL, true);
+    QCOMPARE(index2.findByName("never") != NULL, true);
 
     QCOMPARE(index1.positions("man")->size(), 2);
     QCOMPARE(index1.positions("man")->at(0) , 1);
@@ -160,11 +160,11 @@ void TestLexemeIndex::mergeIndeces()
 
     // After merge, index1 covers the whole text...
     for (int i = 0; i < wordforms.size(); i++) {
-        QCOMPARE(index1.lexemeByPosition(i) != NULL, true);
+        QCOMPARE(index1.findByPosition(i) != NULL, true);
     }
     // ...while index2 is still partial:
     for (int i = 0; i < wordforms.size(); i++) {
-        QCOMPARE(index2.lexemeByPosition(i) == NULL, i < 6);
+        QCOMPARE(index2.findByPosition(i) == NULL, i < 6);
     }
 }
 
