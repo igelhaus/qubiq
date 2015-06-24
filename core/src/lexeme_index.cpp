@@ -61,13 +61,40 @@ Lexeme* LexemeIndex::addPositions(const QString &name, const QVector<int> *pos, 
     return lexeme;
 }
 
+Lexeme* LexemeIndex::copyFromIndex(const LexemeIndex &other, const QString &name, bool *is_new /*=NULL*/)
+{
+    if (is_new != NULL) {
+        *is_new = false;
+    }
+
+    if (lex->contains(name)) {
+        return addPositions(name, other.positions(name));
+    }
+
+    Lexeme *other_lexeme = other.findByName(name);
+
+    Lexeme *lexeme          = new Lexeme(*other_lexeme);
+    QVector<int> *positions = new QVector<int>();
+
+    lex->insert(name, lexeme);
+    lex2pos->insert(name, positions);
+
+    addPositions(name, other.positions(name));
+
+    if (is_new != NULL) {
+        *is_new = true;
+    }
+
+    return lexeme;
+}
+
 void LexemeIndex::merge(const LexemeIndex &other)
 {
     QHash<QString, Lexeme*> *lexemes = other.lexemes();
     QHash<QString, Lexeme*>::const_iterator it_l;
     for (it_l = lexemes->constBegin(); it_l != lexemes->constEnd(); ++it_l) {
         Lexeme *lexeme = *it_l;
-        addPositions(lexeme->lexeme(), other.positions(lexeme->lexeme()));
+        addPositions(lexeme->name(), other.positions(lexeme->name()));
     }
 }
 

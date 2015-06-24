@@ -5,8 +5,6 @@
 #include <qubiq/global.h>
 #include <qubiq/lexeme.h>
 
-// FIXME: Add an ability to add from another lexeme (requires according changes in Lexeme)
-
 class QUBIQSHARED_EXPORT LexemeIndex {
 
 public:
@@ -21,6 +19,9 @@ public:
 
     Lexeme* addPosition(const QString &name, int pos, bool *is_new = NULL);
     Lexeme* addPositions(const QString &name, const QVector<int> *pos, bool *is_new = NULL);
+
+    Lexeme* copyFromIndex(const LexemeIndex &other, const QString &name, bool *is_new = NULL); // FIXME: Cover with tests
+
     void merge(const LexemeIndex &other);
 
 private:
