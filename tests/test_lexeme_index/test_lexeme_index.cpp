@@ -28,12 +28,22 @@ void TestLexemeIndex::addPosition()
     // 0 1   2   3 4
     // a man saw a man
     LexemeIndex index;
+    bool is_new;
 
-    Lexeme *l0 = index.addPosition("a",   0);
-    Lexeme *l1 = index.addPosition("man", 1);
-    Lexeme *l2 = index.addPosition("saw", 2);
-    Lexeme *l3 = index.addPosition("a",   3);
-    Lexeme *l4 = index.addPosition("man", 4);
+    Lexeme *l0 = index.addPosition("a",   0, &is_new);
+    QCOMPARE(is_new, true);
+
+    Lexeme *l1 = index.addPosition("man", 1, &is_new);
+    QCOMPARE(is_new, true);
+
+    Lexeme *l2 = index.addPosition("saw", 2, &is_new);
+    QCOMPARE(is_new, true);
+
+    Lexeme *l3 = index.addPosition("a",   3, &is_new);
+    QCOMPARE(is_new, false);
+
+    Lexeme *l4 = index.addPosition("man", 4, &is_new);
+    QCOMPARE(is_new, false);
 
     QCOMPARE(l0 == l3, true);
     QCOMPARE(l1 == l4, true);

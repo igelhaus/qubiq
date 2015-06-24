@@ -19,8 +19,8 @@ public:
     inline Lexeme* findByName(const QString &name) const { return lex->value(name, NULL); }
     inline QVector<int>* positions(const QString &name) const { return lex2pos->value(name, NULL); }
 
-    Lexeme* addPosition(const QString &name, int pos);
-    Lexeme* addPositions(const QString &name, const QVector<int> *pos);
+    Lexeme* addPosition(const QString &name, int pos, bool *is_new = NULL);
+    Lexeme* addPositions(const QString &name, const QVector<int> *pos, bool *is_new = NULL);
     void merge(const LexemeIndex &other);
 
 private:
@@ -28,7 +28,7 @@ private:
     QHash<QString, QVector<int>*> *lex2pos;
     QHash<int, Lexeme*>           *pos2lex;
 
-    void init_entry(const QString &name);
+    void init_entry(const QString &name, bool *is_new);
 };
 
 #endif // _LEXEME_INDEX_H_

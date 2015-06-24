@@ -26,14 +26,13 @@ LexemeIndex::~LexemeIndex()
     delete lex;
 }
 
-Lexeme* LexemeIndex::addPosition(const QString &name, int pos)
+Lexeme* LexemeIndex::addPosition(const QString &name, int pos, bool *is_new /*= NULL*/)
 {
     if (pos < 0)
         return NULL;
 
-    if (!lex->contains(name)) {
-        init_entry(name);
-    }
+    init_entry(name, is_new);
+
     Lexeme       *lexeme    = lex->value(name);
     QVector<int> *positions = lex2pos->value(name);
 
@@ -43,14 +42,13 @@ Lexeme* LexemeIndex::addPosition(const QString &name, int pos)
     return lexeme;
 }
 
-Lexeme* LexemeIndex::addPositions(const QString &name, const QVector<int> *pos)
+Lexeme* LexemeIndex::addPositions(const QString &name, const QVector<int> *pos, bool *is_new /*= NULL*/)
 {
     if (pos == NULL)
         return NULL;
 
-    if (!lex->contains(name)) {
-        init_entry(name);
-    }
+    init_entry(name, is_new);
+
     Lexeme       *lexeme    = lex->value(name);
     QVector<int> *positions = lex2pos->value(name);
 
@@ -73,10 +71,22 @@ void LexemeIndex::merge(const LexemeIndex &other)
     }
 }
 
-void LexemeIndex::init_entry(const QString &name)
+void LexemeIndex::init_entry(const QString &name, bool *is_new)
 {
-    Lexeme *lexeme          = new Lexeme(name, false); // FIXME: Adjust Lexeme class
-    QVector<int> *positions = new QVector<int>;
+    if (is_new != NULL) {
+        *is_new = false;
+    }
+
+    if (lex->contains(name)) {
+        return;
+    }
+
+    Lexeme *lexeme          = new Lexeme(name);
+    QVector<int> *positions = new QVector<int>();
     lex->insert(name, lexeme);
     lex2pos->insert(name, positions);
+
+    if (is_new != NULL) {
+        *is_new = true;
+    }
 }
