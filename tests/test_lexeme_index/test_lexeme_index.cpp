@@ -10,6 +10,7 @@ private slots:
     void addPosition();
     void addPositions();
     void mergeIndeces();
+    void copyFromIndex();
 };
 
 void TestLexemeIndex::emptyIndex()
@@ -127,8 +128,8 @@ void TestLexemeIndex::mergeIndeces()
     // a man wants to see the man men will never see
     QStringList wordforms;
     wordforms
-        << "a"   << "man"  << "wants" << "to" << "see" << "the" << "man"
-        << "men" << "will" << "never" << "see"
+        << "a"   << "man" << "wants" << "to"    << "see" << "the" // index1
+        << "man" << "men" << "will"  << "never" << "see"          // index2
     ;
 
     LexemeIndex index1;
@@ -140,6 +141,8 @@ void TestLexemeIndex::mergeIndeces()
             index2.addPosition(wordforms.at(i), i);
         }
     }
+    QCOMPARE(index1.numUniquePositions(), 6);
+    QCOMPARE(index2.numUniquePositions(), 5);
 
     QCOMPARE(index1.findByName("wants") != NULL, true);
     QCOMPARE(index1.findByName("will")  == NULL, true);
@@ -149,6 +152,9 @@ void TestLexemeIndex::mergeIndeces()
     QCOMPARE(index2.findByName("never") != NULL, true);
 
     index1.merge(index2);
+
+    QCOMPARE(index1.numUniquePositions(), 11);
+    QCOMPARE(index2.numUniquePositions(),  5);
 
     QCOMPARE(index1.findByName("wants") != NULL, true);
     QCOMPARE(index1.findByName("will")  != NULL, true);
@@ -176,6 +182,66 @@ void TestLexemeIndex::mergeIndeces()
     for (int i = 0; i < wordforms.size(); i++) {
         QCOMPARE(index2.findByPosition(i) == NULL, i < 6);
     }
+}
+
+void TestLexemeIndex::copyFromIndex()
+{
+    // Consider indeces of wordforms on the text:
+    // 0 1   2     3  4   5   6   7   8    9     10
+    // a man wants to see the man men will never see
+    QStringList wordforms;
+    wordforms
+        << "a"   << "man" << "wants" << "to"    << "see" << "the" // index1
+        << "man" << "men" << "will"  << "never" << "see"          // index2
+    ;
+
+    LexemeIndex index1;
+    LexemeIndex index2;
+    for (int i = 0; i < wordforms.size(); i++) {
+        if (i < 6) {
+            index1.addPosition(wordforms.at(i), i);
+        } else {
+            index2.addPosition(wordforms.at(i), i);
+        }
+    }
+    QCOMPARE(index1.numUniquePositions(), 6);
+    QCOMPARE(index2.numUniquePositions(), 5);
+
+    bool is_new;
+    Lexeme *src;
+    Lexeme *dst;
+
+    src = index1.findByName("to");
+    dst = index2.copyFromIndex(index1, "to", &is_new);
+
+    QCOMPARE(is_new, true);
+    QCOMPARE(src != dst, true);
+
+    QCOMPARE(index1.numUniquePositions(), 6);
+    QCOMPARE(index2.numUniquePositions(), 6);
+
+    QCOMPARE(index1.positions("to") != index2.positions("to"), true);
+    QCOMPARE(index1.positions("to")->size(), 1);
+    QCOMPARE(index2.positions("to")->size(), 1);
+    QCOMPARE(index1.positions("to")->at(0), index2.positions("to")->at(0));
+
+    Lexeme *index2_see = index2.findByName("see");
+
+    src = index1.findByName("see");
+    dst = index2.copyFromIndex(index1, "see", &is_new);
+
+    QCOMPARE(is_new, false);
+    QCOMPARE(src != dst       , true);
+    QCOMPARE(dst == index2_see, true);
+
+    QCOMPARE(index1.numUniquePositions(), 6);
+    QCOMPARE(index2.numUniquePositions(), 7);
+
+    QCOMPARE(index1.positions("see")->size(), 1);
+    QCOMPARE(index2.positions("see")->size(), 2);
+    QCOMPARE(index1.positions("see")->at(0),  4);
+    QCOMPARE(index2.positions("see")->at(0), 10);
+    QCOMPARE(index2.positions("see")->at(1),  4);
 }
 
 QTEST_MAIN(TestLexemeIndex)
