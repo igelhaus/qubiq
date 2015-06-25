@@ -49,6 +49,21 @@ void TestText::simpleSentence()
     QCOMPARE(text.indexForms()->value("the"), 0);
     QCOMPARE(text.indexForms()->value("jumps"), 4);
     QCOMPARE(text.indexForms()->value("."), 8);
+
+    LexemeIndex *index = text.wordforms();
+    QCOMPARE(index->numUniquePositions(), 10);
+    QCOMPARE(index->lexemes()->keys().length(), 9);
+
+    Lexeme *lexeme1 = index->findByPosition(0);
+    Lexeme *lexeme2 = index->findByPosition(6);
+    QCOMPARE(lexeme1 == lexeme2, true);
+
+    QVector<int> *positions1 = index->positions(index->findByPosition(0)->name());
+    QVector<int> *positions2 = index->positions("the");
+    QCOMPARE(positions1 == positions2, true);
+    QCOMPARE(index->positions("the")->size(), 2);
+    QCOMPARE(index->positions("the")->at(0),  0);
+    QCOMPARE(index->positions("the")->at(1),  6);
 }
 
 void TestText::simpleSentenceFromFile()
@@ -77,6 +92,21 @@ void TestText::simpleSentenceFromFile()
     QCOMPARE(text.indexForms()->value("the"), 0);
     QCOMPARE(text.indexForms()->value("jumps"), 4);
     QCOMPARE(text.indexForms()->value("."), 8);
+
+    LexemeIndex *index = text.wordforms();
+    QCOMPARE(index->numUniquePositions(), 10);
+    QCOMPARE(index->lexemes()->keys().length(), 9);
+
+    Lexeme *lexeme1 = index->findByPosition(0);
+    Lexeme *lexeme2 = index->findByPosition(6);
+    QCOMPARE(lexeme1 == lexeme2, true);
+
+    QVector<int> *positions1 = index->positions(index->findByPosition(0)->name());
+    QVector<int> *positions2 = index->positions("the");
+    QCOMPARE(positions1 == positions2, true);
+    QCOMPARE(index->positions("the")->size(), 2);
+    QCOMPARE(index->positions("the")->at(0),  0);
+    QCOMPARE(index->positions("the")->at(1),  6);
 }
 
 void TestText::longSentenceFromFile()
@@ -107,11 +137,12 @@ void TestText::nonEnglishLocale()
 {
     Text text(QLocale("ru"));
 
-    QCOMPARE(text.append(QString( // A parody to one of the famous Pushkin's poems:)
+    QCOMPARE(text.append(QString( // A parody of one famous Pushkin's poem:)
         "Быть может быть, а может и не быть." // 00..09
         " А может быть, она и БЫТЬ не может." // 10..19
-        " А может быть, она и может быть."    // 20..28
+        " А может быть, Она и может быть."    // 20..28
     )), true);
+    // Expected unique values in the index: "быть" "может" "," "а" "и" "не" "." "она"
 
     QCOMPARE(text.length(),           29);
     QCOMPARE(text.numNonBoundaries(), 23);
@@ -128,6 +159,31 @@ void TestText::nonEnglishLocale()
     QCOMPARE(text.indexForms()->value("быть"), 0);
     QCOMPARE(text.indexForms()->value("а"), 3);
     QCOMPARE(text.indexForms()->value("."), 6);
+
+    LexemeIndex *index = text.wordforms();
+    QCOMPARE(index->numUniquePositions(), 29);
+    QCOMPARE(index->lexemes()->keys().length(), 8);
+
+    Lexeme *lexeme1 = index->findByPosition( 0);
+    Lexeme *lexeme2 = index->findByPosition(16);
+    Lexeme *lexeme3 = index->findByPosition(27);
+    QCOMPARE(lexeme1 == lexeme2, true);
+    QCOMPARE(lexeme1 == lexeme3, true);
+
+    QCOMPARE(lexeme1->isBoundary(), false);
+    QCOMPARE(index->findByName(".")->isBoundary(), true);
+    QCOMPARE(index->findByName(",")->isBoundary(), true);
+
+    QVector<int> *positions1 = index->positions(index->findByPosition(0)->name());
+    QVector<int> *positions2 = index->positions("быть");
+    QCOMPARE(positions1 == positions2, true);
+    QCOMPARE(index->positions(".")->size(), 3);
+    QCOMPARE(index->positions(".")->at(0),  9);
+    QCOMPARE(index->positions(".")->at(1), 19);
+    QCOMPARE(index->positions(".")->at(2), 28);
+    QCOMPARE(index->positions("она")->size(),  2);
+    QCOMPARE(index->positions("она")->at(0), 14);
+    QCOMPARE(index->positions("она")->at(1), 24);
 }
 
 QTEST_MAIN(TestText)
