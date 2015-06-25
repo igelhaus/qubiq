@@ -28,6 +28,7 @@ Text::~Text() {
     delete _offsets;
     delete idx_forms;
     delete idx_lexemes;
+    delete idx_wf;
 }
 
 /**
@@ -249,6 +250,13 @@ bool Text::process_token(const QStringRef &token)
     _offsets->append(idx_lexeme);
     _lexemes->at(idx_lexeme)->addForm(form, _offsets->length() - 1);
 
+    int  pos    = idx_wf->numUniquePositions();
+    bool is_new = false;
+    Lexeme *lexeme = idx_wf->addPosition(form_key, pos, &is_new);
+    if (is_new == true) {
+        lexeme->setIsBoundary(is_boundary);
+    }
+
     return true;
 }
 
@@ -260,6 +268,8 @@ void Text::_initialize(const QLocale &locale)
     _offsets    = new QVector<int>();
     idx_forms   = new QHash<QString, int>();
     idx_lexemes = new QHash<QString, int>();
+
+    idx_wf      = new LexemeIndex();
 
     num_forms      = 0;
     num_boundaries = 0;

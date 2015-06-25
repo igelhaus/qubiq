@@ -5,6 +5,7 @@
 #include <cutelogger/include/Logger.h>
 #include <qubiq/global.h>
 #include <qubiq/lexeme.h>
+#include <qubiq/lexeme_index.h>
 
 const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
 
@@ -79,6 +80,10 @@ public:
     //! \sa indexForms
     inline const QHash<QString, int>* indexLexemes() const { return idx_lexemes; }
 
+    // FIXME: Document me
+    // FIXME: Make const?
+    inline LexemeIndex* wordforms() const { return idx_wf; }
+
     bool appendFile(const QString &fname);
     bool appendFile(FILE *fd);
     bool append    (const QString &buffer);
@@ -89,6 +94,7 @@ private:
     QVector<int>        *_offsets;   //!< token's offset in the text -> offset of its lexeme in \c _lexemes
     QHash<QString, int> *idx_forms;  //!< token  (string) -> offset of its lexeme in \c _lexemes
     QHash<QString, int> *idx_lexemes;//!< lexeme (string) -> its offset in \c _lexemes
+    LexemeIndex         *idx_wf;     //!< Index of word forms built on the text
 
     int num_forms;
     int num_boundaries;
