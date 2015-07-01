@@ -1,4 +1,6 @@
 #include <qubiq/lexeme_sequence.h>
+//#include <iostream>
+//using namespace std;
 
 /**
  * \class LexemeSequence
@@ -45,7 +47,7 @@ LexemeSequence::LexemeSequence(const Text *text, int offset, int n, int n1)
     if (_state == LexemeSequence::STATE_OK) {
         _state = build_sequence(offset, n);
         if (_state == LexemeSequence::STATE_OK) {
-            calculate_metrics(n, n1);
+            calculate_metrics(offset, n, n1);
         }
     }
 }
@@ -80,13 +82,11 @@ QString LexemeSequence::image() const
     if (_state != LexemeSequence::STATE_OK)
         return _image;
 
-    int idx_first_offset = _offsets->at(0);
-    for (int i = 0; i < _lexemes->length(); i++) {
-        int idx_lexeme = _text->offsets()->at(idx_first_offset + i);
-        Lexeme *lexeme = _text->lexemes()->at(idx_lexeme);
-        _image.append(lexeme->forms()->at(0));
-        _image.append(" ");
+    int first_pos      = _index->positions(_seq->at(0)->name())->at(0);
+    for (int i = 0; i < _seq->length(); i++) {
+        _image.append(_index->findByPosition(first_pos + i)->name()).append(" ");
     }
+
     return _image;
 }
 
@@ -103,7 +103,8 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *
     if (text == NULL)
         return LexemeSequence::STATE_BAD_TEXT;
 
-    _text = text;
+    _text  = text;
+    _index = text->wordforms(); // FIXME: ability to specify an arbitrary index
 
     if (n < 2)
         return LexemeSequence::STATE_UNIGRAM;
@@ -129,20 +130,38 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_state(const Text *
 LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(int offset, int n)
 {
     for (int i = 0; i < n; i++) {
-        int  idx_lexeme = _text->offsets()->at(offset + i);
-        Lexeme *lexeme  = _text->lexemes()->at(idx_lexeme);
+        Lexeme *lexeme = _index->findByPosition(offset + i);
         if (lexeme->isBoundary()) {
             /* For invalid sequences we shrink containers to 0: */
-            _lexemes->resize(0);
+            _seq->resize(0);
             _key->resize(0);
             return LexemeSequence::STATE_HAS_BOUNDARIES;
         }
-        _lexemes->append(idx_lexeme);
-        for (int j = 0; j != sizeof(idx_lexeme); ++j) {
-            _key->append((char)(idx_lexeme & (0xFF << j) >> j));
-        }
+        _seq->append(lexeme);
+        add_to_key(lexeme);
     }
     return LexemeSequence::STATE_OK;
+}
+
+/**
+ * \brief Appends data about lexeme to the key of the sequence.
+ *
+ * Lexeme's address (which size is equal to the size of \c qintptr) is converted to bytes
+ * and appended to the internal \c _key byte storage. All sequences that consist of the same
+ * lexemes in the same order will share the same \c _key since lexeme entries are unique and not
+ * relocatable in the \c _index.
+ *
+ * \param[in] lexeme Lexeme to proces.
+ */
+void LexemeSequence::add_to_key(Lexeme *lexeme)
+{
+    qintptr lexeme_key = (qintptr)lexeme;
+    for (int i = 0; i != sizeof(lexeme_key); i++) {
+        qintptr shift = i << 3;
+        qintptr mask  = ((qintptr)0xFF) << shift;
+        char    byte  = (char)((lexeme_key & mask) >> shift);
+        _key->append(byte);
+    }
 }
 
 /**
@@ -174,15 +193,16 @@ LexemeSequence::LexemeSequenceState LexemeSequence::build_sequence(int offset, i
  * - \c H1: The first and the second subsequences are linguistically unrelated, i.e.
  * probability of the second subsequence is the same in the entire text.
  *
- * \param[in] n  Length of the sequence.
- * \param[in] n1 Length of the first subsequence.
- * \returns      Currently always returns \c LexemeSequence::LexemeSequenceState::STATE_OK.
+ * \param[in] offset  Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n       Length of the sequence.
+ * \param[in] n1      Length of the first subsequence.
+ * \returns           Currently always returns \c LexemeSequence::LexemeSequenceState::STATE_OK.
  */
-LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int n, int n1)
+LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int offset, int n, int n1)
 {
-    int f         = calculate_frequency(0, n, true); /* frequency of the whole sequence */
-    int f1        = calculate_frequency(0, n1);      /* frequency of the first subsequence */
-    int f2        = calculate_frequency(n1, n - n1); /* frequency of the second subsequence */
+    int f         = calculate_frequency(offset, n);           /* frequency of the whole sequence     */
+    int f1        = calculate_frequency(offset, n1);          /* frequency of the first subsequence  */
+    int f2        = calculate_frequency(offset + n1, n - n1); /* frequency of the second subsequence */
     int N         = _text->length();
     int not_f1    = N - f1; /* number of offsets that do not start the first subsequence */
     int f2_not_f1 = f2 - f; /* frequency of the second subsequence adjacent to anything but the first subsequence */
@@ -200,6 +220,7 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int n, int
     if (f == f2) /* Special case: the 2nd subsequence is not present outside the sequence */
         p2_H0 += PROBABILITY_ADJUSTMENT;
 
+    _f   = f;
     _n1  = n1;
     _mi  = (double)N * (double)f / (double)f1 / (double)f2;
     _llr = ll(p1_H0, f, f1)
@@ -214,22 +235,20 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int n, int
 
 /**
  * \brief Calculates frequency of a sequence in the source text.
- * \param[in] offset          Offset (expressed in tokens) to start building the sequence at.
- * \param[in] n               Length of the sequence.
- * \param[in] collect_offsets Set to \c true if offsets that start the sequences should be preserved internally.
+ * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n      Length of the sequence.
  * \returns Number of occurences of the sequence in the \c text.
  */
-int LexemeSequence::calculate_frequency(int offset, int n, bool collect_offsets)
+int LexemeSequence::calculate_frequency(int offset, int n)
 {
-    const QVector<int>* first = _text->lexemes()->at(_lexemes->at(offset))->offsets();
-    int f = first->length();
-    for (int i = 0; i < first->length(); i++) {
-        if (!is_sequence(first->at(i), offset, n)) {
+    Lexeme       *lexeme    = _index->findByPosition(offset);
+    QVector<int> *first_pos = _index->positions(lexeme->name());
+    int f = first_pos->size();
+    for (int i = 0; i < first_pos->length(); i++) {
+        if (!is_sequence(first_pos->at(i), offset, n)) {
             f--;
             continue;
         }
-        if (collect_offsets)
-            _offsets->append(first->at(i));
     }
     return f;
 }
@@ -251,9 +270,11 @@ bool LexemeSequence::is_sequence(int text_offset, int sequence_offset, int n) co
     /* NB! sequence_offset and n are always correlated and won't lead to out-of-range errors */
     if (text_offset + n > _text->length())
         return false;
-    for (int i = 0; i < n; i++)
-        if (_text->offsets()->at(text_offset + i) != _lexemes->at(sequence_offset + i))
+    for (int i = 0; i < n; i++) {
+        if (_index->findByPosition(text_offset + i) != _index->findByPosition(sequence_offset + i)) {
             return false;
+        }
+    }
     return true;
 }
 
@@ -261,15 +282,16 @@ bool LexemeSequence::is_sequence(int text_offset, int sequence_offset, int n) co
 void LexemeSequence::_initialize()
 {
     _text     = NULL;
+    _index    = NULL;
     _state    = LexemeSequence::STATE_EMPTY;
     _n1       = 0;
+    _f        = 0;
     _mi       = 0.0;
     _llr      = 0.0;
     _score    = 0.0;
     _led      = 0;
     _red      = 0;
-    _lexemes  = new QVector<int>;
-    _offsets  = new QVector<int>;
+    _seq      = new QVector<Lexeme*>();
     _key      = new QByteArray;
 }
 
@@ -277,22 +299,22 @@ void LexemeSequence::_initialize()
 void LexemeSequence::_assign(const LexemeSequence &other)
 {
     _text     = other._text;
+    _index    = other._index;
     _state    = other._state;
     _n1       = other._n1;
+    _f        = other._f;
     _mi       = other._mi;
     _llr      = other._llr;
     _score    = other._score;
     _led      = other._led;
     _red      = other._red;
-    _lexemes  = new QVector<int>(*(other._lexemes));
-    _offsets  = new QVector<int>(*(other._offsets));
+    _seq      = new QVector<Lexeme*>(*(other._seq));
     _key      = new QByteArray(*(other._key));
 }
 
 //! \internal Frees memory occupied by class members.
 void LexemeSequence::_destroy()
 {
-    delete _lexemes;
-    delete _offsets;
+    delete _seq;
     delete _key;
 }

@@ -48,24 +48,24 @@ public:
 
     //! Returns the number of lexemes that compose the sequence.
     //! \sa n1
-    inline int length() const { return _lexemes->length(); }
+    inline int length() const { return _seq->size(); }
 
     //! Returns the number of lexemes that compose the first subsequence.
     //! \sa length
     inline int n1() const { return _n1; }
 
     //! Returns the number of ocurrences of the sequence in the source text.
-    inline int frequency() const { return _offsets->length(); }
+    inline int frequency() const { return _f; }
 
     //! Returns a pointer to the vector mapping lexemes of the sequence to
     //! their offsets in the source text's vector of all lexemes.
-    //! \sa Text::lexemes
-    inline const QVector<int>* lexemes() const { return _lexemes; }
+    inline const QVector<int>* lexemes() const { return NULL; }      // FIXME: remove me
+    inline const QVector<Lexeme*>* lexemes2() const { return _seq; } // FIXME: -> lexemes()
 
     //! Returns a pointer to the vector of all offsets of the first lexeme
     //! in the source text.
     //! \sa Text::offsets
-    inline const QVector<int>* offsets() const { return _offsets; }
+    inline const QVector<int>* offsets() const { return NULL; } // FIXME: remove me
 
     //! Returns a key of the sequence, a special internal value for implementing hashes and sets of sequences.
     inline const QByteArray* key() const { return _key; }
@@ -114,6 +114,7 @@ private:
 
     int _n1; //!< Length of the first subsequence
 
+    int    _f;     //!< Frequency of the sequence
     double _mi;    //!< Mutual information
     double _llr;   //!< Log-likelihood ratio
     double _score; //!< Overall score
@@ -123,9 +124,9 @@ private:
     int _red; //!< Right Expansion Disatnce
 
     const Text   *_text;    //!< Original text the sequence is extracted from.
-    QVector<int> *_lexemes; //!< Offsets of the lexeme in the lexeme vector of the text
-    QVector<int> *_offsets; //!< Offsets of the first lexeme of the sequence
+    LexemeIndex  *_index;   //!< Index built on the text to derive sequences from.
     QByteArray   *_key;     //!< Sequence key for hashing
+    QVector<Lexeme*> *_seq; //!< Vector of pointers to lexemes the sequence actually consists of
 
     /**
      * \brief Auxiliary function for counting log-likelihood ratio.
@@ -145,11 +146,13 @@ private:
     void _destroy();
     void _assign(const LexemeSequence &other);
 
+    void add_to_key(Lexeme *lexeme);
+
     LexemeSequenceState calculate_state  (const Text *text, int offset, int n, int n1);
     LexemeSequenceState build_sequence   (int offset, int n);
-    LexemeSequenceState calculate_metrics(int n, int n1);
+    LexemeSequenceState calculate_metrics(int offset, int n, int n1);
 
-    int  calculate_frequency(int offset, int n, bool collect_offsets = false);
+    int  calculate_frequency(int offset, int n);
     bool is_sequence        (int text_offset, int sequence_offset, int n) const;
 };
 
@@ -161,10 +164,10 @@ private:
  */
 inline bool operator ==(const LexemeSequence &s1, const LexemeSequence &s2)
 {
-    const QVector<int> *l1 = s1.lexemes();
-    const QVector<int> *l2 = s2.lexemes();
-    if (l1->length() != l2->length())
+    if (s1.length() != s1.length())
         return false;
+    const QVector<Lexeme*> *l1 = s1.lexemes2();
+    const QVector<Lexeme*> *l2 = s2.lexemes2();
     for (int i = 0; i < l1->length(); i++) {
         if (l1->at(i) != l2->at(i))
             return false;
