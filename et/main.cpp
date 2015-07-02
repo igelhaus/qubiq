@@ -150,12 +150,8 @@ EnglishTermFilter::~EnglishTermFilter()
 
 bool EnglishTermFilter::passes(const LexemeSequence &sequence)
 {
-    const Text *text = sequence.text();
-
-    int idx_first_lexeme = sequence.lexemes()->at(0);
-    int idx_last_lexeme  = sequence.lexemes()->at(sequence.lexemes()->size() - 1);
-    QString first_lexeme = text->lexemes()->at(idx_first_lexeme)->lexeme();
-    QString last_lexeme  = text->lexemes()->at(idx_last_lexeme)->lexeme();
+    QString first_lexeme = sequence.lexemes()->at(0)->name();
+    QString last_lexeme  = sequence.lexemes()->at(sequence.lexemes()->size() - 1)->name();
 
     if (_prepositions->contains(first_lexeme) || _prepositions->contains(last_lexeme)) {
         LOG_DEBUG() << sequence.image() << "rejected: starts or ends with a preposition";
