@@ -34,6 +34,7 @@ void TestLexemeSequence::emptySequence()
     QCOMPARE(sequence.length(), 0);
     QCOMPARE(sequence.n1(), 0);
     QCOMPARE(sequence.lexemes()->length(), 0);
+    QCOMPARE(sequence.positions()->length(), 0);
     QCOMPARE(sequence.key()->length(), 0);
     QCOMPARE(sequence.mi(), 0.0);
     QCOMPARE(sequence.llr(), 0.0);
@@ -50,6 +51,7 @@ void TestLexemeSequence::emptySequenceCopy()
     QCOMPARE(sequence2.length(), 0);
     QCOMPARE(sequence2.n1(), 0);
     QCOMPARE(sequence2.lexemes()->length(), 0);
+    QCOMPARE(sequence2.positions()->length(), 0);
     QCOMPARE(sequence2.key()->length(), 0);
     QCOMPARE(sequence2.mi(), 0.0);
     QCOMPARE(sequence2.llr(), 0.0);
@@ -69,6 +71,7 @@ void TestLexemeSequence::emptySequenceAssignment()
     QCOMPARE(sequence2.n1(), 0);
     QCOMPARE(sequence2.lexemes()->length(), 0);
     QCOMPARE(sequence2.key()->length(), 0);
+    QCOMPARE(sequence2.positions()->length(), 0);
     QCOMPARE(sequence2.mi(), 0.0);
     QCOMPARE(sequence2.llr(), 0.0);
     QCOMPARE(sequence2.score(), 0.0);
@@ -114,11 +117,21 @@ void TestLexemeSequence::simpleSequence()
     QCOMPARE(sequence.length(), 3);
     QCOMPARE(sequence.n1(), 2);
     QCOMPARE(sequence.lexemes()->length(), 3);
+    QCOMPARE(sequence.positions()->length(), 2);
     QCOMPARE(sequence.key()->length(), (int)(3 * sizeof(quintptr)));
     QCOMPARE(sequence.frequency(), 2);
     QCOMPARE(sequence.mi(), 46 * (double)(2.0 / (3.0 * 3.0)));
     QCOMPARE(sequence.llr() > 0.0, true);
     QCOMPARE(sequence.score(), sequence.llr());
+
+    // Lexeme positions vs. sequecne positions:
+
+    QVector<int> *first_lexeme_pos = text.wordforms()->positions(sequence.lexemes()->at(0)->name());
+    QCOMPARE(first_lexeme_pos->size(),     4);
+    QCOMPARE(first_lexeme_pos->at(0),      1);
+    QCOMPARE(sequence.positions()->at(0),  1);
+    QCOMPARE(first_lexeme_pos->at(3),     34);
+    QCOMPARE(sequence.positions()->at(1), 34);
 }
 
 void TestLexemeSequence::extremeMetricValues()

@@ -200,7 +200,7 @@ void LexemeSequence::add_to_key(Lexeme *lexeme)
  */
 LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int offset, int n, int n1)
 {
-    int f         = calculate_frequency(offset, n);           /* frequency of the whole sequence     */
+    int f         = calculate_frequency(offset, n, true);     /* frequency of the whole sequence     */
     int f1        = calculate_frequency(offset, n1);          /* frequency of the first subsequence  */
     int f2        = calculate_frequency(offset + n1, n - n1); /* frequency of the second subsequence */
     int N         = _text->length();
@@ -235,19 +235,24 @@ LexemeSequence::LexemeSequenceState LexemeSequence::calculate_metrics(int offset
 
 /**
  * \brief Calculates frequency of a sequence in the source text.
- * \param[in] offset Offset (expressed in tokens) to start building the sequence at.
- * \param[in] n      Length of the sequence.
+ * \param[in] offset      Offset (expressed in tokens) to start building the sequence at.
+ * \param[in] n           Length of the sequence.
+ * \param[in] collect_pos If \c true internal storage of sequence position in the text will be updated.
  * \returns Number of occurences of the sequence in the \c text.
  */
-int LexemeSequence::calculate_frequency(int offset, int n)
+int LexemeSequence::calculate_frequency(int offset, int n, bool collect_pos /* = false*/)
 {
     Lexeme       *lexeme    = _index->findByPosition(offset);
     QVector<int> *first_pos = _index->positions(lexeme->name());
     int f = first_pos->size();
     for (int i = 0; i < first_pos->length(); i++) {
-        if (!is_sequence(first_pos->at(i), offset, n)) {
+        int pos = first_pos->at(i);
+        if (!is_sequence(pos, offset, n)) {
             f--;
             continue;
+        }
+        if (collect_pos) {
+            _pos->append(pos);
         }
     }
     return f;
@@ -292,6 +297,7 @@ void LexemeSequence::_initialize()
     _led      = 0;
     _red      = 0;
     _seq      = new QVector<Lexeme*>();
+    _pos      = new QVector<int>();
     _key      = new QByteArray;
 }
 
@@ -309,6 +315,7 @@ void LexemeSequence::_assign(const LexemeSequence &other)
     _led      = other._led;
     _red      = other._red;
     _seq      = new QVector<Lexeme*>(*(other._seq));
+    _pos      = new QVector<int>(*(other._pos));
     _key      = new QByteArray(*(other._key));
 }
 
@@ -316,5 +323,6 @@ void LexemeSequence::_assign(const LexemeSequence &other)
 void LexemeSequence::_destroy()
 {
     delete _seq;
+    delete _pos;
     delete _key;
 }

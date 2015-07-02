@@ -64,9 +64,7 @@ public:
     //! Returns a pointer to the vector of all offsets of the first lexeme
     //! in the source text.
     //! \sa LexemeIndex::positions
-    inline const QVector<int>* positions() const { // FIXME: cover with tests
-        return _state == STATE_OK? _index->positions(_seq->at(0)->name()) : NULL;
-    }
+    inline const QVector<int>* positions() const { return _pos; }
 
     //! Returns a key of the sequence, a special internal value for implementing hashes and sets of sequences.
     inline const QByteArray* key() const { return _key; }
@@ -126,8 +124,9 @@ private:
 
     const Text   *_text;    //!< Original text the sequence is extracted from.
     LexemeIndex  *_index;   //!< Index built on the text to derive sequences from.
-    QByteArray   *_key;     //!< Sequence key for hashing
-    QVector<Lexeme*> *_seq; //!< Vector of pointers to lexemes the sequence actually consists of
+    QByteArray   *_key;     //!< Sequence key for hashing.
+    QVector<Lexeme*> *_seq; //!< Vector of pointers to lexemes the sequence actually consists of.
+    QVector<int>     *_pos; //!< Vector of positions of the sequence in the text.
 
     /**
      * \brief Auxiliary function for counting log-likelihood ratio.
@@ -153,7 +152,7 @@ private:
     LexemeSequenceState build_sequence   (int offset, int n);
     LexemeSequenceState calculate_metrics(int offset, int n, int n1);
 
-    int  calculate_frequency(int offset, int n);
+    int  calculate_frequency(int offset, int n, bool collect_pos = false);
     bool is_sequence        (int text_offset, int sequence_offset, int n) const;
 };
 
