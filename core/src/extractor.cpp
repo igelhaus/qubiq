@@ -192,12 +192,12 @@ bool Extractor::treat_as_term(const LexemeSequence &candidate, int num_expansion
 int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
 {
     int num_expanded = 0;
-    const QVector<int> *first_lexeme_entries = candidate.offsets();
+    const QVector<int> *positions = candidate.positions();
     int n  = candidate.length() + 1;
     int n1 = is_left_expanded? 1 : candidate.length();
 
-    for (int i = 0; i < first_lexeme_entries->size(); i++) {
-        int offset = first_lexeme_entries->at(i);
+    for (int i = 0; i < positions->size(); i++) {
+        int offset = positions->at(i);
         if (is_left_expanded)
             offset--;
 

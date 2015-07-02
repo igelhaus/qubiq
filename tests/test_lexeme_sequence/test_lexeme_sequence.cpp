@@ -33,7 +33,7 @@ void TestLexemeSequence::emptySequence()
     QCOMPARE(sequence.isValid(), false);
     QCOMPARE(sequence.length(), 0);
     QCOMPARE(sequence.n1(), 0);
-//    QCOMPARE(sequence.lexemes()->length(), 0); // FIXME: Will fail until lexemes() -> lexemes()
+    QCOMPARE(sequence.lexemes()->length(), 0);
     QCOMPARE(sequence.key()->length(), 0);
     QCOMPARE(sequence.mi(), 0.0);
     QCOMPARE(sequence.llr(), 0.0);
@@ -49,7 +49,7 @@ void TestLexemeSequence::emptySequenceCopy()
     QCOMPARE(sequence2.isValid(), false);
     QCOMPARE(sequence2.length(), 0);
     QCOMPARE(sequence2.n1(), 0);
-//    QCOMPARE(sequence2.lexemes()->length(), 0); // FIXME: Will fail until lexemes() -> lexemes()
+    QCOMPARE(sequence2.lexemes()->length(), 0);
     QCOMPARE(sequence2.key()->length(), 0);
     QCOMPARE(sequence2.mi(), 0.0);
     QCOMPARE(sequence2.llr(), 0.0);
@@ -67,7 +67,7 @@ void TestLexemeSequence::emptySequenceAssignment()
     QCOMPARE(sequence2.isValid(), false);
     QCOMPARE(sequence2.length(), 0);
     QCOMPARE(sequence2.n1(), 0);
-//    QCOMPARE(sequence2.lexemes()->length(), 0); // FIXME: Will fail until lexemes() -> lexemes()
+    QCOMPARE(sequence2.lexemes()->length(), 0);
     QCOMPARE(sequence2.key()->length(), 0);
     QCOMPARE(sequence2.mi(), 0.0);
     QCOMPARE(sequence2.llr(), 0.0);
@@ -113,7 +113,7 @@ void TestLexemeSequence::simpleSequence()
     QCOMPARE(sequence.isValid(), true);
     QCOMPARE(sequence.length(), 3);
     QCOMPARE(sequence.n1(), 2);
-    //QCOMPARE(sequence.lexemes()->length(), 3); // FIXME: Will fail until lexemes() -> lexemes()
+    QCOMPARE(sequence.lexemes()->length(), 3);
     QCOMPARE(sequence.key()->length(), (int)(3 * sizeof(quintptr)));
     QCOMPARE(sequence.frequency(), 2);
     QCOMPARE(sequence.mi(), 46 * (double)(2.0 / (3.0 * 3.0)));

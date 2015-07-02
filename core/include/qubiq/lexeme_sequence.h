@@ -59,13 +59,14 @@ public:
 
     //! Returns a pointer to the vector mapping lexemes of the sequence to
     //! their offsets in the source text's vector of all lexemes.
-    inline const QVector<int>* lexemes() const { return NULL; }      // FIXME: remove me
-    inline const QVector<Lexeme*>* lexemes2() const { return _seq; } // FIXME: -> lexemes()
+    inline const QVector<Lexeme*>* lexemes() const { return _seq; }
 
     //! Returns a pointer to the vector of all offsets of the first lexeme
     //! in the source text.
-    //! \sa Text::offsets
-    inline const QVector<int>* offsets() const { return NULL; } // FIXME: remove me
+    //! \sa LexemeIndex::positions
+    inline const QVector<int>* positions() const { // FIXME: cover with tests
+        return _state == STATE_OK? _index->positions(_seq->at(0)->name()) : NULL;
+    }
 
     //! Returns a key of the sequence, a special internal value for implementing hashes and sets of sequences.
     inline const QByteArray* key() const { return _key; }
@@ -166,8 +167,8 @@ inline bool operator ==(const LexemeSequence &s1, const LexemeSequence &s2)
 {
     if (s1.length() != s1.length())
         return false;
-    const QVector<Lexeme*> *l1 = s1.lexemes2();
-    const QVector<Lexeme*> *l2 = s2.lexemes2();
+    const QVector<Lexeme*> *l1 = s1.lexemes();
+    const QVector<Lexeme*> *l2 = s2.lexemes();
     for (int i = 0; i < l1->length(); i++) {
         if (l1->at(i) != l2->at(i))
             return false;
