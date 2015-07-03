@@ -1,6 +1,9 @@
 #include <QtTest/QtTest>
 
+#include <iostream>
 #include <qubiq/extractor.h>
+
+using namespace std;
 
 const char *_text =
    "A database connection string is a special format string "     // 00 .. 08
@@ -40,26 +43,30 @@ void TestExtractor::simpleExtractor()
     Extractor extractor(&text);
     const QList<LexemeSequence> *extracted;
 
+    std::cout << "========== Default settings" << std::endl;
     QCOMPARE(extractor.extract(), true);
     extracted = extractor.extracted();
     for (int i = 0; i < extracted->size(); i++) {
         const LexemeSequence &term = extracted->at(i);
-        qDebug() << term.image() << " " << term.mi() << " " << term.llr();
+        std::cout << term.image().toStdString() << " " << term.mi() << " " << term.llr() << std::endl;
     }
+
+    std::cout << "========== max_left_expansion_distanse=0" << std::endl;
     extractor.setMaxLeftExpansionDistance(0);
     QCOMPARE(extractor.extract(), true);
     extracted = extractor.extracted();
     for (int i = 0; i < extracted->size(); i++) {
         const LexemeSequence &term = extracted->at(i);
-        qDebug() << term.image() << " " << term.mi() << " " << term.llr();
+        std::cout << term.image().toStdString() << " " << term.mi() << " " << term.llr() << std::endl;
     }
 
+    std::cout << "========== max_source_extraction_rate=0.5" << std::endl;
     extractor.setMaxSourceExtractionRate(0.5);
     QCOMPARE(extractor.extract(), true);
     extracted = extractor.extracted();
     for (int i = 0; i < extracted->size(); i++) {
         const LexemeSequence &term = extracted->at(i);
-        qDebug() << term.image() << " " << term.mi() << " " << term.llr();
+        std::cout << term.image().toStdString() << " " << term.mi() << " " << term.llr() << std::endl;
     }
 }
 
