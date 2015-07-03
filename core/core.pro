@@ -16,7 +16,7 @@ DESTDIR   = ..
 INCLUDEPATH += "include" "../util/include" "../3rdparty"
 HEADERS     += \
     include/qubiq/abstract_term_filter.h  \
-    include/qubiq/global.h                \
+    include/qubiq/qubiq_global.h          \
     include/qubiq/extractor.h             \
     include/qubiq/lexeme_sequence.h       \
     include/qubiq/text.h                  \

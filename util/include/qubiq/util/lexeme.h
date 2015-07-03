@@ -2,7 +2,7 @@
 #define _LEXEME_H_
 
 #include <QtCore>
-#include <qubiq/util/global.h>
+#include <qubiq/util/qubiqutil_global.h>
 
 // 2DO: describe arbitrary lexeme features as a free-form QHash?
 

@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include <QtCore>
-#include <qubiq/global.h>
+#include <qubiq/qubiq_global.h>
 #include <qubiq/text.h>
 
 const double PROBABILITY_ADJUSTMENT = 0.001; //!< Adjustment for correcting extreme probability values (0 and 1)

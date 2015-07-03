@@ -2,7 +2,7 @@
 #define _LEXEME_INDEX_H_
 
 #include <QtCore>
-#include <qubiq/util/global.h>
+#include <qubiq/util/qubiqutil_global.h>
 #include <qubiq/util/lexeme.h>
 
 class QUBIQUTILSHARED_EXPORT LexemeIndex {

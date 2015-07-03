@@ -14,8 +14,8 @@ DESTDIR   = ..
 
 INCLUDEPATH += "include" "../3rdparty"
 HEADERS     += \
-    include/qubiq/util/global.h       \
-    include/qubiq/util/lexeme.h       \
+    include/qubiq/util/qubiqutil_global.h \
+    include/qubiq/util/lexeme.h           \
     include/qubiq/util/lexeme_index.h
 
 SOURCES += \
