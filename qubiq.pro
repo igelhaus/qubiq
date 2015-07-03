@@ -22,6 +22,7 @@ SUBDIRS  = core util et \
 #
 
 cutelogger.depends =
+util.depends       =
 core.depends       = util 3rdparty/cutelogger
 et.depends         = core
 
@@ -29,8 +30,8 @@ et.depends         = core
 # Test dependencies:
 #
 
-test_lexeme.depends          = core # FIXME: util only
-test_lexeme_index.depends    = core # FIXME: util only
+test_lexeme.depends          = util
+test_lexeme_index.depends    = util
 test_lexeme_sequence.depends = core
 test_text.depends            = core
 test_extractor.depends       = core
