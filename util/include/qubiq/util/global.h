@@ -1,5 +1,5 @@
-#ifndef _GLOBAL_H_
-#define _GLOBAL_H_
+#ifndef _QUBIQUTIL_GLOBAL_H_
+#define _QUBIQUTIL_GLOBAL_H_
 
 #include <QtCore>
 
@@ -9,4 +9,4 @@
 #  define QUBIQUTILSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-#endif // _GLOBAL_H_
+#endif // _QUBIQUTIL_GLOBAL_H_
