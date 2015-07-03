@@ -3,6 +3,7 @@
 
 #include <QtCore>
 
+#include <qubiq/util/lexeme_index.h>
 #include <qubiq/text.h>
 #include <qubiq/lemmatizer_interfaces.h>
 #include <qubiq/lemmatizer.h>
@@ -25,7 +26,7 @@ public:
     bool isFinished() const;
     Q_SIGNAL void finished();
 
-    Q_SLOT void lemmatizerReady(int id, QHash<QString, InterimLexeme*> *result);
+    Q_SLOT void lemmatizerReady(int id, LexemeIndex *partial_index);
     Q_SLOT void start();
 };
 

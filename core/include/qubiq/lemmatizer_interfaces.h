@@ -18,9 +18,4 @@ public:
 
 Q_DECLARE_INTERFACE(LemmatizerFactory, "org.qubiq.lemmatizerfactory/1.0")
 
-struct InterimLexeme { // FIXME: elaborate on the struct
-    QString main_form;
-    QString features;
-};
-
 #endif // LEMMATIZER_INTERFACES_H
