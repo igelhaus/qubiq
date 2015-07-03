@@ -4,8 +4,8 @@
 #include <QtCore>
 #include <cutelogger/include/Logger.h>
 #include <qubiq/global.h>
-#include <qubiq/lexeme.h>
-#include <qubiq/lexeme_index.h>
+#include <qubiq/util/lexeme.h>
+#include <qubiq/util/lexeme_index.h>
 
 const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
 

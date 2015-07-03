@@ -5,7 +5,7 @@
 #include <QtCore>
 #include <cutelogger/include/Logger.h>
 #include <qubiq/global.h>
-#include <qubiq/lexeme.h>
+#include <qubiq/util/lexeme.h>
 #include <qubiq/text.h>
 #include <qubiq/lexeme_sequence.h>
 #include <qubiq/abstract_term_filter.h>

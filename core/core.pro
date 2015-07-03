@@ -9,18 +9,16 @@ QT       -= gui
 TARGET    = qubiq
 DEFINES  += QUBIQ_LIBRARY
 TEMPLATE  = lib
-LIBS     += -L../3rdparty/cutelogger -lLogger
+LIBS     += -L.. -lqubiqutil -L../3rdparty/cutelogger -lLogger
 
 DESTDIR   = ..
 
-INCLUDEPATH += "include" "../3rdparty"
+INCLUDEPATH += "include" "../util/include" "../3rdparty"
 HEADERS     += \
     include/qubiq/abstract_term_filter.h  \
     include/qubiq/global.h                \
     include/qubiq/extractor.h             \
-    include/qubiq/lexeme.h                \
     include/qubiq/lexeme_sequence.h       \
-    include/qubiq/lexeme_index.h          \
     include/qubiq/text.h                  \
     include/qubiq/master_lemmatizer.h     \
     include/qubiq/lemmatizer.h            \
@@ -28,9 +26,7 @@ HEADERS     += \
 
 SOURCES += \
     src/extractor.cpp         \
-    src/lexeme.cpp            \
     src/lexeme_sequence.cpp   \
-    src/lexeme_index.cpp      \
     src/text.cpp              \
     src/master_lemmatizer.cpp
 
