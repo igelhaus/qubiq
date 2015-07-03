@@ -4,5 +4,5 @@ CONFIG      += console
 CONFIG      -= app_bundle
 TEMPLATE     = app
 DESTDIR      = ../../
-INCLUDEPATH += "../../core/include" "../../3rdparty"
-LIBS        += -L../../ -lqubiq
+INCLUDEPATH += "../../core/include" "../../util/include" "../../3rdparty"
+LIBS        += -L../../ -lqubiqutil -lqubiq

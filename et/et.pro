@@ -6,7 +6,7 @@ CONFIG   -= app_bundle
 CONFIG   += console
 DESTDIR   = ..
 
-INCLUDEPATH += "../core/include" "../3rdparty" "../3rdparty/cutelogger" "../3rdparty/cutelogger/include"
-LIBS        += -L../ -L../3rdparty/cutelogger -lqubiq -lLogger
+INCLUDEPATH += "../core/include" "../util/include" "../3rdparty" "../3rdparty/cutelogger" "../3rdparty/cutelogger/include"
+LIBS        += -L../ -L../3rdparty/cutelogger -lqubiqutil -lqubiq -lLogger
 
 SOURCES += main.cpp

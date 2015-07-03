@@ -1,5 +1,5 @@
 #include <QtTest/QtTest>
-#include <qubiq/lexeme_index.h>
+#include <qubiq/util/lexeme_index.h>
 
 class TestLexemeIndex: public QObject
 {

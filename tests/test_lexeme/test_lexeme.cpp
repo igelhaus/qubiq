@@ -1,6 +1,6 @@
 #include <QtTest/QtTest>
 
-#include <qubiq/lexeme.h>
+#include <qubiq/util/lexeme.h>
 
 class TestLexeme: public QObject
 {
