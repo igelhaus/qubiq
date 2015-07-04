@@ -21,13 +21,6 @@ Text::Text(const QLocale &locale) {
 
 //! Destructs the Text object.
 Text::~Text() {
-    for (int i = 0; i < _lexemes->length(); i++)
-        delete _lexemes->at(i);
-
-    delete _lexemes;
-    delete _offsets;
-    delete idx_forms;
-    delete idx_lexemes;
     delete idx_wf;
 }
 
@@ -227,28 +220,8 @@ bool Text::process_token(const QStringRef &token)
     else
         num_forms++;
 
-    int idx_lexeme;
     QString form     = token.toString();
     QString form_key = _locale.toLower(form);
-    if (idx_forms->contains(form_key)) {
-        idx_lexeme = idx_forms->value(form_key);
-    } else {
-        QString *normalized = normalize_token(token, is_boundary);
-
-        if (!idx_lexemes->contains(*normalized)) {
-            Lexeme *lexeme = new Lexeme(*normalized, is_boundary);
-            _lexemes->append(lexeme);
-            idx_lexemes->insert(*normalized, _lexemes->length() - 1);
-        }
-
-        idx_lexeme = idx_lexemes->value(*normalized);
-        idx_forms->insert(form_key, idx_lexeme);
-
-        delete normalized;
-    }
-
-    _offsets->append(idx_lexeme);
-    _lexemes->at(idx_lexeme)->addForm(form, _offsets->length() - 1);
 
     int  pos    = idx_wf->numUniquePositions();
     bool is_new = false;
@@ -264,10 +237,6 @@ bool Text::process_token(const QStringRef &token)
 void Text::_initialize(const QLocale &locale)
 {
     _locale     = locale;
-    _lexemes    = new QVector<Lexeme*>();
-    _offsets    = new QVector<int>();
-    idx_forms   = new QHash<QString, int>();
-    idx_lexemes = new QHash<QString, int>();
 
     idx_wf      = new LexemeIndex();
 
