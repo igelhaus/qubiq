@@ -33,6 +33,9 @@ public:
     LexemeSequence &operator =(const LexemeSequence &other);
     QString image() const;
 
+    //! Returns index which was used for building the sequence.
+    inline const LexemeIndex* index() const { return _index; }
+
     //! Returns state of the sequence.
     //! \sa LexemeSequenceState
     //! \sa isValid

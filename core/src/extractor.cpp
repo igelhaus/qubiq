@@ -2,11 +2,14 @@
 
 /**
  * \brief Constructs an Extractor object.
- * \param[in] text Text to extract terms from.
+ * \param[in] index Lexeme index to use for extracting terms.
  */
-Extractor::Extractor(const Text *text)
+Extractor::Extractor(const LexemeIndex *index)
 {
-    _text    = text;
+    // NB! To make this class depend only LexemeIndex we assume that
+    // the index is *not* sparse, i.e. covers all token positions in the original text.
+    _index   = index;
+    _txt_len = index->numUniquePositions();
     _filter  = NULL;
     _min_bf  = DEFAULT_MIN_BIGRAM_FREQUENCY;
     _min_bs  = DEFAULT_MIN_BIGRAM_SCORE;
@@ -54,9 +57,8 @@ bool Extractor::extract(bool sort_terms /* = false */)
     LOG_INFO("Starting extraction");
 
     LOG_INFO() << "==================== Text metrics ====================";
-    LOG_INFO() << "length        =" << _text->length();
-    LOG_INFO() << "num_wordforms =" << _text->wordforms()->size();
-    LOG_INFO() << "num_lexemes   =" << _text->lexemes()->size();
+    LOG_INFO() << "text_length =" << _txt_len;
+    LOG_INFO() << "index_size  =" << _index->size();
     LOG_INFO() << "==================== Extractor parameters ====================";
     LOG_INFO() << "min_bf  =" << _min_bf;
     LOG_INFO() << "min_bs  =" << _min_bs;
@@ -129,8 +131,8 @@ bool Extractor::extract(bool sort_terms /* = false */)
 bool Extractor::collect_good_bigrams()
 {
     LOG_INFO("Starting collecting good bigrams");
-    for (int i = 0; i < _text->length(); i++) {
-        LexemeSequence bigram(_text->wordforms(), i, 2, 1); // FIXME: Choose the right index
+    for (int i = 0; i < _txt_len; i++) {
+        LexemeSequence bigram(_index, i, 2, 1);
         if (!bigram.isValid())
             continue;
         const QByteArray *key = bigram.key();
@@ -199,7 +201,7 @@ int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
         if (is_left_expanded)
             offset--;
 
-        LexemeSequence expanded(_text->wordforms(), offset, n, n1); // FIXME: Choose the right index
+        LexemeSequence expanded(_index, offset, n, n1); // FIXME: Choose the right index
         if (!validate_expanded(expanded, candidate))
             continue;
 

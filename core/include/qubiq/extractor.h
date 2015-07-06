@@ -6,7 +6,7 @@
 #include <cutelogger/include/Logger.h>
 #include <qubiq/qubiq_global.h>
 #include <qubiq/util/lexeme.h>
-#include <qubiq/text.h>
+#include <qubiq/util/lexeme_index.h>
 #include <qubiq/lexeme_sequence.h>
 #include <qubiq/abstract_term_filter.h>
 
@@ -21,7 +21,7 @@ class QUBIQSHARED_EXPORT Extractor : public QObject {
     Q_OBJECT
 
 public:
-    Extractor(const Text *text);
+    Extractor(const LexemeIndex *index);
     ~Extractor();
 
     bool extract(bool sort_terms = false);
@@ -112,16 +112,17 @@ public:
     //! Sets quality decrease threshold.
     inline void setQualityDecreaseThreshold(double qdt) { _qdt = qdt; }
 
-    //! Returns pointer to the source text.
-    inline const Text *text() const { return _text; }
+    //! Returns pointer to the lexeme index used for extraction.
+    inline const LexemeIndex *index() const { return _index; }
 
     //! Returns pointer to the list of extracted terms.
     inline const QList<LexemeSequence> *extracted() const { return _candidates; }
 
 private:
-    const Text *_text;
+    const LexemeIndex  *_index;
     AbstractTermFilter *_filter;
 
+    int    _txt_len; //!< Length of the original text expressed in tokens.
     int     _min_bf; //!< Minimum bigram frequency
     double _min_bs;  //!< Minimum bigram score
     double _max_ser; //!< Maximum source extraction rate
