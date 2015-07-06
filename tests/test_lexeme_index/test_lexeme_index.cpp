@@ -17,7 +17,7 @@ void TestLexemeIndex::emptyIndex()
 {
     LexemeIndex index;
 
-    QCOMPARE(index.lexemes()->keys().size(), 0);
+    QCOMPARE(index.size(), 0);
     QCOMPARE(index.findByName("")     == NULL, true);
     QCOMPARE(index.findByPosition(0)  == NULL, true);
     QCOMPARE(index.findByPosition(-1) == NULL, true);
@@ -45,6 +45,8 @@ void TestLexemeIndex::addPosition()
 
     Lexeme *l4 = index.addPosition("man", 4, &is_new);
     QCOMPARE(is_new, false);
+
+    QCOMPARE(index.size(), 3);
 
     QCOMPARE(l0 == l3, true);
     QCOMPARE(l1 == l4, true);
@@ -141,6 +143,9 @@ void TestLexemeIndex::mergeIndeces()
             index2.addPosition(wordforms.at(i), i);
         }
     }
+
+    QCOMPARE(index1.size(), 6);
+    QCOMPARE(index2.size(), 5);
     QCOMPARE(index1.numUniquePositions(), 6);
     QCOMPARE(index2.numUniquePositions(), 5);
 
@@ -153,6 +158,8 @@ void TestLexemeIndex::mergeIndeces()
 
     index1.merge(index2);
 
+    QCOMPARE(index1.size(), 9);
+    QCOMPARE(index2.size(), 5);
     QCOMPARE(index1.numUniquePositions(), 11);
     QCOMPARE(index2.numUniquePositions(),  5);
 

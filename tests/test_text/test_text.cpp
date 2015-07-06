@@ -19,11 +19,9 @@ void TestText::emptyText()
 {
     Text text;
 
-    QCOMPARE(text.length(), 0);
-    QCOMPARE(text.numNonBoundaries(), 0);
-    QCOMPARE(text.numBoundaries(), 0);
-    QCOMPARE(text.numUniqueTokens(), 0);
-    QCOMPARE(text.numLexemes(), 0);
+    QCOMPARE(text.length()           , 0);
+    QCOMPARE(text.wordforms()->size(), 0);
+    QCOMPARE(text.lexemes()->size()  , 0);
 }
 
 void TestText::simpleSentence()
@@ -34,25 +32,11 @@ void TestText::simpleSentence()
         "The quick brown fox jumps over the lazy dog."
     )), true);
 
-    QCOMPARE(text.length(),          10);
-    QCOMPARE(text.numNonBoundaries(), 9);
-    QCOMPARE(text.numBoundaries(),    1);
-    QCOMPARE(text.numUniqueTokens(),  9);
-    QCOMPARE(text.numLexemes(),       9);
-
-    QCOMPARE(text.offsets()->at(0), 0);
-    QCOMPARE(text.offsets()->at(6), 0);
-    QCOMPARE(text.lexemes()->at(0)->offsets()->length(), 2);
-    QCOMPARE(text.indexLexemes()->value("the"), 0);
-    QCOMPARE(text.indexLexemes()->value("jumps"), 4);
-    QCOMPARE(text.indexLexemes()->value("."), 8);
-    QCOMPARE(text.indexForms()->value("the"), 0);
-    QCOMPARE(text.indexForms()->value("jumps"), 4);
-    QCOMPARE(text.indexForms()->value("."), 8);
+    QCOMPARE(text.length(), 10);
 
     LexemeIndex *index = text.wordforms();
     QCOMPARE(index->numUniquePositions(), 10);
-    QCOMPARE(index->lexemes()->keys().length(), 9);
+    QCOMPARE(index->size(), 9);
 
     Lexeme *lexeme1 = index->findByPosition(0);
     Lexeme *lexeme2 = index->findByPosition(6);
@@ -77,25 +61,11 @@ void TestText::simpleSentenceFromFile()
     Text text;
     QCOMPARE(text.appendFile(text_file.fileName()), true);
 
-    QCOMPARE(text.length(),          10);
-    QCOMPARE(text.numNonBoundaries(), 9);
-    QCOMPARE(text.numBoundaries(),    1);
-    QCOMPARE(text.numUniqueTokens(),  9);
-    QCOMPARE(text.numLexemes(),       9);
-
-    QCOMPARE(text.offsets()->at(0), 0);
-    QCOMPARE(text.offsets()->at(6), 0);
-    QCOMPARE(text.lexemes()->at(0)->offsets()->length(), 2);
-    QCOMPARE(text.indexLexemes()->value("the"), 0);
-    QCOMPARE(text.indexLexemes()->value("jumps"), 4);
-    QCOMPARE(text.indexLexemes()->value("."), 8);
-    QCOMPARE(text.indexForms()->value("the"), 0);
-    QCOMPARE(text.indexForms()->value("jumps"), 4);
-    QCOMPARE(text.indexForms()->value("."), 8);
+    QCOMPARE(text.length(), 10);
 
     LexemeIndex *index = text.wordforms();
     QCOMPARE(index->numUniquePositions(), 10);
-    QCOMPARE(index->lexemes()->keys().length(), 9);
+    QCOMPARE(index->size(), 9);
 
     Lexeme *lexeme1 = index->findByPosition(0);
     Lexeme *lexeme2 = index->findByPosition(6);
@@ -120,11 +90,7 @@ void TestText::longSentenceFromFile()
     Text text;
     QCOMPARE(text.appendFile(text_file.fileName()), true);
 
-    QCOMPARE(text.length(),          10);
-    QCOMPARE(text.numNonBoundaries(), 9);
-    QCOMPARE(text.numBoundaries(),    1);
-    QCOMPARE(text.numUniqueTokens(),  9);
-    QCOMPARE(text.numLexemes(),       9);
+    QCOMPARE(text.length(), 10);
 }
 
 void TestText::appendFromNonExistentFile()
@@ -144,25 +110,11 @@ void TestText::nonEnglishLocale()
     )), true);
     // Expected unique values in the index: "быть" "может" "," "а" "и" "не" "." "она"
 
-    QCOMPARE(text.length(),           29);
-    QCOMPARE(text.numNonBoundaries(), 23);
-    QCOMPARE(text.numBoundaries(),     6);
-    QCOMPARE(text.numUniqueTokens(),   8);
-    QCOMPARE(text.numLexemes(),        8);
-
-    QCOMPARE(text.offsets()->at(0), 0);
-    QCOMPARE(text.offsets()->at(2), 0);
-    QCOMPARE(text.lexemes()->at(0)->offsets()->length(), 7);
-    QCOMPARE(text.indexLexemes()->value("быть"), 0);
-    QCOMPARE(text.indexLexemes()->value("а"), 3);
-    QCOMPARE(text.indexLexemes()->value("."), 6);
-    QCOMPARE(text.indexForms()->value("быть"), 0);
-    QCOMPARE(text.indexForms()->value("а"), 3);
-    QCOMPARE(text.indexForms()->value("."), 6);
+    QCOMPARE(text.length(), 29);
 
     LexemeIndex *index = text.wordforms();
     QCOMPARE(index->numUniquePositions(), 29);
-    QCOMPARE(index->lexemes()->keys().length(), 8);
+    QCOMPARE(index->size(), 8);
 
     Lexeme *lexeme1 = index->findByPosition( 0);
     Lexeme *lexeme2 = index->findByPosition(16);
