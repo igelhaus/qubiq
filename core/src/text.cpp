@@ -22,6 +22,7 @@ Text::Text(const QLocale &locale) {
 //! Destructs the Text object.
 Text::~Text() {
     delete idx_wf;
+    delete idx_lex;
 }
 
 /**
@@ -215,11 +216,6 @@ bool Text::process_token(const QStringRef &token)
 
     bool is_boundary = is_boundary_token(token);
 
-    if (is_boundary)
-        num_boundaries++;
-    else
-        num_forms++;
-
     QString form     = token.toString();
     QString form_key = _locale.toLower(form);
 
@@ -236,10 +232,7 @@ bool Text::process_token(const QStringRef &token)
 //! \internal Initializes class members.
 void Text::_initialize(const QLocale &locale)
 {
-    _locale     = locale;
-
-    idx_wf      = new LexemeIndex();
-
-    num_forms      = 0;
-    num_boundaries = 0;
+    _locale = locale;
+    idx_wf  = new LexemeIndex();
+    idx_lex = new LexemeIndex();
 }
