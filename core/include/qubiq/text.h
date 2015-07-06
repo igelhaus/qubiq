@@ -9,9 +9,6 @@
 
 const qint64 DEFAULT_READ_BUFFER_SIZE = 80;
 
-// FIXME: implement lemmatizing interface
-// FIXME: tokenization with lemmatization vs. tokenization before lemmatization
-
 class QUBIQSHARED_EXPORT Text: public QObject {
     Q_OBJECT
 

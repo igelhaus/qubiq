@@ -214,15 +214,14 @@ bool Text::process_token(const QStringRef &token)
     if (is_whitespace_token(token))
         return false;
 
-    bool is_boundary = is_boundary_token(token);
+    QString token_key = _locale.toLower(token.toString());
+    int  pos          = idx_wf->numUniquePositions();
+    bool is_new       = false;
 
-    QString form     = token.toString();
-    QString form_key = _locale.toLower(form);
-
-    int  pos    = idx_wf->numUniquePositions();
-    bool is_new = false;
-    Lexeme *lexeme = idx_wf->addPosition(form_key, pos, &is_new);
+    Lexeme *lexeme = idx_wf->addPosition(token_key, pos, &is_new);
     if (is_new == true) {
+        // FIXME: Add other universal properties (is_number etc.)
+        bool is_boundary = is_boundary_token(token);
         lexeme->setIsBoundary(is_boundary);
     }
 
