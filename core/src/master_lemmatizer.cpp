@@ -33,8 +33,8 @@ void MasterLemmatizer::start()
         QObject::connect(thread, SIGNAL(started()),  lemmatizer, SLOT(start()));
         QObject::connect(thread, SIGNAL(finished()), lemmatizer, SLOT(deleteLater()));
         QObject::connect(
-            lemmatizer, SIGNAL(ready          (int, QHash<QString, InterimLexeme*> *)),
-            this      , SLOT  (lemmatizerReady(int, QHash<QString, InterimLexeme*> *))
+            lemmatizer, SIGNAL(ready          (int, LexemeIndex*)),
+            this      , SLOT  (lemmatizerReady(int, LexemeIndex*))
         );
         thread->start();
     }
