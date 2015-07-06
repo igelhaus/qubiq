@@ -26,7 +26,7 @@ public:
 
     //! Returns a pointer to the index of lexemes assosiated with the text.
     //! \sa wordforms
-    inline LexemeIndex* lexmes() const { return idx_lex; }
+    inline LexemeIndex* lexemes() const { return idx_lex; }
 
     bool appendFile(const QString &fname);
     bool appendFile(FILE *fd);

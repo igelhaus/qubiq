@@ -45,7 +45,7 @@ void MasterLemmatizer::lemmatizerReady(int id, LexemeIndex *partial_index)
     Q_UNUSED(partial_index)
 //    qDebug() << "From lemmatizer " << id << " result_length = " << result->keys().length();
 
-    // FIXME: Process result: merge partial index into text
+    _text->lexemes()->merge(*partial_index);
 
     _threads->at(id)->quit();
     _threads->at(id)->wait();

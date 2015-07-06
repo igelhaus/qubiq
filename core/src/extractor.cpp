@@ -56,7 +56,7 @@ bool Extractor::extract(bool sort_terms /* = false */)
     LOG_INFO() << "==================== Text metrics ====================";
     LOG_INFO() << "length        =" << _text->length();
     LOG_INFO() << "num_wordforms =" << _text->wordforms()->size();
-    LOG_INFO() << "num_lexemes   =" << _text->lexmes()->size();
+    LOG_INFO() << "num_lexemes   =" << _text->lexemes()->size();
     LOG_INFO() << "==================== Extractor parameters ====================";
     LOG_INFO() << "min_bf  =" << _min_bf;
     LOG_INFO() << "min_bs  =" << _min_bs;
