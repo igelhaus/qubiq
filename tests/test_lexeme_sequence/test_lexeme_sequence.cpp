@@ -1,5 +1,6 @@
 #include <QtTest/QtTest>
 #include <cmath>
+#include <qubiq/text.h>
 #include <qubiq/lexeme_sequence.h>
 
 const char *_text =
@@ -84,24 +85,24 @@ void TestLexemeSequence::badSequenceStates()
     text.append(QString("The quick brown fox jumps over the lazy dog."));
 
     LexemeSequence sequence1(NULL, 1, 2, 1);
-    QCOMPARE(sequence1.state(), LexemeSequence::STATE_BAD_TEXT);
+    QCOMPARE(sequence1.state(), LexemeSequence::STATE_BAD_INDEX);
 
-    LexemeSequence sequence2(&text, 1, 1, 1);
+    LexemeSequence sequence2(text.wordforms(), 1, 1, 1);
     QCOMPARE(sequence2.state(), LexemeSequence::STATE_UNIGRAM);
 
-    LexemeSequence sequence3(&text, 1, 2, 0);
+    LexemeSequence sequence3(text.wordforms(), 1, 2, 0);
     QCOMPARE(sequence3.state(), LexemeSequence::STATE_BAD_BOUNDARY);
 
-    LexemeSequence sequence4(&text, 1, 2, 2);
+    LexemeSequence sequence4(text.wordforms(), 1, 2, 2);
     QCOMPARE(sequence4.state(), LexemeSequence::STATE_BAD_BOUNDARY);
 
-    LexemeSequence sequence5(&text, 10, 2, 1);
+    LexemeSequence sequence5(text.wordforms(), 10, 2, 1);
     QCOMPARE(sequence5.state(), LexemeSequence::STATE_BAD_OFFSET);
 
-    LexemeSequence sequence6(&text, 8, 4, 1);
+    LexemeSequence sequence6(text.wordforms(), 8, 4, 1);
     QCOMPARE(sequence6.state(), LexemeSequence::STATE_BAD_OFFSET_N);
 
-    LexemeSequence sequence7(&text, 8, 2, 1);
+    LexemeSequence sequence7(text.wordforms(), 8, 2, 1);
     QCOMPARE(sequence7.state(), LexemeSequence::STATE_HAS_BOUNDARIES);
 }
 
@@ -111,7 +112,7 @@ void TestLexemeSequence::simpleSequence()
     text.append(QString(_text));
 
     /* Extract a trigram: (datbase connection, string) */
-    LexemeSequence sequence(&text, 1, 3, 2);
+    LexemeSequence sequence(text.wordforms(), 1, 3, 2);
     QCOMPARE(sequence.state(), LexemeSequence::STATE_OK);
     QCOMPARE(sequence.isValid(), true);
     QCOMPARE(sequence.length(), 3);
@@ -139,7 +140,7 @@ void TestLexemeSequence::extremeMetricValues()
     // 1. Artificial text
     Text text1;
     text1.append(QString("x x"));
-    LexemeSequence sequence1(&text1, 0, 2, 1);
+    LexemeSequence sequence1(text1.wordforms(), 0, 2, 1);
     QCOMPARE(sequence1.isValid(), true);
     QCOMPARE(!std::isnan(sequence1.score()), true);
     QCOMPARE(sequence1.score() == 0.0, true);
@@ -150,7 +151,7 @@ void TestLexemeSequence::extremeMetricValues()
         "first lexeme of the sequence in this text is the lexeme"
         " that belongs to the first lexeme sequence only"
     ));
-    LexemeSequence sequence2(&text2, 0, 2, 1);
+    LexemeSequence sequence2(text2.wordforms(), 0, 2, 1);
     QCOMPARE(sequence2.isValid(), true);
     QCOMPARE(!std::isnan(sequence2.score()), true);
     QCOMPARE(sequence2.score() > 0.0, true);
@@ -161,7 +162,7 @@ void TestLexemeSequence::extremeMetricValues()
         "second lexeme of the sequence belongs to the"
         " second lexeme sequence only: second adjacency test"
     ));
-    LexemeSequence sequence3(&text3, 0, 2, 1);
+    LexemeSequence sequence3(text3.wordforms(), 0, 2, 1);
     QCOMPARE(sequence3.isValid(), true);
     QCOMPARE(!std::isnan(sequence3.score()), true);
     QCOMPARE(sequence3.score() > 0.0, true);
@@ -172,7 +173,7 @@ void TestLexemeSequence::extremeMetricValues()
         "lexeme sequence lexeme sequence in this text consists of"
         " subsequences that are adjacent to each other in the lexeme sequence"
     ));
-    LexemeSequence sequence4(&text4, 0, 2, 1);
+    LexemeSequence sequence4(text4.wordforms(), 0, 2, 1);
     QCOMPARE(sequence4.isValid(), true);
     QCOMPARE(!std::isnan(sequence4.score()), true);
     QCOMPARE(sequence4.score() > 0.0, true);
@@ -184,11 +185,11 @@ void TestLexemeSequence::comparisonOperator()
     text.append(QString(_text));
 
     /* Extract a trigram: (datbase connection, string) */
-    LexemeSequence sequence1(&text, 1, 3, 2);
+    LexemeSequence sequence1(text.wordforms(), 1, 3, 2);
     /* Extract the same trigram, but from another offset */
-    LexemeSequence sequence2(&text, 34, 3, 2);
+    LexemeSequence sequence2(text.wordforms(), 34, 3, 2);
     /* Extract a different trigram: (connection string, is) */
-    LexemeSequence sequence3(&text, 2, 3, 2);
+    LexemeSequence sequence3(text.wordforms(), 2, 3, 2);
 
     QCOMPARE(sequence1 == sequence2, true);
     QCOMPARE(sequence1 == sequence3, false);
@@ -205,11 +206,11 @@ void TestLexemeSequence::hashOfSequences()
     text.append(QString(_text));
 
     /* Extract a trigram: (datbase connection, string) */
-    LexemeSequence sequence1(&text, 1, 3, 2);
+    LexemeSequence sequence1(text.wordforms(), 1, 3, 2);
     /* Extract the same trigram, but from another offset */
-    LexemeSequence sequence2(&text, 34, 3, 2);
+    LexemeSequence sequence2(text.wordforms(), 34, 3, 2);
     /* Extract a different trigram: (connection string, is) */
-    LexemeSequence sequence3(&text, 2, 3, 2);
+    LexemeSequence sequence3(text.wordforms(), 2, 3, 2);
 
     QHash<LexemeSequence, bool> sequences;
 
@@ -229,11 +230,11 @@ void TestLexemeSequence::setOfSequences()
     text.append(QString(_text));
 
     /* Extract a trigram: (datbase connection, string) */
-    LexemeSequence sequence1(&text, 1, 3, 2);
+    LexemeSequence sequence1(text.wordforms(), 1, 3, 2);
     /* Extract the same trigram, but from another offset */
-    LexemeSequence sequence2(&text, 34, 3, 2);
+    LexemeSequence sequence2(text.wordforms(), 34, 3, 2);
     /* Extract a different trigram: (connection string, is) */
-    LexemeSequence sequence3(&text, 2, 3, 2);
+    LexemeSequence sequence3(text.wordforms(), 2, 3, 2);
 
     QSet<LexemeSequence> sequences;
 

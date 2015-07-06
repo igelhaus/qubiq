@@ -130,7 +130,7 @@ bool Extractor::collect_good_bigrams()
 {
     LOG_INFO("Starting collecting good bigrams");
     for (int i = 0; i < _text->length(); i++) {
-        LexemeSequence bigram(_text, i, 2, 1);
+        LexemeSequence bigram(_text->wordforms(), i, 2, 1); // FIXME: Choose the right index
         if (!bigram.isValid())
             continue;
         const QByteArray *key = bigram.key();
@@ -199,7 +199,7 @@ int Extractor::expand(const LexemeSequence &candidate, bool is_left_expanded)
         if (is_left_expanded)
             offset--;
 
-        LexemeSequence expanded(_text, offset, n, n1);
+        LexemeSequence expanded(_text->wordforms(), offset, n, n1); // FIXME: Choose the right index
         if (!validate_expanded(expanded, candidate))
             continue;
 

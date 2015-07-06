@@ -4,7 +4,7 @@
 #include <math.h>
 #include <QtCore>
 #include <qubiq/qubiq_global.h>
-#include <qubiq/text.h>
+#include <qubiq/util/lexeme_index.h>
 
 const double PROBABILITY_ADJUSTMENT = 0.001; //!< Adjustment for correcting extreme probability values (0 and 1)
 const double MIN_MUTUAL_INFORMATION = 2.5;
@@ -16,7 +16,7 @@ public:
     //! LexemeSequenceState: enumeration for indicating states of the sequence.
     enum LexemeSequenceState {
         STATE_OK             = 0, //!< Valid sequence.
-        STATE_BAD_TEXT       = 1, //!< Invalid: Pointer to text is NULL.
+        STATE_BAD_INDEX      = 1, //!< Invalid: Pointer to lexeme index is NULL.
         STATE_EMPTY          = 2, //!< Invalid: Sequence is empty.
         STATE_UNIGRAM        = 3, //!< Invalid: Contains less than 2 lexemes.
         STATE_BAD_BOUNDARY   = 4, //!< Invalid: Incorrectly split into subsequences.
@@ -27,14 +27,11 @@ public:
 
     LexemeSequence();
     LexemeSequence(const LexemeSequence &other);
-    LexemeSequence(const Text *text, int offset, int n, int n1);
+    LexemeSequence(const LexemeIndex *index, int offset, int n, int n1);
     ~LexemeSequence();
 
     LexemeSequence &operator =(const LexemeSequence &other);
     QString image() const;
-
-    //! Returns pointer to the text the sequence was extracted from.
-    const Text* text() const { return _text; }
 
     //! Returns state of the sequence.
     //! \sa LexemeSequenceState
@@ -122,11 +119,12 @@ private:
     int _led; //!< Left Expansion Distance
     int _red; //!< Right Expansion Disatnce
 
-    const Text   *_text;    //!< Original text the sequence is extracted from.
-    LexemeIndex  *_index;   //!< Index built on the text to derive sequences from.
-    QByteArray   *_key;     //!< Sequence key for hashing.
-    QVector<Lexeme*> *_seq; //!< Vector of pointers to lexemes the sequence actually consists of.
-    QVector<int>     *_pos; //!< Vector of positions of the sequence in the text.
+    int _txt_len; //!< Length of the original text expressed in tokens.
+
+    const LexemeIndex  *_index; //!< Lexeme index to derive sequences from.
+    QByteArray         *_key;   //!< Sequence key for hashing.
+    QVector<Lexeme*>   *_seq;   //!< Vector of pointers to lexemes the sequence actually consists of.
+    QVector<int>       *_pos;   //!< Vector of positions of the sequence in the text.
 
     /**
      * \brief Auxiliary function for counting log-likelihood ratio.
@@ -148,7 +146,7 @@ private:
 
     void add_to_key(Lexeme *lexeme);
 
-    LexemeSequenceState calculate_state  (const Text *text, int offset, int n, int n1);
+    LexemeSequenceState calculate_state  (const LexemeIndex *index, int offset, int n, int n1);
     LexemeSequenceState build_sequence   (int offset, int n);
     LexemeSequenceState calculate_metrics(int offset, int n, int n1);
 
