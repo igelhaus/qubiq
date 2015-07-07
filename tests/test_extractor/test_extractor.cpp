@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 
 #include <iostream>
+#include <qubiq/text.h>
 #include <qubiq/extractor.h>
 
 using namespace std;
@@ -27,7 +28,7 @@ void TestExtractor::emptyExtractor()
     Text text;
     text.append(QString(_text));
 
-    Extractor extractor(&text);
+    Extractor extractor(text.wordforms());
     QCOMPARE(extractor.minBigramFrequency(),        DEFAULT_MIN_BIGRAM_FREQUENCY);
     QCOMPARE(extractor.maxSourceExtractionRate(),   DEFAULT_MAX_SOURCE_EXTRACTION_RATE);
     QCOMPARE(extractor.maxLeftExpansionDistance(),  DEFAULT_MAX_LEFT_EXPANSION_DISTANCE);
@@ -40,7 +41,7 @@ void TestExtractor::simpleExtractor()
     Text text;
     text.append(QString(_text));
 
-    Extractor extractor(&text);
+    Extractor extractor(text.wordforms());
     const QList<LexemeSequence> *extracted;
 
     std::cout << "========== Default settings" << std::endl;

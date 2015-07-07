@@ -1,6 +1,8 @@
 #include <QtCore>
 #include <cutelogger/include/Logger.h>
 #include <cutelogger/include/FileAppender.h>
+#include <qubiq/util/lexeme_index.h>
+#include <qubiq/text.h>
 #include <qubiq/extractor.h>
 #include <qubiq/abstract_term_filter.h>
 
@@ -264,7 +266,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    Extractor extractor(&text);
+    LexemeIndex *wordforms = text.wordforms();
+    LexemeIndex *lexemes   = text.lexemes();
+    Extractor extractor(lexemes->numUniquePositions() == wordforms->numUniquePositions()
+        ? lexemes : wordforms
+    );
     EnglishTermFilter english_filter;
 
     if (language.left(2).toLower() == "en")
