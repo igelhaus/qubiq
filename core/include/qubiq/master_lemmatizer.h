@@ -3,6 +3,7 @@
 
 #include <QtCore>
 
+#include <cutelogger/include/Logger.h>
 #include <qubiq/util/lexeme_index.h>
 #include <qubiq/text.h>
 #include <qubiq/lemmatizer_interfaces.h>
@@ -19,15 +20,19 @@ private:
 
     int _num_lemmatizers;
     int _num_finished_lemmatizers;
+
 public:
-    MasterLemmatizer(Text *text, LemmatizerFactory *lemmatizer_factory, int num_lemmatizers);
+    MasterLemmatizer(Text *text, LemmatizerFactory *lemmatizer_factory, int num_lemmatizers = -1);
     ~MasterLemmatizer();
 
-    bool isFinished() const;
-    Q_SIGNAL void finished();
+    inline bool isFinished() const { return _num_finished_lemmatizers == _num_lemmatizers; }
 
-    Q_SLOT void lemmatizerReady(int id, LexemeIndex *partial_index);
-    Q_SLOT void start();
+public slots:
+    void lemmatizerReady(int id, LexemeIndex *partial_index);
+    bool start();
+
+signals:
+    void finished();
 };
 
 #endif // _MASTER_LEMMATIZER_H_

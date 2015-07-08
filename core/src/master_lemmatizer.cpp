@@ -1,7 +1,12 @@
 #include <qubiq/master_lemmatizer.h>
 
-MasterLemmatizer::MasterLemmatizer(Text *text, LemmatizerFactory *lemmatizer_factory, int num_lemmatizers)
+MasterLemmatizer::MasterLemmatizer(Text *text, LemmatizerFactory *lemmatizer_factory, int num_lemmatizers /*= 0*/)
 {
+    if (num_lemmatizers < 1) {
+        int ideal_thread_count = QThread::idealThreadCount();
+        num_lemmatizers        = ideal_thread_count > 1? ideal_thread_count - 1 : 1;
+    }
+
     _lemmatizer_factory       = lemmatizer_factory;
     _num_lemmatizers          = num_lemmatizers;
     _num_finished_lemmatizers = 0;
@@ -11,16 +16,18 @@ MasterLemmatizer::MasterLemmatizer(Text *text, LemmatizerFactory *lemmatizer_fac
 }
 
 MasterLemmatizer::~MasterLemmatizer() {
-//    qDebug() << "~Master";
     delete _threads;
 }
 
-void MasterLemmatizer::start()
+bool MasterLemmatizer::start()
 {
-    // FIXME: Ensure re-entrance
+    if (!isFinished()) {
+        LOG_WARNING() << "Master lemmatizer already running";
+        return false;
+    }
     _num_finished_lemmatizers = 0;
     for (int i = 0; i < _num_lemmatizers; ++i) {
-//        qDebug() << "Creating and starting lemmatizer " << i;
+        LOG_INFO() << "Creating and starting lemmatizer " << i;
 
         // Worker thread created below is owned by the master object.
         // Lemmatizer can't have an owner before it's moved to the worker thread.
@@ -38,25 +45,26 @@ void MasterLemmatizer::start()
         );
         thread->start();
     }
+    return true;
 }
 
 void MasterLemmatizer::lemmatizerReady(int id, LexemeIndex *partial_index)
 {
-    Q_UNUSED(partial_index)
-//    qDebug() << "From lemmatizer " << id << " result_length = " << result->keys().length();
+    LOG_INFO() << "Got result from lemmatizer " << id;
+    LOG_INFO() << "partial_index_size = " << partial_index->size();
 
     _text->lexemes()->merge(*partial_index);
+    delete partial_index;
 
     _threads->at(id)->quit();
     _threads->at(id)->wait();
     _num_finished_lemmatizers++;
+
+    LOG_INFO() << "Number of already finished lemmatizers: " << _num_finished_lemmatizers;
+
     if (_num_finished_lemmatizers == _num_lemmatizers) {
+        LOG_DEBUG() << "Emitting 'finished' signal";
         _threads->resize(0);
         emit finished();
     }
-}
-
-bool MasterLemmatizer::isFinished() const
-{
-    return _num_finished_lemmatizers == _num_lemmatizers;
 }
