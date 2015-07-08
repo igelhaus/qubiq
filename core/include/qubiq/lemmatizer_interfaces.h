@@ -3,8 +3,7 @@
 
 #include <QtCore>
 #include <qubiq/text.h>
-
-class Lemmatizer;
+#include <qubiq/lemmatizer.h>
 
 class LemmatizerFactory {
 public:

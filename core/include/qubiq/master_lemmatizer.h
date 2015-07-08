@@ -2,7 +2,6 @@
 #define _MASTER_LEMMATIZER_H_
 
 #include <QtCore>
-
 #include <cutelogger/include/Logger.h>
 #include <qubiq/util/lexeme_index.h>
 #include <qubiq/text.h>

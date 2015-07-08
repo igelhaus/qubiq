@@ -3,7 +3,6 @@
 
 #include <QtCore>
 #include <qubiq/util/lexeme_index.h>
-#include <qubiq/lemmatizer_interfaces.h>
 
 class Lemmatizer : public QObject {
     Q_OBJECT
@@ -11,10 +10,11 @@ class Lemmatizer : public QObject {
 public:
     virtual ~Lemmatizer() {}
 
-    Q_SIGNAL void ready(int id, LexemeIndex *partial_index);
-
 public slots:
     virtual void start() = 0;
+
+signals:
+    void ready(int id, LexemeIndex *partial_index);
 };
 
 #endif // LEMMATIZER_H
