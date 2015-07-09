@@ -53,6 +53,8 @@ void MasterLemmatizer::lemmatizerReady(int id, LexemeIndex *partial_index)
     LOG_INFO() << "Got result from lemmatizer " << id;
     LOG_INFO() << "partial_index_size = " << partial_index->size();
 
+    // FIXME: partial_index == NULL as an indicator of lemmatizer's failure?
+
     _text->lexemes()->merge(*partial_index);
     delete partial_index;
 
