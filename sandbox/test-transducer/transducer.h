@@ -16,6 +16,8 @@ public:
     inline QString output() const { return o; }
     inline void setOutput(const QString &output) { o = output; }
 
+    inline void prependOutput(const QString &prefix) { o.prepend(prefix); }
+
     inline State* next() const { return n; }
     inline void setNext(State *next) { n = next; }
 
@@ -44,13 +46,19 @@ public:
     QString output(const QChar &c);
     void setOutput(const QChar &c, const QString &output);
 
+    QVector<Transition*>* transitions() const { return _t; }
+
     void clear();
 
     QString key() const;
 
+    bool updateFinalsWithPrefix(const QString &prefix);
+    inline void addFinal(const QString &final) { finals->append(final); }
+
 private:
     bool is_final;
     QVector<Transition*> *_t;
+    QVector<QString>     *finals;
 
     Transition *transition_by_label(const QChar &c);
 
@@ -63,5 +71,25 @@ private:
 inline uint qHash(const State &state, uint seed) {
     return qHash(state.key(), seed);
 }
+
+class Transducer {
+public:
+    Transducer();
+
+    ~Transducer();
+
+    bool build(const QString &fname, int max_word_size);
+    State *findEquivalent(const State *state);
+
+private:
+    QHash<QString, State*> *states;
+    State *init_state;
+
+    QVector <State*> *tmp_states;
+
+    int common_prefix_length(const QString &s1, const QString &s2) const;
+    QString common_prefix(const QString &s1, const QString &s2) const;
+};
+
 
 #endif // _TRANSDUCER_H_
