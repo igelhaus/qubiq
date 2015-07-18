@@ -15,7 +15,9 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
+    state.cpp \
     transducer.cpp
 
 HEADERS += \
+    state.h \
     transducer.h
