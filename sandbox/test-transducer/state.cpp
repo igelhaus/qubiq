@@ -59,7 +59,6 @@ void State::setOutput(const QChar &c, const QString &output)
 void State::clear()
 {
     _destroy_transitions();
-    _t->resize(0);
     finals->resize(0);
     is_final = false;
 }
@@ -118,15 +117,23 @@ void State::_destroy()
     delete finals;
 }
 
-void State::_destroy_transitions()
-{
-    for (int i = 0; i < _t->size(); i++)
-        delete _t->at(i);
-}
-
 void State::_assign(const State &other)
 {
     is_final = other.is_final;
-    // FIXME: Copy transitions
-    // FIXME: Copy finals
+    finals   = other.finals;
+
+    _destroy_transitions();
+    for (int i = 0; i < other._t->size(); i++) {
+        Transition *src_t = other._t->at(i);
+        Transition *dst_t = new Transition(*src_t);
+        _t->append(dst_t);
+    }
+}
+
+void State::_destroy_transitions()
+{
+    for (int i = 0; i < _t->size(); i++) {
+        delete _t->at(i);
+    }
+    _t->resize(0);
 }

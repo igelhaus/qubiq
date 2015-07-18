@@ -8,6 +8,11 @@ class State;
 class Transition {
 public:
     Transition() { n = NULL; }
+    Transition(const Transition &other) {
+        o = other.o;
+        l = other.l;
+        n = other.n;
+    }
     ~Transition() {}
 
     inline QChar label() const { return l; }
