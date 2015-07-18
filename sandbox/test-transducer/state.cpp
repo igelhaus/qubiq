@@ -9,6 +9,7 @@ State::State()
 
 State::State(const State &other)
 {
+    _initialize();
     _assign(other);
 }
 
@@ -63,7 +64,7 @@ void State::clear()
     is_final = false;
 }
 
-QString State::key() const
+QString State::key() const // FIXME: include final
 {
     if (_t->size() == 0) {
         return QString("");

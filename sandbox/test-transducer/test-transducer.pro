@@ -4,11 +4,11 @@
 #
 #-------------------------------------------------
 
-QT       += core network
+QT       += core
 
 QT       -= gui
 
-TARGET    = test-console-threads
+TARGET    = test-transducer
 CONFIG   += console
 CONFIG   -= app_bundle
 

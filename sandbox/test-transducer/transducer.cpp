@@ -31,7 +31,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
     }
 
     tmp_states->resize(0);
-    for (int i = 0; i < max_word_size; i++) {
+    for (int i = 0; i <= max_word_size; i++) {
         State *tmp_state = new State();
         tmp_states->append(tmp_state);
     }
@@ -40,6 +40,8 @@ bool Transducer::build(const QString &fname, int max_word_size)
     // previous_len
     // current_len
     // prefix_len
+
+    qDebug() << "File successfully open, started building";
 
     QString     current_word;
     QString     current_output;
@@ -51,7 +53,12 @@ bool Transducer::build(const QString &fname, int max_word_size)
         current_word   = parts.at(0);
         current_output = parts.at(1);
 
+        qDebug() << "previous_word  =" << previous_word;
+        qDebug() << "current_word   =" << current_word;
+        qDebug() << "current_output =" << current_output;
+
         int prefix_len = common_prefix_length(previous_word, current_word);
+        qDebug() << "prefix_len =" << prefix_len;
 
         // We minimize the states from the suffix of the previous word
         for (int i = previous_word.length() /*= last previous state index*/; i >= prefix_len + 1; i--) {
@@ -99,6 +106,8 @@ bool Transducer::build(const QString &fname, int max_word_size)
         previous_word = current_word;
     }
     in_file.close();
+    qDebug() << "List read";
+    qDebug() << "Last word:" << current_word;
 
     // Minimize last word
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
@@ -107,18 +116,24 @@ bool Transducer::build(const QString &fname, int max_word_size)
             findEquivalent(tmp_states->at(i))
         );
     }
+    qDebug() << "Last word minimized";
+
     init_state = findEquivalent(tmp_states->at(0));
 
+    qDebug() << "Built";
     return true;
 }
 
 State* Transducer::findEquivalent(const State *state)
 {
     QString state_key = state->key();
+    qDebug() << "state_key =" << state_key;
     if (states->contains(state_key)) {
         return states->value(state_key);
     }
+    qDebug() << "does not contain";
     State *_state = new State(*state);
+    qDebug() << "created";
     states->insert(state_key, _state);
     return _state;
 }
