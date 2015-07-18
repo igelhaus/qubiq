@@ -8,7 +8,12 @@ Transducer::Transducer()
 
 Transducer::~Transducer()
 {
-    delete states; // delete values
+    QHash<QString, State*>::iterator state;
+    for (state = states->begin(); state != states->end(); ++state) {
+        delete state.value();
+    }
+    delete states;
+
     for (int i = 0; i < tmp_states->size(); i++)
         delete tmp_states->at(i);
     delete tmp_states;
@@ -27,7 +32,8 @@ bool Transducer::build(const QString &fname, int max_word_size)
 
     tmp_states->resize(0);
     for (int i = 0; i < max_word_size; i++) {
-        tmp_states->append(new State());
+        State *tmp_state = new State();
+        tmp_states->append(tmp_state);
     }
     // 0-w-0-o-0-r-0-d-0
     // 0-w-0-o-0-r-0-m-0
