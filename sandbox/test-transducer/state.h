@@ -69,8 +69,8 @@ private:
 
     void _initialize();
     void _destroy();
-    void _destroy_transitions();
     void _assign(const State &other);
+    void _destroy_transitions();
 };
 
 inline uint qHash(const State &state, uint seed) {

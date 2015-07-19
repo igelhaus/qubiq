@@ -85,7 +85,7 @@ QString State::key() const // FIXME: include final
 
 bool State::updateFinalsWithPrefix(const QString &prefix)
 {
-    if (finals->size() == 0) {
+    if (finals->size() == 0) { // FIXME: Is this correct?
         return false;
     }
     for (int i = 0; i < finals->size(); i++) {
@@ -121,7 +121,14 @@ void State::_destroy()
 void State::_assign(const State &other)
 {
     is_final = other.is_final;
-    finals   = other.finals;
+
+    if (finals->size() > 0) {
+        finals->clear();
+    }
+
+    for (int i = 0; i < other.finals->size(); i++) {
+        finals->append(other.finals->at(i));
+    }
 
     _destroy_transitions();
     for (int i = 0; i < other._t->size(); i++) {
@@ -136,5 +143,5 @@ void State::_destroy_transitions()
     for (int i = 0; i < _t->size(); i++) {
         delete _t->at(i);
     }
-    _t->resize(0);
+    _t->clear();
 }
