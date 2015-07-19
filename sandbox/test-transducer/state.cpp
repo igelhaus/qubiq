@@ -37,7 +37,9 @@ void State::setNext(const QChar &c, State *next)
 {
     Transition *t = transition_by_label(c);
     if (t == NULL) {
-        return;
+        t = new Transition();
+        t->setLabel(c);
+        _t->append(t);
     }
     t->setNext(next);
 }
@@ -64,13 +66,14 @@ void State::clear()
     is_final = false;
 }
 
-QString State::key() const // FIXME: include final
+QString State::key() const
 {
     if (_t->size() == 0) {
         return QString("");
     }
 
-    QString k(QChar(_t->size()));
+    QString k(is_final? '1' : '0');
+    k.append(KEY_DELIMITER).append(QChar(_t->size()));
 
     for (int i = 0; i < _t->size(); i++) {
         Transition *t = _t->at(i);
