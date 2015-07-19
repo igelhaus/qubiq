@@ -11,16 +11,18 @@ public:
     ~Transducer();
 
     bool build(const QString &fname, int max_word_size);
-    State *findEquivalent(const State *state);
 
 private:
     QHash<QString, State*> *states;
-    State *init_state;
+    State                  *init_state;
+    QVector <State*>       *tmp_states;
 
-    QVector <State*> *tmp_states;
-
+    State *find_equivalent(const State *state);
     int common_prefix_length(const QString &s1, const QString &s2) const;
     QString common_prefix(const QString &s1, const QString &s2) const;
+
+    void _initialize_tmp_states(int n);
+    void _destroy_tmp_states();
 };
 
 

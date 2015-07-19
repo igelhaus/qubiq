@@ -4,6 +4,7 @@ Transducer::Transducer()
 {
     states     = new QHash<QString, State*>();
     tmp_states = new QVector<State*>();
+    init_state = NULL;
 }
 
 Transducer::~Transducer()
@@ -13,12 +14,14 @@ Transducer::~Transducer()
         delete state.value();
     }
     delete states;
-
-    for (int i = 0; i < tmp_states->size(); i++)
-        delete tmp_states->at(i);
     delete tmp_states;
 }
 
+// 0-w-0-o-0-r-0-d-0
+// 0-w-0-o-0-r-0-m-0
+// previous_len
+// current_len
+// prefix_len
 bool Transducer::build(const QString &fname, int max_word_size)
 {
     QFile in_file(fname);
@@ -30,16 +33,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
         max_word_size = 1024;
     }
 
-    tmp_states->resize(0);
-    for (int i = 0; i <= max_word_size; i++) {
-        State *tmp_state = new State();
-        tmp_states->append(tmp_state);
-    }
-    // 0-w-0-o-0-r-0-d-0
-    // 0-w-0-o-0-r-0-m-0
-    // previous_len
-    // current_len
-    // prefix_len
+    _initialize_tmp_states(max_word_size);
 
     qDebug() << "File successfully open, started building";
 
@@ -64,7 +58,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
         for (int i = previous_word.length() /*= last previous state index*/; i >= prefix_len + 1; i--) {
             tmp_states->at(i - 1)->setNext(
                 previous_word.at(i - 1),
-                findEquivalent(tmp_states->at(i))
+                find_equivalent(tmp_states->at(i))
             );
         }
         // This loop intializes the tail states for the current word
@@ -113,27 +107,29 @@ bool Transducer::build(const QString &fname, int max_word_size)
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
         tmp_states->at(i - 1)->setNext(
             previous_word.at(i - 1),
-            findEquivalent(tmp_states->at(i))
+            find_equivalent(tmp_states->at(i))
         );
     }
-    qDebug() << "Last word minimized";
+//    qDebug() << "Last word minimized";
 
-    init_state = findEquivalent(tmp_states->at(0));
+    init_state = find_equivalent(tmp_states->at(0));
 
-    qDebug() << "Built";
+    _destroy_tmp_states();
+
+//    qDebug() << "Built";
     return true;
 }
 
-State* Transducer::findEquivalent(const State *state)
+State* Transducer::find_equivalent(const State *state)
 {
     QString state_key = state->key();
-    qDebug() << "state_key =" << state_key;
+//    qDebug() << "state_key =" << state_key;
     if (states->contains(state_key)) {
         return states->value(state_key);
     }
-    qDebug() << "does not contain";
+//    qDebug() << "does not contain";
     State *_state = new State(*state);
-    qDebug() << "created";
+//    qDebug() << "created";
     states->insert(state_key, _state);
     return _state;
 }
@@ -153,4 +149,21 @@ int Transducer::common_prefix_length(const QString &s1, const QString &s2) const
 QString Transducer::common_prefix(const QString &s1, const QString &s2) const
 {
     return s1.left(common_prefix_length(s1, s2));
+}
+
+void Transducer::_initialize_tmp_states(int n)
+{
+    // NB! We assume that vector of tmp states is always empty here
+    for (int i = 0; i <= n; i++) {
+        State *state = new State();
+        tmp_states->append(state);
+    }
+}
+
+void Transducer::_destroy_tmp_states()
+{
+    for (int i = 0; i < tmp_states->size(); i++) {
+        delete tmp_states->at(i);
+    }
+    tmp_states->clear();
 }
