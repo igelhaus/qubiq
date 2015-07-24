@@ -68,12 +68,17 @@ void State::clear()
 
 QString State::key() const
 {
+    if (is_final) {
+        // FIXME: return dump of all finals: f1|f2|...
+    }
+
     if (_t->size() == 0) {
         return QString("");
     }
-
+        // l1|o1|n1|...
+    QByteArray x;
     QString k(is_final? '1' : '0');
-    k.append(KEY_DELIMITER).append(QChar(_t->size()));
+    k.append(KEY_DELIMITER).append(QString(_t->size()));
 
     for (int i = 0; i < _t->size(); i++) {
         Transition *t = _t->at(i);

@@ -11,6 +11,10 @@ public:
     ~Transducer();
 
     bool build(const QString &fname, int max_word_size);
+    // 2DO: saveToFile
+    // 2DO: loadFromFile
+
+    QStringList search(const QString &s);
 
 private:
     QHash<QString, State*> *states;

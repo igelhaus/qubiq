@@ -57,6 +57,8 @@ public:
 
     QString key() const;
 
+    const QVector<QString>* finalStrings() const { return finals; }
+
     bool updateFinalsWithPrefix(const QString &prefix);
     inline void addFinal(const QString &final) { finals->append(final); }
 

@@ -9,6 +9,9 @@ int main(int argc, char *argv[])
 
     transducer->build("lexemes.txt", 10);
 
+    QStringList r = transducer->search("lexeme");
+    qDebug() << "num_results =" << r.size();
+
     delete transducer;
 
     app.exit();
