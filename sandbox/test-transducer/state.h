@@ -2,36 +2,7 @@
 #define _STATE_H_
 
 #include <QtCore>
-
-class State;
-
-class Transition {
-public:
-    Transition() { n = NULL; }
-    Transition(const Transition &other) {
-        o = other.o;
-        l = other.l;
-        n = other.n;
-    }
-    ~Transition() {}
-
-    inline QChar label() const { return l; }
-    inline void setLabel(const QChar &c) { l = c; }
-
-    inline QString output() const { return o; }
-    inline void setOutput(const QString &output) { o = output; }
-
-    inline void prependOutput(const QString &prefix) { o.prepend(prefix); }
-
-    inline State* next() const { return n; }
-    inline void setNext(State *next) { n = next; }
-
-private:
-
-    QString o;
-    QChar   l;
-    State   *n;
-};
+#include "transition.h"
 
 class State {
 public:

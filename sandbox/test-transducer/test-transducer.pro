@@ -15,9 +15,11 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
+    transition.cpp \
     state.cpp \
     transducer.cpp
 
 HEADERS += \
+    transition.h \
     state.h \
     transducer.h
