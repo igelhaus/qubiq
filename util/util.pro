@@ -17,13 +17,13 @@ HEADERS     += \
     include/qubiq/util/qubiqutil_global.h \
     include/qubiq/util/lexeme.h           \
     include/qubiq/util/lexeme_index.h     \
-    include/qubiq/util/transition.h       \
-    include/qubiq/util/state.h            \
-    include/qubiq/util/transducer.h
+    include/qubiq/util/transducer.h       \
+    include/qubiq/util/transducer_state.h \
+    include/qubiq/util/transducer_state_transition.h
 
 SOURCES += \
-    src/lexeme.cpp       \
-    src/lexeme_index.cpp \
-    src/transition.cpp   \
-    src/state.cpp        \
-    src/transducer.cpp
+    src/lexeme.cpp           \
+    src/lexeme_index.cpp     \
+    src/transducer.cpp       \
+    src/transducer_state.cpp \
+    src/transducer_state_transition.cpp

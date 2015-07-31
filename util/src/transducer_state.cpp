@@ -1,4 +1,4 @@
-#include <qubiq/util/state.h>
+#include <qubiq/util/transducer_state.h>
 
 const char *KEY_DELIMITER = "|";
 

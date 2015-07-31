@@ -1,4 +1,4 @@
-#include <qubiq/util/transition.h>
+#include <qubiq/util/transducer_state_transition.h>
 
 Transition::Transition() {
     n = NULL;

@@ -2,7 +2,7 @@
 #define _STATE_H_
 
 #include <QtCore>
-#include <qubiq/util/transition.h>
+#include <qubiq/util/transducer_state_transition.h>
 
 class State {
 public:

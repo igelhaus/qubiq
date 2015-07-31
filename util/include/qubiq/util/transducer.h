@@ -3,7 +3,7 @@
 
 #include <QtCore>
 #include <qubiq/util/qubiqutil_global.h>
-#include <qubiq/util/state.h>
+#include <qubiq/util/transducer_state.h>
 
 class QUBIQUTILSHARED_EXPORT Transducer {
 public:
