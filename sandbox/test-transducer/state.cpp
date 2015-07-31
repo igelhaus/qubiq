@@ -66,29 +66,20 @@ void State::clear()
     is_final = false;
 }
 
-QString State::key() const
+uint State::key(uint seed) const
 {
+    char *key;
+
     if (is_final) {
-        // FIXME: return dump of all finals: f1|f2|...
+        key = final_state_key(seed);
+    } else {
+        key = non_final_state_key(seed);
     }
 
-    if (_t->size() == 0) {
-        return QString("");
-    }
-        // l1|o1|n1|...
-    QByteArray x;
-    QString k(is_final? '1' : '0');
-    k.append(KEY_DELIMITER).append(QString(_t->size()));
+    uint state_hash = qHash(key, seed);
+    delete []key;
 
-    for (int i = 0; i < _t->size(); i++) {
-        Transition *t = _t->at(i);
-        k.append(KEY_DELIMITER)
-            .append(t->label())
-            .append(KEY_DELIMITER)
-            .append(t->output());
-    }
-
-    return k;
+    return state_hash;
 }
 
 bool State::updateFinalsWithPrefix(const QString &prefix)
@@ -110,6 +101,57 @@ Transition* State::transition_by_label(const QChar &c)
         }
     }
     return NULL;
+}
+
+// Format: final-byte-mark | f_hash
+char* State::final_state_key(uint seed) const
+{
+    const int size_of_f_key = sizeof(uint);
+    const int size_of_key   = 1 + size_of_f_key;
+
+    char *key        = new char[size_of_key + 1];
+    key[0]           =  'f'; // final-byte-mark
+    key[size_of_key] = '\0';
+
+    QString all_finals;
+    for (int i = 0; i < finals->size(); i++) {
+        all_finals.append(finals->at(i)).append('|');
+    }
+
+    uint f_key = qHash(all_finals, seed);
+
+    const char *bytes_f_key = static_cast<const char*>(static_cast<const void*>(&f_key));
+    std::copy(
+        bytes_f_key,
+        bytes_f_key + size_of_f_key - 1,
+        key + 1
+    );
+
+    return key;
+}
+
+// Format: non-final-byte-mark | t1_hash | t2_hash ...
+char* State::non_final_state_key(uint seed) const
+{
+    const int size_of_t_key = sizeof(uint);
+    const int size_of_key   = 1 + size_of_t_key * _t->size();
+
+    char *key        = new char[size_of_key + 1];
+    key[0]           =  'F'; // non-final-byte-mark
+    key[size_of_key] = '\0';
+
+    for (int i = 0; i < _t->size(); i++) {
+        Transition *t = _t->at(i);
+        uint t_key    = qHash(*t, seed);
+        const char *bytes_t_key = static_cast<const char*>(static_cast<const void*>(&t_key));
+        std::copy(
+            bytes_t_key,
+            bytes_t_key + size_of_t_key - 1,
+            key + 1 + i * size_of_t_key
+        );
+    }
+
+    return key;
 }
 
 void State::_initialize()

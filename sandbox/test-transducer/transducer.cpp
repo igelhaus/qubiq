@@ -2,14 +2,14 @@
 
 Transducer::Transducer()
 {
-    states     = new QHash<QString, State*>();
+    states     = new QHash<uint, State*>();
     tmp_states = new QVector<State*>();
     init_state = NULL;
 }
 
 Transducer::~Transducer()
 {
-    QHash<QString, State*>::iterator state;
+    QHash<uint, State*>::iterator state;
     for (state = states->begin(); state != states->end(); ++state) {
         delete state.value();
     }
@@ -122,7 +122,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
 
 State* Transducer::find_equivalent(const State *state)
 {
-    QString state_key = state->key();
+    uint state_key = state->key();
     qDebug() << "state_key =" << state_key;
     if (states->contains(state_key)) {
         qDebug() << "contains";

@@ -26,7 +26,7 @@ public:
 
     void clear();
 
-    QString key() const;
+    uint key(uint seed = 0) const;
 
     const QVector<QString>* finalStrings() const { return finals; }
 
@@ -40,6 +40,9 @@ private:
 
     Transition *transition_by_label(const QChar &c);
 
+    char* final_state_key(uint seed = 0) const;
+    char* non_final_state_key(uint seed = 0) const;
+
     void _initialize();
     void _destroy();
     void _assign(const State &other);
@@ -47,7 +50,7 @@ private:
 };
 
 inline uint qHash(const State &state, uint seed) {
-    return qHash(state.key(), seed);
+    return qHash(state.key(seed), seed);
 }
 
 #endif // _STATE_H_

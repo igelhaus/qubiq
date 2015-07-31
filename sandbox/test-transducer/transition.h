@@ -25,7 +25,7 @@ public:
     inline State* next() const { return n; }
     inline void setNext(State *next) { n = next; }
 
-    QByteArray key() const;
+    uint key(uint seed = 0) const;
 
 private:
 
@@ -35,5 +35,7 @@ private:
 
     void _assign(const Transition &other);
 };
+
+uint qHash(const Transition &t, uint seed = 0);
 
 #endif // _TRANSITION_H_

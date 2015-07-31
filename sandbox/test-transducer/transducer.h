@@ -17,9 +17,9 @@ public:
     QStringList search(const QString &s);
 
 private:
-    QHash<QString, State*> *states;
-    State                  *init_state;
-    QVector <State*>       *tmp_states;
+    QHash<uint, State*> *states;
+    State               *init_state;
+    QVector <State*>    *tmp_states;
 
     State *find_equivalent(const State *state);
     int common_prefix_length(const QString &s1, const QString &s2) const;
