@@ -1,0 +1,34 @@
+#ifndef _TRANSDUCER_H_
+#define _TRANSDUCER_H_
+
+#include <QtCore>
+#include <qubiq/util/qubiqutil_global.h>
+#include <qubiq/util/state.h>
+
+class QUBIQUTILSHARED_EXPORT Transducer {
+public:
+    Transducer();
+
+    ~Transducer();
+
+    bool build(const QString &fname, int max_word_size);
+    // 2DO: saveToFile
+    // 2DO: loadFromFile
+
+    QStringList search(const QString &s);
+
+private:
+    QHash<uint, State*> *states;
+    State               *init_state;
+    QVector <State*>    *tmp_states;
+
+    State *find_equivalent(const State *state);
+    int common_prefix_length(const QString &s1, const QString &s2) const;
+    QString common_prefix(const QString &s1, const QString &s2) const;
+
+    void _initialize_tmp_states(int n);
+    void _destroy_tmp_states();
+};
+
+
+#endif // _TRANSDUCER_H_
