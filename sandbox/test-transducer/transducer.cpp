@@ -9,10 +9,7 @@ Transducer::Transducer()
 
 Transducer::~Transducer()
 {
-    QHash<uint, State*>::iterator state;
-    for (state = states->begin(); state != states->end(); ++state) {
-        delete state.value();
-    }
+    clear();
     delete states;
     delete tmp_states;
 }
@@ -33,6 +30,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
         max_word_size = 1024;
     }
 
+    clear();
     _initialize_tmp_states(max_word_size);
 
     qDebug() << "File successfully open, started building";
@@ -168,7 +166,7 @@ void Transducer::_destroy_tmp_states()
     tmp_states->clear();
 }
 
-QStringList Transducer::search(const QString &s)
+QStringList Transducer::search(const QString &s) const
 {
     QStringList result;
 
@@ -207,4 +205,14 @@ QStringList Transducer::search(const QString &s)
     }
 
     return result;
+}
+
+void Transducer::clear()
+{
+    QHash<uint, State*>::iterator state;
+    for (state = states->begin(); state != states->end(); ++state) {
+        delete state.value();
+    }
+    states->clear();
+    init_state = NULL;
 }

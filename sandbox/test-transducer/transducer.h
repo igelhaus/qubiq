@@ -4,17 +4,21 @@
 #include <QtCore>
 #include "state.h"
 
+class TransducerManager;
+
 class Transducer {
+    friend class TransducerManager;
+
 public:
     Transducer();
 
     ~Transducer();
 
-    bool build(const QString &fname, int max_word_size);
-    // 2DO: saveToFile
-    // 2DO: loadFromFile
+    bool isReady() const { return init_state != NULL; }
 
-    QStringList search(const QString &s);
+    bool build(const QString &fname, int max_word_size);
+
+    QStringList search(const QString &s) const;
 
 private:
     QHash<uint, State*> *states;
@@ -25,9 +29,10 @@ private:
     int common_prefix_length(const QString &s1, const QString &s2) const;
     QString common_prefix(const QString &s1, const QString &s2) const;
 
+    void clear();
+
     void _initialize_tmp_states(int n);
     void _destroy_tmp_states();
 };
-
 
 #endif // _TRANSDUCER_H_

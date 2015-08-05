@@ -17,9 +17,11 @@ TEMPLATE = app
 SOURCES += main.cpp \
     transition.cpp \
     state.cpp \
-    transducer.cpp
+    transducer.cpp \
+    transducer_manager.cpp
 
 HEADERS += \
     transition.h \
     state.h \
-    transducer.h
+    transducer.h \
+    transducer_manager.h
