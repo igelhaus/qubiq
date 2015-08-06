@@ -32,10 +32,11 @@ TransducerManager::~TransducerManager()
  * INIT_STATE_ID   := qint64
  * NUM_STATES      := qint64
  * STATES          := (FINAL_STATE | NON_FINAL_STATE)*
- * FINAL_STATE     := STATE_ID 'f' FINAL_STRING*
- * NON_FINAL_STATE := STATE_ID 'F' NUM_TRANSITIONS TRANSITION*
+ * FINAL_STATE     := STATE_ID 'f' FINAL_STRING* TRANSITIONS
+ * NON_FINAL_STATE := STATE_ID 'F' TRANSITIONS
  * STATE_ID        := qint64
  * FINAL_STRING    := qstring
+ * TRANSITIONS     := NUM_TRANSITIONS TRANSITION*
  * NUM_TRANSITIONS := qint64
  * TRANSITION      := LABEL OUTPUT NEXT_STATE_ID
  * LABEL           := qchar
@@ -73,22 +74,21 @@ bool TransducerManager::saveTofile(const QString &fname)
                 << *(state->finalStrings()) // FIXME: Rewrite as a string list
             ;
         } else {
-            QVector<Transition*> *transitions = state->transitions();
-            qint64 num_transtitions           = transitions->size();
+            out_stream << STATE_MARK_NON_FINAL;
+        }
 
+        QVector<Transition*> *transitions = state->transitions();
+        qint64 num_transtitions           = transitions->size();
+
+        out_stream << num_transtitions;
+        for (int i = 0; i < num_transtitions; i++) {
+            Transition *transition = transitions->at(i);
+            State *next = transition->next();
             out_stream
-                << STATE_MARK_NON_FINAL
-                << num_transtitions
+                << transition->label()
+                << transition->output()
+                << (qint64)next
             ;
-            for (int i = 0; i < num_transtitions; i++) {
-                Transition *transition = transitions->at(i);
-                State *next = transition->next();
-                out_stream
-                    << transition->label()
-                    << transition->output()
-                    << (qint64)next
-                ;
-            }
         }
     }
 
@@ -143,30 +143,34 @@ bool TransducerManager::loadFromFile(const QString &fname)
             }
         } else if (state_mark == STATE_MARK_NON_FINAL) {
             state->setFinal(false);
-
-            qint64 num_transitions = 0;
-            in_stream >> num_transitions; // FIXME: validate num_transitions
-
-            for (int i = 0; i < num_transitions; i++) {
-                QChar   label   = '\0';
-                QString output  = "";
-                qint64  next_id = 0;
-                in_stream
-                    >> label
-                    >> output
-                    >> next_id
-                ;
-                // FIXME: validate next_id and label
-
-                State *next = get_or_alloc_state(next_id, id2addr);
-
-                state->setNext(label, next);
-                state->setOutput(label, output);
-            }
-            states->insert(state->key(), state);
         } else {
             // FIXME: throw an error
         }
+
+        qint64 num_transitions = 0;
+        in_stream >> num_transitions;
+        if (num_transitions == 0 && !state->isFinal()) {
+            // FIXME: Throw an error
+        }
+
+        for (int i = 0; i < num_transitions; i++) {
+            QChar   label   = '\0';
+            QString output  = "";
+            qint64  next_id = 0;
+            in_stream
+                >> label
+                >> output
+                >> next_id
+            ;
+            // FIXME: validate next_id and label
+
+            State *next = get_or_alloc_state(next_id, id2addr);
+
+            state->setNext(label, next);
+            state->setOutput(label, output);
+        }
+
+        states->insert(state->key(), state);
     }
 
     State *init_state = id2addr->value(init_state_id, NULL);
