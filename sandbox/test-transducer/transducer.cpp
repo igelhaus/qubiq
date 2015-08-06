@@ -42,8 +42,9 @@ bool Transducer::build(const QString &fname, int max_word_size)
     while (!in_stream.atEnd()) {
         QString line      = in_stream.readLine();
         QStringList parts = line.split("\t");
-        current_word   = parts.at(0);
-        current_output = parts.at(1);
+        current_word    = parts.at(0);
+        current_output  = parts.at(1);
+        int current_len = current_word.length();
 
         qDebug() << "previous_word  =" << previous_word;
         qDebug() << "current_word   =" << current_word;
@@ -60,7 +61,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
             );
         }
         // This loop intializes the tail states for the current word
-        for (int i = prefix_len + 1; i <= current_word.length() /*= last current state index*/; i++) {
+        for (int i = prefix_len + 1; i <= current_len /*= last current state index*/; i++) {
             tmp_states->at(i)->clear();
             tmp_states->at(i - 1)->setNext(
                 current_word.at(i - 1),
@@ -68,7 +69,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
             );
         }
         if (previous_word != current_word) {
-            tmp_states->at(current_word.length())->setFinal(true);
+            tmp_states->at(current_len)->setFinal(true);
             // FIXME: Do we need to mark outputs of the final state somehow?
         }
         // Optimize output:
@@ -90,7 +91,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
         }
 
         if (current_word == previous_word) {
-            tmp_states->at(current_word.length())->addFinal(current_output);
+            tmp_states->at(current_len)->addFinal(current_output);
         } else {
             tmp_states->at(prefix_len)->setOutput(current_word.at(prefix_len), current_output);
         }
@@ -104,7 +105,7 @@ bool Transducer::build(const QString &fname, int max_word_size)
     // Minimize last word
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
         tmp_states->at(i - 1)->setNext(
-            previous_word.at(i - 1),
+            current_word.at(i - 1),
             find_equivalent(tmp_states->at(i))
         );
     }
