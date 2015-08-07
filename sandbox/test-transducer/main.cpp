@@ -6,30 +6,23 @@ int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
 
-    Transducer *transducer = new Transducer();
+    TransducerManager t_manager1;
+    t_manager1.build("lexemes.txt", 10);
 
-    transducer->build("lexemes.txt", 10);
+    qDebug() << "num_results =" << t_manager1.transducer()->search("lexeme") .size();
+    qDebug() << "num_results =" << t_manager1.transducer()->search("lexemes").size();
+    qDebug() << "num_results =" << t_manager1.transducer()->search("lex")    .size();
 
-    QStringList r1 = transducer->search("lexeme");
-    qDebug() << "num_results =" << r1.size();
-
-    QStringList r2 = transducer->search("lexemes");
-    qDebug() << "num_results =" << r2.size();
-
-    QStringList r3 = transducer->search("lex");
-    qDebug() << "num_results =" << r3.size();
-
-    TransducerManager t_manager1(transducer);
-
-    t_manager1.saveTofile("lexemes.qutd");
+    t_manager1.save("lexemes.qutd");
 
     TransducerManager t_manager2;
-    t_manager2.loadFromFile("lexemes.qutd");
+    t_manager2.load("lexemes.qutd");
     qDebug() << "num_results =" << t_manager2.transducer()->search("lexeme") .size();
-    qDebug() << "num_results =" << t_manager2.transducer()->search("lexemes").size(); // FIXME
+    qDebug() << "num_results =" << t_manager2.transducer()->search("lexemes").size();
     qDebug() << "num_results =" << t_manager2.transducer()->search("lex")    .size();
 
-    delete transducer;
+    qDebug() << "num_results =" << t_manager1.transducer()->search("lexemezzzz") .size();
+    qDebug() << "num_results =" << t_manager2.transducer()->search("lexemezzzz") .size();
 
     app.exit();
 }

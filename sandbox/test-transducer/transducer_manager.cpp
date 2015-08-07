@@ -1,5 +1,7 @@
 #include "transducer_manager.h"
 
+const int DEFAULT_MAX_WORD_SIZE = 1024;
+
 const qint8 STATE_MARK_FINAL     = 'f';
 const qint8 STATE_MARK_NON_FINAL = 'F';
 
@@ -25,6 +27,113 @@ TransducerManager::~TransducerManager()
 }
 
 /*
+ * Example state-trnasition chains:
+ *
+ * 0-w-0-o-0-r-0-d-0
+ * 0-w-0-o-0-r-0-m-0
+ *
+ */
+bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
+{
+    QFile in_file(fname);
+    if (!in_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    if (max_word_size < 1) {
+        max_word_size = DEFAULT_MAX_WORD_SIZE;
+    }
+
+    t->clear();
+    QVector<State*> *tmp_states = TransducerManager::_initialize_tmp_states(max_word_size);
+
+    qDebug() << "File successfully open, started building";
+
+    QString     current_word;
+    QString     current_output;
+    QString     previous_word("");
+    QTextStream in_stream(&in_file);
+    while (!in_stream.atEnd()) {
+        QString line      = in_stream.readLine();
+        QStringList parts = line.split("\t");
+        current_word    = parts.at(0);
+        current_output  = parts.at(1);
+        int current_len = current_word.length();
+
+        qDebug() << "previous_word  =" << previous_word;
+        qDebug() << "current_word   =" << current_word;
+        qDebug() << "current_output =" << current_output;
+
+        int prefix_len = TransducerManager::common_prefix_length(previous_word, current_word);
+        qDebug() << "prefix_len =" << prefix_len;
+
+        // We minimize the states from the suffix of the previous word
+        for (int i = previous_word.length() /*= last previous state index*/; i >= prefix_len + 1; i--) {
+            tmp_states->at(i - 1)->setNext(
+                previous_word.at(i - 1),
+                t->find_equivalent(tmp_states->at(i))
+            );
+        }
+        // This loop intializes the tail states for the current word
+        for (int i = prefix_len + 1; i <= current_len /*= last current state index*/; i++) {
+            tmp_states->at(i)->clear();
+            tmp_states->at(i - 1)->setNext(
+                current_word.at(i - 1),
+                tmp_states->at(i)
+            );
+        }
+        if (previous_word != current_word) {
+            tmp_states->at(current_len)->setFinal(true);
+            // FIXME: Do we need to mark outputs of the final state somehow?
+        }
+        // Optimize output:
+        for (int i = 0; i < prefix_len; i++) {
+            QString _output       = tmp_states->at(i)->output(current_word.at(i)); // FIXME: ref?
+            QString output_prefix = TransducerManager::common_prefix(_output, current_output);
+            QString output_suffix = _output.right(_output.length() - output_prefix.length());
+
+            tmp_states->at(i)->setOutput(current_word.at(i), output_prefix);
+
+            QVector<Transition*> *transitions = tmp_states->at(i)->transitions();
+            for (int j = 0; j < transitions->size(); j++) {
+                transitions->at(j)->prependOutput(output_suffix);
+            }
+            if (tmp_states->at(i)->isFinal()) {
+                tmp_states->at(i)->updateFinalsWithPrefix(output_suffix);
+            }
+            current_output = current_output.right(current_output.length() - output_prefix.length());
+        }
+
+        if (current_word == previous_word) {
+            tmp_states->at(current_len)->addFinal(current_output);
+        } else {
+            tmp_states->at(prefix_len)->setOutput(current_word.at(prefix_len), current_output);
+        }
+
+        previous_word = current_word;
+    }
+    in_file.close();
+    qDebug() << "List read";
+    qDebug() << "Last word:" << current_word;
+
+    // Minimize last word
+    for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
+        tmp_states->at(i - 1)->setNext(
+            current_word.at(i - 1),
+            t->find_equivalent(tmp_states->at(i))
+        );
+    }
+//    qDebug() << "Last word minimized";
+
+    t->init_state = t->find_equivalent(tmp_states->at(0));
+
+    TransducerManager::_destroy_tmp_states(tmp_states);
+
+//    qDebug() << "Built";
+    return true;
+}
+
+/*
  * SERIALIZED      := PROLOGUE STATES
  * PROLOGUE        := PROLOGUE_MARKER VERSION INIT_STATE_ID NUM_STATES
  * PROLOGUE_MARKER := 'Q' 'U' 'T' 'D'
@@ -44,7 +153,7 @@ TransducerManager::~TransducerManager()
  * NEXT_STATE_ID   := qint64
  */
 
-bool TransducerManager::saveTofile(const QString &fname)
+bool TransducerManager::save(const QString &fname)
 {
     QFile out_file(fname);
     if (!out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -96,7 +205,7 @@ bool TransducerManager::saveTofile(const QString &fname)
     return true;
 }
 
-bool TransducerManager::loadFromFile(const QString &fname)
+bool TransducerManager::load(const QString &fname)
 {
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly)) {
@@ -131,7 +240,7 @@ bool TransducerManager::loadFromFile(const QString &fname)
 
         in_stream >> state_id; // FIXME: validate state_id
 
-        State *state = get_or_alloc_state(state_id, id2addr);
+        State *state = TransducerManager::get_or_alloc_state(state_id, id2addr);
 
         in_stream >> state_mark;
         if (state_mark == STATE_MARK_FINAL) {
@@ -164,7 +273,7 @@ bool TransducerManager::loadFromFile(const QString &fname)
             ;
             // FIXME: validate next_id and label
 
-            State *next = get_or_alloc_state(next_id, id2addr);
+            State *next = TransducerManager::get_or_alloc_state(next_id, id2addr);
 
             state->setNext(label, next);
             state->setOutput(label, output);
@@ -188,13 +297,41 @@ bool TransducerManager::loadFromFile(const QString &fname)
     return true;
 }
 
-bool TransducerManager::buildFromFile(const QString &fname)
+/*static*/ QVector<State*>* TransducerManager::_initialize_tmp_states(int n)
 {
-    Q_UNUSED(fname);
-    return true;
+    QVector<State*> *tmp_states = new QVector<State*>(n);
+    for (int i = 0; i < n; i++) {
+        (*tmp_states)[i] = new State();
+    }
+    return tmp_states;
 }
 
-State* TransducerManager::get_or_alloc_state(qint64 state_id, QHash<qint64, State *> *id2addr) const
+/*static*/ void TransducerManager::_destroy_tmp_states(QVector<State*> *tmp_states)
+{
+    for (int i = 0; i < tmp_states->size(); i++) {
+        delete tmp_states->at(i);
+    }
+    tmp_states->clear();
+}
+
+/*static*/ int TransducerManager::common_prefix_length(const QString &s1, const QString &s2)
+{
+    int prefix_len = 0;
+    while (prefix_len < s1.length()
+        && prefix_len < s2.length()
+        && s1.at(prefix_len) == s2.at(prefix_len)
+    ) {
+        prefix_len++;
+    }
+    return prefix_len;
+}
+
+/*static*/ QString TransducerManager::common_prefix(const QString &s1, const QString &s2)
+{
+    return s1.left(common_prefix_length(s1, s2));
+}
+
+/*static*/ State* TransducerManager::get_or_alloc_state(qint64 state_id, QHash<qint64, State *> *id2addr)
 {
     State *state = id2addr->value(state_id, NULL);
     if (state != NULL) {
