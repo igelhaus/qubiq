@@ -11,7 +11,7 @@ public:
     TransducerManager(Transducer *other);
     ~TransducerManager();
 
-    inline Transducer *transducer() const { return t; }
+    inline const Transducer *transducer() const { return t; }
 
     bool build(const QString &fname, int max_word_size = 0);
     bool save(const QString &fname);
