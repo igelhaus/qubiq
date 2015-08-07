@@ -35,9 +35,11 @@ TransducerManager::~TransducerManager()
  */
 bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 {
+    clear_err_str();
+
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
+        return set_err_str("Unable to open input file for reading");
     }
 
     if (max_word_size < 1) {
@@ -155,9 +157,16 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 
 bool TransducerManager::save(const QString &fname)
 {
+    clear_err_str();
+
+    if (!t->isReady()) {
+        return set_err_str("Unable to save unready transducer");
+    }
+
+
     QFile out_file(fname);
     if (!out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        return false;
+        return set_err_str("Unable to open output file for writing");
     }
 
     QDataStream out_stream(&out_file);
@@ -207,9 +216,11 @@ bool TransducerManager::save(const QString &fname)
 
 bool TransducerManager::load(const QString &fname)
 {
+    clear_err_str();
+
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly)) {
-        return false;
+        return set_err_str("Unable to open input file for reading");
     }
 
     QDataStream in_stream(&in_file);
@@ -221,26 +232,37 @@ bool TransducerManager::load(const QString &fname)
 
     in_stream
         >> format_marker
-        >> format_version
+        >> format_version // Currently ignored
         >> init_state_id
         >> num_states
     ;
 
+    if (format_marker != TRANSDUCER_FORMAT_MARKER) {
+        return set_err_str("Bad file format");
+    }
+
     if (init_state_id == 0) {
-        return false;
+        return set_err_str("Bad init_state_id");
+    }
+
+    if (num_states == 0) {
+        return set_err_str("Bad number of states");
     }
 
     t->clear();
 
-    QHash<uint, State*>   *states  = t->states;
-    QHash<qint64, State*> *id2addr = new QHash<qint64, State*>();
+    QHash<uint, State*> *states  = t->states;
+    QHash<qint64, State*> id2addr;
     while (!in_stream.atEnd()) {
         qint64 state_id   = 0;
         qint8  state_mark = 0;
 
-        in_stream >> state_id; // FIXME: validate state_id
+        in_stream >> state_id;
+        if (state_id == 0) {
+            return set_err_str("Bad state_id");
+        }
 
-        State *state = TransducerManager::get_or_alloc_state(state_id, id2addr);
+        State *state = TransducerManager::get_or_alloc_state(state_id, &id2addr);
 
         in_stream >> state_mark;
         if (state_mark == STATE_MARK_FINAL) {
@@ -253,13 +275,13 @@ bool TransducerManager::load(const QString &fname)
         } else if (state_mark == STATE_MARK_NON_FINAL) {
             state->setFinal(false);
         } else {
-            // FIXME: throw an error
+            return set_err_str("Bad state mark");
         }
 
         qint64 num_transitions = 0;
         in_stream >> num_transitions;
         if (num_transitions == 0 && !state->isFinal()) {
-            // FIXME: Throw an error
+            return set_err_str("Bad state: 0 transitions for non-final state"); // FIXME: correct exit
         }
 
         for (int i = 0; i < num_transitions; i++) {
@@ -271,9 +293,15 @@ bool TransducerManager::load(const QString &fname)
                 >> output
                 >> next_id
             ;
-            // FIXME: validate next_id and label
 
-            State *next = TransducerManager::get_or_alloc_state(next_id, id2addr);
+            if (next_id == 0) {
+                return set_err_str("Bad next_id"); // FIXME: correct exit
+            }
+            if (label == '\0') {
+                return set_err_str("Bad label"); // FIXME: correct exit
+            }
+
+            State *next = TransducerManager::get_or_alloc_state(next_id, &id2addr);
 
             state->setNext(label, next);
             state->setOutput(label, output);
@@ -282,16 +310,15 @@ bool TransducerManager::load(const QString &fname)
         states->insert(state->key(), state);
     }
 
-    State *init_state = id2addr->value(init_state_id, NULL);
-
+    State *init_state = id2addr.value(init_state_id, NULL);
     if (init_state == NULL) {
-        return false;
+        return set_err_str("Unknown init_state_id");
     }
+
     // TESTME: Test initial state only transducers
 
     t->init_state = init_state;
 
-    delete id2addr;
     in_file.close();
 
     return true;

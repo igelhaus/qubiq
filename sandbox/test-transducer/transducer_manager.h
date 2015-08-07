@@ -17,9 +17,16 @@ public:
     bool save(const QString &fname);
     bool load(const QString &fname);
 
+    inline QString error() const { return err_str; }
+
 private:
     bool is_self_alloc;
     Transducer *t;
+
+    QString err_str;
+
+    inline bool set_err_str(const char *msg) { err_str = msg; return false; }
+    inline void clear_err_str() { err_str.clear(); }
 
     static QVector<State*>* _initialize_tmp_states(int n);
     static void _destroy_tmp_states(QVector<State*> *tmp_states);
