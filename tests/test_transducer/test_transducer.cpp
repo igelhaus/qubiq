@@ -12,7 +12,6 @@ private slots:
 
 void TestTransducer::simpleTransducer()
 {
-    // NB! This test depends on DEFAULT_READ_BUFFER_SIZE value
     QTemporaryFile transducer_source;
     transducer_source.open();
     transducer_source.write("lexeme\tlexeme\n");
