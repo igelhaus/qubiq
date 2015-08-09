@@ -15,7 +15,8 @@ SUBDIRS  = core util et \
     tests/test_lexeme_index    \
     tests/test_lexeme_sequence \
     tests/test_text            \
-    tests/test_extractor
+    tests/test_extractor       \
+    tests/test_transducer
 
 #
 # Core dependencies:
