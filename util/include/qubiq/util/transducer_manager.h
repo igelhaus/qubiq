@@ -4,20 +4,28 @@
 #include <QtCore>
 #include <qubiq/util/transducer.h>
 
-class TransducerManager
+class TransducerManager : public QObject
 {
+    Q_OBJECT
+
 public:
-    TransducerManager();
-    TransducerManager(Transducer *other);
+    TransducerManager(QObject *parent = 0);
+    TransducerManager(Transducer *other, QObject *parent = 0);
     ~TransducerManager();
 
     inline const Transducer *transducer() const { return t; }
 
+    inline QString error() const { return err_str; }
+
+public slots:
     bool build(const QString &fname, int max_word_size = 0);
     bool save(const QString &fname);
     bool load(const QString &fname);
 
-    inline QString error() const { return err_str; }
+signals:
+    void buildFinished();
+    void saveFinished();
+    void loadFinished();
 
 private:
     bool is_self_alloc;

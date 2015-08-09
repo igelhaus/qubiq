@@ -8,13 +8,13 @@ const qint8 STATE_MARK_NON_FINAL = 'F';
 const qint32 TRANSDUCER_FORMAT_MARKER  = 0x51555444; // QUTD = Qubiq Util TransDucer
 const qint32 TRANSDUCER_FORMAT_VERSION = 1;
 
-TransducerManager::TransducerManager()
+TransducerManager::TransducerManager(QObject *parent) : QObject(parent)
 {
     t             = new Transducer();
     is_self_alloc = true;
 }
 
-TransducerManager::TransducerManager(Transducer *other)
+TransducerManager::TransducerManager(Transducer *other, QObject *parent) : QObject(parent)
 {
     t             = other;
     is_self_alloc = false;
