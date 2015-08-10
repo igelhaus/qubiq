@@ -23,9 +23,14 @@ public slots:
     bool load(const QString &fname);
 
 signals:
-    void buildFinished();
-    void saveFinished();
-    void loadFinished();
+
+    void buildStatusUpdate(int bytes_read, int bytes_total);
+    void saveStatusUpdate(int states_saved, int states_total);
+    void loadStatusUpdate(int states_read, int states_total);
+
+    void buildFinished(bool status);
+    void saveFinished(bool status);
+    void loadFinished(bool status);
 
 private:
     bool is_self_alloc;

@@ -8,6 +8,8 @@ const qint8 STATE_MARK_NON_FINAL = 'F';
 const qint32 TRANSDUCER_FORMAT_MARKER  = 0x51555444; // QUTD = Qubiq Util TransDucer
 const qint32 TRANSDUCER_FORMAT_VERSION = 1;
 
+const int DEFAULT_SAVE_LOAD_STATUS_UPDATE_STEP = 1024; // Report status after each X states are saved/loaded
+
 TransducerManager::TransducerManager(QObject *parent) : QObject(parent)
 {
     t             = new Transducer();
@@ -39,7 +41,8 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return set_err_str("Unable to open input file for reading");
+        emit buildFinished(set_err_str("Unable to open input file for reading"));
+        return false;
     }
 
     if (max_word_size < 1) {
@@ -49,7 +52,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     t->clear();
     QVector<State*> *tmp_states = TransducerManager::_initialize_tmp_states(max_word_size);
 
-    qDebug() << "File successfully open, started building";
+//    qDebug() << "File successfully open, started building";
 
     QString     current_word;
     QString     current_output;
@@ -62,12 +65,12 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         current_output  = parts.at(1);
         int current_len = current_word.length();
 
-        qDebug() << "previous_word  =" << previous_word;
-        qDebug() << "current_word   =" << current_word;
-        qDebug() << "current_output =" << current_output;
+//        qDebug() << "previous_word  =" << previous_word;
+//        qDebug() << "current_word   =" << current_word;
+//        qDebug() << "current_output =" << current_output;
 
         int prefix_len = TransducerManager::common_prefix_length(previous_word, current_word);
-        qDebug() << "prefix_len =" << prefix_len;
+//        qDebug() << "prefix_len =" << prefix_len;
 
         // We minimize the states from the suffix of the previous word
         for (int i = previous_word.length() /*= last previous state index*/; i >= prefix_len + 1; i--) {
@@ -115,8 +118,8 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         previous_word = current_word;
     }
     in_file.close();
-    qDebug() << "List read";
-    qDebug() << "Last word:" << current_word;
+//    qDebug() << "List read";
+//    qDebug() << "Last word:" << current_word;
 
     // Minimize last word
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
@@ -132,6 +135,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     TransducerManager::_destroy_tmp_states(tmp_states);
 
 //    qDebug() << "Built";
+    emit buildFinished(true);
     return true;
 }
 
@@ -160,13 +164,15 @@ bool TransducerManager::save(const QString &fname)
     clear_err_str();
 
     if (!t->isReady()) {
-        return set_err_str("Unable to save unready transducer");
+        emit saveFinished(set_err_str("Unable to save unready transducer"));
+        return false;
     }
 
 
     QFile out_file(fname);
     if (!out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        return set_err_str("Unable to open output file for writing");
+        emit saveFinished(set_err_str("Unable to open output file for writing"));
+        return false;
     }
 
     QDataStream out_stream(&out_file);
@@ -180,6 +186,10 @@ bool TransducerManager::save(const QString &fname)
         << (qint64)(t->init_state)
         << (qint64)(states->size())
     ;
+
+
+    const int num_states = states->size();
+    int num_states_saved = 0;
 
     for (i_state = states->begin(); i_state != states->end(); ++i_state) {
 
@@ -208,9 +218,15 @@ bool TransducerManager::save(const QString &fname)
                 << (qint64)next
             ;
         }
+
+        if ((++num_states_saved) % DEFAULT_SAVE_LOAD_STATUS_UPDATE_STEP == 0) {
+            emit saveStatusUpdate(num_states_saved, num_states);
+        }
     }
 
     out_file.close();
+
+    emit saveFinished(true);
     return true;
 }
 
@@ -220,7 +236,8 @@ bool TransducerManager::load(const QString &fname)
 
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly)) {
-        return set_err_str("Unable to open input file for reading");
+        emit loadFinished(set_err_str("Unable to open input file for reading"));
+        return false;
     }
 
     QDataStream in_stream(&in_file);
@@ -238,18 +255,25 @@ bool TransducerManager::load(const QString &fname)
     ;
 
     if (format_marker != TRANSDUCER_FORMAT_MARKER) {
-        return set_err_str("Bad file format");
+        emit loadFinished(set_err_str("Bad file format"));
+        return false;
     }
 
     if (init_state_id == 0) {
-        return set_err_str("Bad init_state_id");
+        emit loadFinished(set_err_str("Bad init_state_id"));
+        return false;
     }
 
     if (num_states == 0) {
-        return set_err_str("Bad number of states");
+        emit loadFinished(set_err_str("Bad number of states"));
+        return false;
     }
 
     t->clear();
+
+    // FIXME: Ensure correct destruction of newly allocated states:
+
+    int num_states_read = 0;
 
     QHash<uint, State*> *states  = t->states;
     QHash<qint64, State*> id2addr;
@@ -259,7 +283,8 @@ bool TransducerManager::load(const QString &fname)
 
         in_stream >> state_id;
         if (state_id == 0) {
-            return set_err_str("Bad state_id");
+            emit loadFinished(set_err_str("Bad state_id"));
+            return false;
         }
 
         State *state = TransducerManager::get_or_alloc_state(state_id, &id2addr);
@@ -275,13 +300,15 @@ bool TransducerManager::load(const QString &fname)
         } else if (state_mark == STATE_MARK_NON_FINAL) {
             state->setFinal(false);
         } else {
-            return set_err_str("Bad state mark");
+            emit loadFinished(set_err_str("Bad state mark"));
+            return false;
         }
 
         qint64 num_transitions = 0;
         in_stream >> num_transitions;
         if (num_transitions == 0 && !state->isFinal()) {
-            return set_err_str("Bad state: 0 transitions for non-final state"); // FIXME: correct exit
+            emit loadFinished(set_err_str("Bad state: 0 transitions for non-final state"));
+            return false;
         }
 
         for (int i = 0; i < num_transitions; i++) {
@@ -295,10 +322,12 @@ bool TransducerManager::load(const QString &fname)
             ;
 
             if (next_id == 0) {
-                return set_err_str("Bad next_id"); // FIXME: correct exit
+                emit loadFinished(set_err_str("Bad next_id"));
+                return false;
             }
             if (label == '\0') {
-                return set_err_str("Bad label"); // FIXME: correct exit
+                emit loadFinished(set_err_str("Bad label"));
+                return false;
             }
 
             State *next = TransducerManager::get_or_alloc_state(next_id, &id2addr);
@@ -308,11 +337,16 @@ bool TransducerManager::load(const QString &fname)
         }
 
         states->insert(state->key(), state);
+
+        if ((++num_states_read) % DEFAULT_SAVE_LOAD_STATUS_UPDATE_STEP == 0) {
+            emit loadStatusUpdate(num_states_read, num_states);
+        }
     }
 
     State *init_state = id2addr.value(init_state_id, NULL);
     if (init_state == NULL) {
-        return set_err_str("Unknown init_state_id");
+        emit loadFinished(set_err_str("Unknown init_state_id"));
+        return false;
     }
 
     // TESTME: Test initial state only transducers
@@ -321,6 +355,7 @@ bool TransducerManager::load(const QString &fname)
 
     in_file.close();
 
+    emit loadFinished(true);
     return true;
 }
 
