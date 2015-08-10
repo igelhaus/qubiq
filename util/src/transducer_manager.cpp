@@ -290,7 +290,7 @@ bool TransducerManager::load(const QString &fname)
     QHash<qint64, State*> id2addr;
     while (!in_stream.atEnd()) {
         if (num_states_read > num_states) {
-            emit loadFinished(set_err_str("Read more states then declared"));
+            emit loadFinished(set_err_str("Read more states than declared"));
             return false;
         }
 
