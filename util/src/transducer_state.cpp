@@ -1,7 +1,5 @@
 #include <qubiq/util/transducer_state.h>
 
-const char *KEY_DELIMITER = "|";
-
 State::State()
 {
     _initialize();

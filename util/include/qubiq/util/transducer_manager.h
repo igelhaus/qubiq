@@ -24,7 +24,7 @@ public slots:
 
 signals:
 
-    void buildStatusUpdate(int bytes_read, int bytes_total);
+    void buildStatusUpdate(qint64 bytes_read, qint64 bytes_total);
     void saveStatusUpdate(int states_saved, int states_total);
     void loadStatusUpdate(int states_read, int states_total);
 

@@ -9,6 +9,9 @@ const qint32 TRANSDUCER_FORMAT_MARKER  = 0x51555444; // QUTD = Qubiq Util TransD
 const qint32 TRANSDUCER_FORMAT_VERSION = 1;
 
 const int DEFAULT_SAVE_LOAD_STATUS_UPDATE_STEP = 1024; // Report status after each X states are saved/loaded
+const qint64 DEFAULT_BUILD_STATUS_UPDATE_STEP  = 4096; // Report status after approximately X bytes read
+const qint64 DEFAULT_BUILD_STATUS_UPDATE_LOWER =   50;
+const qint64 DEFAULT_BUILD_STATUS_UPDATE_UPPER = 4046;
 
 TransducerManager::TransducerManager(QObject *parent) : QObject(parent)
 {
@@ -29,7 +32,7 @@ TransducerManager::~TransducerManager()
 }
 
 /*
- * Example state-trnasition chains:
+ * Example state-transition chains:
  *
  * 0-w-0-o-0-r-0-d-0
  * 0-w-0-o-0-r-0-m-0
@@ -38,6 +41,7 @@ TransducerManager::~TransducerManager()
 bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 {
     clear_err_str();
+    t->clear();
 
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -45,14 +49,19 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         return false;
     }
 
+    const qint64 num_bytes = in_file.size();
+    qint64 num_bytes_read  = 0;
+
+    if (num_bytes == 0) {
+        emit buildFinished(set_err_str("Input file is of zero length"));
+        return false;
+    }
+
     if (max_word_size < 1) {
         max_word_size = DEFAULT_MAX_WORD_SIZE;
     }
 
-    t->clear();
-    QVector<State*> *tmp_states = TransducerManager::_initialize_tmp_states(max_word_size);
-
-//    qDebug() << "File successfully open, started building";
+    QVector<State*> *tmp_states = TransducerManager::_initialize_tmp_states(max_word_size + 1);
 
     QString     current_word;
     QString     current_output;
@@ -65,12 +74,13 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         current_output  = parts.at(1);
         int current_len = current_word.length();
 
-//        qDebug() << "previous_word  =" << previous_word;
-//        qDebug() << "current_word   =" << current_word;
-//        qDebug() << "current_output =" << current_output;
+        if (current_len > max_word_size) {
+            TransducerManager::_destroy_tmp_states(tmp_states);
+            emit buildFinished(set_err_str("Length of current word is more than max_word_size"));
+            return false;
+        }
 
         int prefix_len = TransducerManager::common_prefix_length(previous_word, current_word);
-//        qDebug() << "prefix_len =" << prefix_len;
 
         // We minimize the states from the suffix of the previous word
         for (int i = previous_word.length() /*= last previous state index*/; i >= prefix_len + 1; i--) {
@@ -89,11 +99,10 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         }
         if (previous_word != current_word) {
             tmp_states->at(current_len)->setFinal(true);
-            // FIXME: Do we need to mark outputs of the final state somehow?
         }
         // Optimize output:
         for (int i = 0; i < prefix_len; i++) {
-            QString _output       = tmp_states->at(i)->output(current_word.at(i)); // FIXME: ref?
+            QString _output       = tmp_states->at(i)->output(current_word.at(i));
             QString output_prefix = TransducerManager::common_prefix(_output, current_output);
             QString output_suffix = _output.right(_output.length() - output_prefix.length());
 
@@ -116,10 +125,15 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         }
 
         previous_word = current_word;
+
+        // Report status:
+        num_bytes_read += (qint64)(line.length());
+        const qint64 remainder = num_bytes_read % DEFAULT_BUILD_STATUS_UPDATE_STEP;
+        if (remainder < DEFAULT_BUILD_STATUS_UPDATE_LOWER || remainder > DEFAULT_BUILD_STATUS_UPDATE_UPPER) {
+            emit buildStatusUpdate(num_bytes_read, num_bytes);
+        }
     }
     in_file.close();
-//    qDebug() << "List read";
-//    qDebug() << "Last word:" << current_word;
 
     // Minimize last word
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
@@ -128,13 +142,11 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
             t->find_equivalent(tmp_states->at(i))
         );
     }
-//    qDebug() << "Last word minimized";
 
     t->init_state = t->find_equivalent(tmp_states->at(0));
 
     TransducerManager::_destroy_tmp_states(tmp_states);
 
-//    qDebug() << "Built";
     emit buildFinished(true);
     return true;
 }
@@ -187,7 +199,6 @@ bool TransducerManager::save(const QString &fname)
         << (qint64)(states->size())
     ;
 
-
     const int num_states = states->size();
     int num_states_saved = 0;
 
@@ -199,7 +210,7 @@ bool TransducerManager::save(const QString &fname)
         if (state->isFinal()) {
             out_stream
                 << STATE_MARK_FINAL
-                << *(state->finalStrings()) // FIXME: Rewrite as a string list
+                << *(state->finalStrings())
             ;
         } else {
             out_stream << STATE_MARK_NON_FINAL;
@@ -278,6 +289,11 @@ bool TransducerManager::load(const QString &fname)
     QHash<uint, State*> *states  = t->states;
     QHash<qint64, State*> id2addr;
     while (!in_stream.atEnd()) {
+        if (num_states_read > num_states) {
+            emit loadFinished(set_err_str("Read more states then declared"));
+            return false;
+        }
+
         qint64 state_id   = 0;
         qint8  state_mark = 0;
 
@@ -348,8 +364,6 @@ bool TransducerManager::load(const QString &fname)
         emit loadFinished(set_err_str("Unknown init_state_id"));
         return false;
     }
-
-    // TESTME: Test initial state only transducers
 
     t->init_state = init_state;
 
