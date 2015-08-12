@@ -2,6 +2,7 @@
 #define TRANSDUCER_MANAGER_H
 
 #include <QtCore>
+#include <QtAlgorithms>
 #include <qubiq/util/transducer.h>
 
 class TransducerManager : public QObject
@@ -41,12 +42,14 @@ private:
     inline bool set_err_str(const char *msg) { err_str = msg; return false; }
     inline void clear_err_str() { err_str.clear(); }
 
+    State* get_or_alloc_state(const State *state, QHash<uint, State*> *key2addr);
+    State* get_or_alloc_state(qint64 state_id, QHash<qint64, State*> *id2addr);
+
     static QVector<State*>* _initialize_tmp_states(int n);
     static void _destroy_tmp_states(QVector<State*> *tmp_states);
 
     static int common_prefix_length(const QString &s1, const QString &s2);
     static QString common_prefix(const QString &s1, const QString &s2);
-    static State *get_or_alloc_state(qint64 state_id, QHash<qint64, State*> *id2addr);
 };
 
 #endif // TRANSDUCER_MANAGER_H

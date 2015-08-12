@@ -2,6 +2,7 @@
 #define _TRANSDUCER_H_
 
 #include <QtCore>
+#include <QtAlgorithms>
 #include <qubiq/util/transducer_state.h>
 
 class TransducerManager;
@@ -18,16 +19,10 @@ public:
     QStringList search(const QString &s) const;
 
 private:
-    QHash<uint, State*> *states;
-    State               *init_state;
-    QVector <State*>    *tmp_states;
-
-    State *find_equivalent(const State *state);
+    QList<State*> *states;
+    State         *init_state;
 
     void clear();
-
-    void _initialize_tmp_states(int n);
-    void _destroy_tmp_states();
 };
 
 #endif // _TRANSDUCER_H_

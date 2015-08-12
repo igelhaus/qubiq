@@ -2,7 +2,7 @@
 
 Transducer::Transducer()
 {
-    states     = new QHash<uint, State*>();
+    states     = new QList<State*>();
     init_state = NULL;
 }
 
@@ -27,11 +27,9 @@ QStringList Transducer::search(const QString &s) const
         const QChar &c = s.at(i);
         next_state     = current_state->next(c);
         if (next_state == NULL) {
-            qDebug() << "char" << c << ": fail";
             current_state = NULL;
             break;
         }
-        qDebug() << "char" << c << ": found";
         output_prefix.append(current_state->output(c));
         current_state = next_state;
     }
@@ -53,26 +51,9 @@ QStringList Transducer::search(const QString &s) const
     return result;
 }
 
-State* Transducer::find_equivalent(const State *state)
-{
-    uint state_key = state->key();
-    qDebug() << "state_key =" << state_key;
-    if (states->contains(state_key)) {
-        qDebug() << "contains";
-        return states->value(state_key);
-    }
-    qDebug() << "does not contain";
-    State *_state = new State(*state);
-    states->insert(state_key, _state);
-    return _state;
-}
-
 void Transducer::clear()
 {
-    QHash<uint, State*>::iterator state;
-    for (state = states->begin(); state != states->end(); ++state) {
-        delete state.value();
-    }
+    qDeleteAll(states->begin(), states->end());
     states->clear();
     init_state = NULL;
 }
