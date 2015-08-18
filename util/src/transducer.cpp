@@ -42,7 +42,7 @@ QStringList Transducer::search(const QString &s) const
         return result;
     }
 
-    const QVector<QString> *finals = current_state->finalStrings();
+    const QList<QString> *finals = current_state->finalStrings();
     result.append(output_prefix);
     for (int i = 0; i < finals->size(); i++) {
         result.append(output_prefix + finals->at(i));

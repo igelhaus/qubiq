@@ -108,11 +108,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
             QString output_suffix = _output.right(_output.length() - output_prefix.length());
 
             tmp_states->at(i)->setOutput(current_word.at(i), output_prefix);
-
-            QVector<Transition*> *transitions = tmp_states->at(i)->transitions();
-            for (int j = 0; j < transitions->size(); j++) {
-                transitions->at(j)->prependOutput(output_suffix);
-            }
+            tmp_states->at(i)->updateOutputsWithPrefix(output_suffix);
             if (tmp_states->at(i)->isFinal()) {
                 tmp_states->at(i)->updateFinalsWithPrefix(output_suffix);
             }
@@ -216,12 +212,13 @@ bool TransducerManager::save(const QString &fname)
             out_stream << STATE_MARK_NON_FINAL;
         }
 
-        QVector<Transition*> *transitions = state->transitions();
-        qint64 num_transtitions           = transitions->size();
+        QHash<QChar, Transition*> *transitions = state->transitions();
+        qint64 num_transtitions                = transitions->size();
 
         out_stream << num_transtitions;
-        for (int i = 0; i < num_transtitions; i++) {
-            Transition *transition = transitions->at(i);
+        QHash<QChar, Transition*>::iterator i_t;
+        for (i_t = transitions->begin(); i_t != transitions->end(); ++i_t) {
+            Transition *transition = i_t.value();
             State *next = transition->next();
             out_stream
                 << transition->label()

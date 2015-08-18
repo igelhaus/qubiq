@@ -1,5 +1,5 @@
-#ifndef _TRANSITION_H_
-#define _TRANSITION_H_
+#ifndef _TRANSDUCER_STATE_TRANSITION_H_
+#define _TRANSDUCER_STATE_TRANSITION_H_
 
 #include <QtCore>
 
@@ -7,7 +7,7 @@ class State;
 
 class Transition {
 public:
-    Transition();
+    Transition(const QChar &label);
     Transition(const Transition &other);
 
     ~Transition();
@@ -25,8 +25,6 @@ public:
     inline State* next() const { return n; }
     inline void setNext(State *next) { n = next; }
 
-    uint key(uint seed = 0) const;
-
 private:
 
     QString o;
@@ -38,4 +36,4 @@ private:
 
 uint qHash(const Transition &t, uint seed = 0);
 
-#endif // _TRANSITION_H_
+#endif // _TRANSDUCER_STATE_TRANSITION_H_

@@ -1,7 +1,8 @@
-#ifndef _STATE_H_
-#define _STATE_H_
+#ifndef _TRANSDUCER_STATE_H_
+#define _TRANSDUCER_STATE_H_
 
 #include <QtCore>
+#include <QtAlgorithms>
 #include <qubiq/util/transducer_state_transition.h>
 
 class State {
@@ -16,32 +17,29 @@ public:
     inline bool isFinal() const      { return is_final; }
     inline void setFinal(bool final) { is_final = final; }
 
-    State *next(const QChar &c);
-    void setNext(const QChar &c, State *next);
+    State *next(const QChar &label) const;
+    void setNext(const QChar &label, State *next);
 
-    QString output(const QChar &c);
-    void setOutput(const QChar &c, const QString &output);
+    QString output(const QChar &label) const;
+    void setOutput(const QChar &label, const QString &output);
 
-    QVector<Transition*>* transitions() const { return _t; }
+    QHash<QChar, Transition*>* transitions() const { return _transitions; }
+
+    void updateOutputsWithPrefix(const QString &prefix);
 
     void clear();
 
     uint key(uint seed = 0) const;
 
-    const QVector<QString>* finalStrings() const { return finals; }
+    const QList<QString>* finalStrings() const { return _final_suffixes; }
 
+    bool addFinal(const QString &final);
     bool updateFinalsWithPrefix(const QString &prefix);
-    inline void addFinal(const QString &final) { finals->append(final); }
 
 private:
     bool is_final;
-    QVector<Transition*> *_t;
-    QVector<QString>     *finals;
-
-    Transition *transition_by_label(const QChar &c);
-
-    char* final_state_key(uint seed = 0) const;
-    char* non_final_state_key(uint seed = 0) const;
+    QHash<QChar, Transition*> *_transitions;
+    QStringList               *_final_suffixes;
 
     void _initialize();
     void _destroy();
@@ -49,8 +47,4 @@ private:
     void _destroy_transitions();
 };
 
-inline uint qHash(const State &state, uint seed) {
-    return qHash(state.key(seed), seed);
-}
-
-#endif // _STATE_H_
+#endif // _TRANSDUCER_STATE_H_

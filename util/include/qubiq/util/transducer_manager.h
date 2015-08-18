@@ -1,5 +1,5 @@
-#ifndef TRANSDUCER_MANAGER_H
-#define TRANSDUCER_MANAGER_H
+#ifndef _TRANSDUCER_MANAGER_H_
+#define _TRANSDUCER_MANAGER_H_
 
 #include <QtCore>
 #include <QtAlgorithms>
@@ -52,4 +52,4 @@ private:
     static QString common_prefix(const QString &s1, const QString &s2);
 };
 
-#endif // TRANSDUCER_MANAGER_H
+#endif // _TRANSDUCER_MANAGER_H_

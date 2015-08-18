@@ -1,6 +1,7 @@
 #include <qubiq/util/transducer_state_transition.h>
 
-Transition::Transition() {
+Transition::Transition(const QChar &label) {
+    l = label;
     n = NULL;
 }
 
