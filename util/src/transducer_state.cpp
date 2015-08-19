@@ -82,10 +82,12 @@ uint State::key(uint seed) const
     key[0]           = is_final? 'f' : 'F';
     key[size_of_key] = '\0';
 
-    int i = 0;
-    QHash<QChar, Transition*>::const_iterator i_t;
-    for (i_t = _transitions->begin(); i_t != _transitions->end(); ++i_t) {
-        Transition *t = i_t.value();
+    // Ensure the same order of keys for hashing transitions
+    QList<QChar> t_keys = _transitions->keys();
+    std::sort(t_keys.begin(), t_keys.end());
+
+    for (int i = 0; i < t_keys.size(); i++) {
+        Transition *t = _transitions->value(t_keys.at(i));
         uint t_key    = qHash(*t, seed);
         const char *bytes_t_key = static_cast<const char*>(static_cast<const void*>(&t_key));
         std::copy(
@@ -93,7 +95,6 @@ uint State::key(uint seed) const
             bytes_t_key + size_of_t_key - 1,
             key + 1 + i * size_of_t_key
         );
-        i++;
     }
 
     if (is_final) {

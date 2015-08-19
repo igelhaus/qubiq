@@ -1,6 +1,8 @@
 #ifndef _TRANSDUCER_STATE_H_
 #define _TRANSDUCER_STATE_H_
 
+#include <algorithm>
+
 #include <QtCore>
 #include <QtAlgorithms>
 #include <qubiq/util/transducer_state_transition.h>
