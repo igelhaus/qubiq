@@ -13,13 +13,15 @@ State::State(const State &other)
 
 State::~State()
 {
-    _destroy();
+    clear();
+    delete _transitions;
+    delete _final_suffixes;
 }
 
 State& State::operator =(const State &other)
 {
     if (this != &other) {
-        _destroy();
+        clear();
         _assign(other);
     }
     return *this;
@@ -66,9 +68,10 @@ void State::updateOutputsWithPrefix(const QString &prefix)
 
 void State::clear()
 {
-    _destroy_transitions();
-    _final_suffixes->clear();
     is_final = false;
+    _final_suffixes->clear();
+    qDeleteAll(_transitions->begin(), _transitions->end());
+    _transitions->clear();
 }
 
 uint State::key(uint seed) const
@@ -154,29 +157,20 @@ void State::_initialize()
     _final_suffixes = new QStringList();
 }
 
-void State::_destroy()
-{
-    _destroy_transitions();
-    delete _transitions;
-    delete _final_suffixes;
-}
-
 void State::_assign(const State &other)
 {
-    is_final        = other.is_final;
-    _final_suffixes = other._final_suffixes;
+    is_final = other.is_final;
 
-    _destroy_transitions(); // FIXME:
-    QHash<QChar, Transition*>::const_iterator i_t;
-    for (i_t = other._transitions->begin(); i_t != other._transitions->end(); ++i_t) {
-        Transition *src_t = i_t.value();
-        Transition *dst_t = new Transition(*src_t);
-        _transitions->insert(i_t.key(), dst_t);
+    if (is_final && other._final_suffixes->size() > 0) {
+        *_final_suffixes = *(other._final_suffixes);
     }
-}
 
-void State::_destroy_transitions()
-{
-    qDeleteAll(_transitions->begin(), _transitions->end());
-    _transitions->clear();
+    if (other._transitions->size() > 0) {
+        QHash<QChar, Transition*>::const_iterator i_t;
+        for (i_t = other._transitions->begin(); i_t != other._transitions->end(); ++i_t) {
+            Transition *src_t = i_t.value();
+            Transition *dst_t = new Transition(*src_t);
+            _transitions->insert(i_t.key(), dst_t);
+        }
+    }
 }

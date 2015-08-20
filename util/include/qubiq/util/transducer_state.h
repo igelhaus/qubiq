@@ -44,9 +44,7 @@ private:
     QStringList               *_final_suffixes;
 
     void _initialize();
-    void _destroy();
     void _assign(const State &other);
-    void _destroy_transitions();
 };
 
 #endif // _TRANSDUCER_STATE_H_

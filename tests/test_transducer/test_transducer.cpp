@@ -51,6 +51,11 @@ void TestTransducer::testTransducerState()
     QCOMPARE(state2.output(label1), prefix1 + output1);
     QCOMPARE(state2.output(label2), empty);
 
+    QCOMPARE(state1.key() != state2.key(), true); // FIXME: this fails
+
+    State state3(state2);
+    QCOMPARE(state2.key() == state3.key(), true);
+
     // FIXME: Assignment
 }
 
