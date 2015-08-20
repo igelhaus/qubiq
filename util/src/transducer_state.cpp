@@ -73,28 +73,32 @@ void State::clear()
 
 uint State::key(uint seed) const
 {
-    const int size_of_f_key  = sizeof(uint);
-    const int size_of_t_key  = sizeof(uint);
-    const int size_of_t_keys = size_of_t_key * _transitions->size();
-    const int size_of_key    = 1 + size_of_t_keys + (is_final? size_of_f_key : 0);
+    const int size_of_f_key   = sizeof(uint);
+    const int size_of_t_key   = sizeof(uint);
+    const int num_transitions =  _transitions->size();
+    const int size_of_t_keys  = size_of_t_key * num_transitions;
+    const int size_of_key     = 1 + size_of_t_keys + (is_final? size_of_f_key : 0);
+    // FIXME: analyze number of final suffices?
 
     char *key        = new char[size_of_key + 1];
     key[0]           = is_final? 'f' : 'F';
     key[size_of_key] = '\0';
 
-    // Ensure the same order of keys for hashing transitions
-    QList<QChar> t_keys = _transitions->keys();
-    std::sort(t_keys.begin(), t_keys.end());
+    if (num_transitions > 0) {
+        // Ensure the same order of keys for hashing transitions
+        QList<QChar> t_keys = _transitions->keys();
+        std::sort(t_keys.begin(), t_keys.end());
 
-    for (int i = 0; i < t_keys.size(); i++) {
-        Transition *t = _transitions->value(t_keys.at(i));
-        uint t_key    = qHash(*t, seed);
-        const char *bytes_t_key = static_cast<const char*>(static_cast<const void*>(&t_key));
-        std::copy(
-            bytes_t_key,
-            bytes_t_key + size_of_t_key - 1,
-            key + 1 + i * size_of_t_key
-        );
+        for (int i = 0; i < t_keys.size(); i++) {
+            Transition *t = _transitions->value(t_keys.at(i));
+            uint t_key    = qHash(*t, seed);
+            const char *bytes_t_key = static_cast<const char*>(static_cast<const void*>(&t_key));
+            std::copy(
+                bytes_t_key,
+                bytes_t_key + size_of_t_key - 1,
+                key + 1 + i * size_of_t_key
+            );
+        }
     }
 
     if (is_final) {
