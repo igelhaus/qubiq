@@ -17,32 +17,37 @@ public:
 
     State& operator =(const State &other);
 
-    inline bool isFinal() const      { return is_final; }
+    //! Returns \c if state is final for some trace, \c false otherwise.
+    inline bool isFinal() const { return is_final; }
+
+    //! Sets finality flag for the state.
     inline void setFinal(bool final) { is_final = final; }
 
-    State *next(const QChar &label) const;
-    void setNext(const QChar &label, State *next);
+    //! Returns pointer to the hash of transitions from \c this state.
+    inline QHash<QChar, Transition*>* transitions() const { return _transitions; }
 
-    QString output(const QChar &label) const;
-    void setOutput(const QChar &label, const QString &output);
+    //! Returns pointer to the list of final suffixes of \c this state.
+    inline const QList<QString>* finalStrings() const { return _final_suffixes; }
 
-    QHash<QChar, Transition*>* transitions() const { return _transitions; }
+    State *next   (const QChar &label) const;
+    void   setNext(const QChar &label, State *next);
+
+    QString output   (const QChar &label) const;
+    void    setOutput(const QChar &label, const QString &output);
 
     void updateOutputsWithPrefix(const QString &prefix);
+
+    bool addFinal              (const QString &final);
+    bool updateFinalsWithPrefix(const QString &prefix);
 
     void clear();
 
     uint key(uint seed = 0) const;
 
-    const QList<QString>* finalStrings() const { return _final_suffixes; }
-
-    bool addFinal(const QString &final);
-    bool updateFinalsWithPrefix(const QString &prefix);
-
 private:
-    bool is_final;
-    QHash<QChar, Transition*> *_transitions;
-    QStringList               *_final_suffixes;
+    bool is_final; //!< Flag: \c true if state is final for some trace, \c false otherwise.
+    QHash<QChar, Transition*> *_transitions;     //!< Hash of transitions from \c this state.
+    QStringList               *_final_suffixes;  //!< List of final suffixes; relevant if \c this state is final for some trace.
 
     void _initialize();
     void _assign(const State &other);

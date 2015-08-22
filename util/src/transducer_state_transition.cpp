@@ -1,31 +1,5 @@
 #include <qubiq/util/transducer_state_transition.h>
 
-Transition::Transition(const QChar &label) {
-    l = label;
-    n = NULL;
-}
-
-Transition::Transition(const Transition &other) {
-    _assign(other);
-}
-
-Transition::~Transition() {}
-
-Transition& Transition::operator =(const Transition &other)
-{
-    if (this != &other) {
-        _assign(other);
-    }
-    return *this;
-}
-
-void Transition::_assign(const Transition &other)
-{
-    o = other.o;
-    l = other.l;
-    n = other.n;
-}
-
 //
 // Related functions
 //

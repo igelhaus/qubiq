@@ -6,35 +6,80 @@
 
 class State;
 
+/**
+ * \class Transition
+ *
+ * \brief The Transition class implements a single transition for a transducer's state.
+ *
+ * \sa State
+ * \sa Transducer
+ */
+
 class Transition {
 public:
-    Transition(const QChar &label);
-    Transition(const Transition &other);
+    //! Constructs a transition object with a given \c label.
+    Transition(const QChar &label)
+    {
+        l = label;
+        n = NULL;
+    }
 
-    ~Transition();
+    //! Copy constructor. Constructs a Transition object copying it from the \c other transition.
+    Transition(const Transition &other)
+    {
+        _assign(other);
+    }
 
-    Transition& operator =(const Transition &other);
+    //! Destructs the Transition object.
+    ~Transition() {}
 
+    //! Assignment operator. Assigns \c other transition to \c this transition and returns a reference to \c this transition.
+    Transition& operator =(const Transition &other)
+    {
+        if (this != &other) {
+            _assign(other);
+        }
+        return *this;
+    }
+
+    //! Returns a label associated with \c this transition.
     inline QChar label() const { return l; }
+
+    //! Sets a label to be associated with \c this transition.
     inline void setLabel(const QChar &c) { l = c; }
 
+    //! Returns a state \c this transition points to.
+    inline State* next() const { return n; }
+
+    //! Sets an state this transition should point to.
+    inline void setNext(State *next) { n = next; }
+
+    //! Returns an output associated with \c this transition.
     inline QString output() const { return o; }
+
+    //! Sets an output to be associated with \c this transition.
     inline void setOutput(const QString &output) { o = output; }
 
+    //! Prepends a \c prefix to the output associated with \c this transition.
     inline void prependOutput(const QString &prefix) { o.prepend(prefix); }
-
-    inline State* next() const { return n; }
-    inline void setNext(State *next) { n = next; }
 
 private:
 
-    QString o;
-    QChar   l;
-    State  *n;
+    QChar   l; //!< Label associated with \c this transition.
+    QString o; //!< Output associated with \c this transition.
+    State  *n; //!< State \c this transition points to.
 
-    void _assign(const Transition &other);
+    //! \internal Assings \c other internals to \c this.
+    void _assign(const Transition &other)
+    {
+        o = other.o;
+        l = other.l;
+        n = other.n;
+    }
+
 };
 
+//! Calculates the unique key of the transition \c t.
 uint qHash(const Transition &t, uint seed = 0);
 
 #endif // _TRANSDUCER_STATE_TRANSITION_H_

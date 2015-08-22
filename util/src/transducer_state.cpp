@@ -1,16 +1,27 @@
 #include <qubiq/util/transducer_state.h>
 
+/**
+ * \class State
+ *
+ * \brief The State class implements a single state of a transducer.
+ *
+ * \sa Transducer
+ */
+
+//! Constructs a State object.
 State::State()
 {
     _initialize();
 }
 
+//! Copy constructor. Constructs a State object copying it from the \c other state.
 State::State(const State &other)
 {
     _initialize();
     _assign(other);
 }
 
+//! Destructs the State object.
 State::~State()
 {
     clear();
@@ -18,6 +29,7 @@ State::~State()
     delete _final_suffixes;
 }
 
+//! Assignment operator. Assigns \c other state to \c this state and returns a reference to \c this state.
 State& State::operator =(const State &other)
 {
     if (this != &other) {
@@ -27,12 +39,14 @@ State& State::operator =(const State &other)
     return *this;
 }
 
+//! Returns the next state for the \c label or \c NULL if there is no such transition.
 State* State::next(const QChar &label) const
 {
     Transition *t = _transitions->value(label, NULL);
     return t != NULL? t->next() : NULL;
 }
 
+//! Sets the \c next state for the \c label. If there is no transition for \c label, it is implicitly created.
 void State::setNext(const QChar &label, State *next)
 {
     Transition *t = _transitions->value(label, NULL);
@@ -43,12 +57,14 @@ void State::setNext(const QChar &label, State *next)
     t->setNext(next);
 }
 
+//! Returns the output for the \c label or an empty string if there is no such transition.
 QString State::output(const QChar &label) const
 {
     Transition *t = _transitions->value(label, NULL);
     return t != NULL? t->output() : QString();
 }
 
+//! Sets the \c output for the \c label. If there is no transition for \c label, it is \b not created: the method does nothing.
 void State::setOutput(const QChar &label, const QString &output)
 {
     Transition *t = _transitions->value(label, NULL);
@@ -58,6 +74,7 @@ void State::setOutput(const QChar &label, const QString &output)
     t->setOutput(output);
 }
 
+//! Updates all outputs of the state with a given \c prefix.
 void State::updateOutputsWithPrefix(const QString &prefix)
 {
     QHash<QChar, Transition*>::iterator i_t;
@@ -66,6 +83,39 @@ void State::updateOutputsWithPrefix(const QString &prefix)
     }
 }
 
+//! Adds a new final suffix to the list of final suffixes keeping the list sorted in ascending order.
+//! Returns \c false if \c final is already in the list, and \c true otherwise.
+bool State::addFinal(const QString &final)
+{
+    const int num_finals = _final_suffixes->size();
+    int insertion_pos    = num_finals;
+    for (int i = 0; i < num_finals; i++) {
+        int cmp_result = QString::compare(final, _final_suffixes->at(i), Qt::CaseSensitive);
+        if (cmp_result == 0) {
+            return false;
+        } else if (cmp_result < 0) {
+            insertion_pos = i;
+            break;
+        }
+    }
+    _final_suffixes->insert(insertion_pos, final);
+    return true;
+}
+
+//! Updates all final suffixes of the state with a given \c prefix.
+bool State::updateFinalsWithPrefix(const QString &prefix)
+{
+    if (_final_suffixes->size() == 0) {
+        _final_suffixes->append(prefix);
+    } else {
+        for (int i = 0; i < _final_suffixes->size(); i++) {
+            (*_final_suffixes)[i].prepend(prefix);
+        }
+    }
+    return true;
+}
+
+//! Clears the state \b without destroying internals completely.
 void State::clear()
 {
     is_final = false;
@@ -76,6 +126,8 @@ void State::clear()
 
 const int SIZE_OF_F_KEY = sizeof(uint);
 const int SIZE_OF_T_KEY = sizeof(uint);
+
+//! Calculates the unique key of \c this state.
 uint State::key(uint seed) const
 {
     const int num_transitions = _transitions->size();
@@ -106,35 +158,7 @@ uint State::key(uint seed) const
     return state_hash;
 }
 
-bool State::addFinal(const QString &final)
-{
-    const int num_finals = _final_suffixes->size();
-    int insertion_pos    = num_finals;
-    for (int i = 0; i < num_finals; i++) {
-        int cmp_result = QString::compare(final, _final_suffixes->at(i), Qt::CaseSensitive);
-        if (cmp_result == 0) {
-            return false;
-        } else if (cmp_result < 0) {
-            insertion_pos = i;
-            break;
-        }
-    }
-    _final_suffixes->insert(insertion_pos, final);
-    return true;
-}
-
-bool State::updateFinalsWithPrefix(const QString &prefix)
-{
-    if (_final_suffixes->size() == 0) {
-        _final_suffixes->append(prefix);
-    } else {
-        for (int i = 0; i < _final_suffixes->size(); i++) {
-            (*_final_suffixes)[i].prepend(prefix);
-        }
-    }
-    return true;
-}
-
+//! \internal Initializes object's internals.
 void State::_initialize()
 {
     is_final        = false;
@@ -142,6 +166,7 @@ void State::_initialize()
     _final_suffixes = new QStringList();
 }
 
+//! \internal Assings \c other internals to \c this.
 void State::_assign(const State &other)
 {
     is_final = other.is_final;
