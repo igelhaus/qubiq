@@ -9,7 +9,7 @@
 #
 
 TEMPLATE = subdirs
-SUBDIRS  = core util et \
+SUBDIRS  = core util et btd \
     3rdparty/cutelogger        \
     tests/test_lexeme          \
     tests/test_lexeme_index    \
