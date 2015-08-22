@@ -74,47 +74,33 @@ void State::clear()
     _transitions->clear();
 }
 
+const int SIZE_OF_F_KEY = sizeof(uint);
+const int SIZE_OF_T_KEY = sizeof(uint);
 uint State::key(uint seed) const
 {
-    const int size_of_f_key   = sizeof(uint);
-    const int size_of_t_key   = sizeof(uint);
-    const int num_transitions =  _transitions->size();
-    const int size_of_t_keys  = size_of_t_key * num_transitions;
-    const int size_of_key     = 1 + size_of_t_keys + (is_final? size_of_f_key : 0);
-    // FIXME: analyze number of final suffices?
+    const int num_transitions = _transitions->size();
+    const int size_of_t_keys  = SIZE_OF_T_KEY * num_transitions;
+    const int size_of_key     = 1 + size_of_t_keys + (is_final? SIZE_OF_F_KEY : 0);
 
-    char *key        = new char[size_of_key + 1];
-    key[0]           = is_final? 'f' : 'F';
-    key[size_of_key] = '\0';
+    char *key = new char[size_of_key];
+    key[0]    = is_final? 'f' : 'F';
 
     if (num_transitions > 0) {
         // Ensure the same order of keys for hashing transitions
         QList<QChar> t_keys = _transitions->keys();
         std::sort(t_keys.begin(), t_keys.end());
-
-        for (int i = 0; i < t_keys.size(); i++) {
-            Transition *t = _transitions->value(t_keys.at(i));
-            uint t_key    = qHash(*t, seed);
-            const char *bytes_t_key = static_cast<const char*>(static_cast<const void*>(&t_key));
-            std::copy(
-                bytes_t_key,
-                bytes_t_key + size_of_t_key - 1,
-                key + 1 + i * size_of_t_key
-            );
+        for (int i = 0; i < num_transitions; i++) {
+            uint t_key = qHash(*(_transitions->value(t_keys.at(i))), seed);
+            memcpy(key + 1 + i * SIZE_OF_T_KEY, &t_key, SIZE_OF_T_KEY);
         }
     }
 
     if (is_final) {
-        uint f_key              = qHash(_final_suffixes->join('|'), seed);
-        const char *bytes_f_key = static_cast<const char*>(static_cast<const void*>(&f_key));
-        std::copy(
-            bytes_f_key,
-            bytes_f_key + size_of_f_key - 1,
-            key + 1 + size_of_t_keys
-        );
+        uint f_key = qHash(_final_suffixes->join('|'), seed);
+        memcpy(key + 1 + size_of_t_keys, &f_key, SIZE_OF_F_KEY);
     }
 
-    uint state_hash = qHash(key, seed);
+    uint state_hash = qHash(QByteArray(key, size_of_key), seed);
     delete []key;
 
     return state_hash;
@@ -123,18 +109,17 @@ uint State::key(uint seed) const
 bool State::addFinal(const QString &final)
 {
     const int num_finals = _final_suffixes->size();
-    int pos = 0;
+    int insertion_pos    = num_finals;
     for (int i = 0; i < num_finals; i++) {
-        int cmp_result = final.compare(_final_suffixes->at(i), Qt::CaseSensitive);
+        int cmp_result = QString::compare(final, _final_suffixes->at(i), Qt::CaseSensitive);
         if (cmp_result == 0) {
             return false;
-        }
-        if (cmp_result > 0) {
-            pos = i;
+        } else if (cmp_result < 0) {
+            insertion_pos = i;
             break;
         }
     }
-    _final_suffixes->insert(pos, final);
+    _final_suffixes->insert(insertion_pos, final);
     return true;
 }
 

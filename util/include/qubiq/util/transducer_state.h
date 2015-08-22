@@ -1,6 +1,7 @@
 #ifndef _TRANSDUCER_STATE_H_
 #define _TRANSDUCER_STATE_H_
 
+#include <string.h>
 #include <algorithm>
 
 #include <QtCore>

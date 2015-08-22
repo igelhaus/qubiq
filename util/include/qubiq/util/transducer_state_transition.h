@@ -1,6 +1,7 @@
 #ifndef _TRANSDUCER_STATE_TRANSITION_H_
 #define _TRANSDUCER_STATE_TRANSITION_H_
 
+#include <string.h>
 #include <QtCore>
 
 class State;
@@ -29,7 +30,7 @@ private:
 
     QString o;
     QChar   l;
-    State   *n;
+    State  *n;
 
     void _assign(const Transition &other);
 };

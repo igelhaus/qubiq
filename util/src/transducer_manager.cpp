@@ -132,7 +132,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     }
     in_file.close();
 
-    // Minimize last word
+    // Minimize the last word
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
         tmp_states->at(i - 1)->setNext(
             current_word.at(i - 1),
@@ -396,7 +396,7 @@ bool TransducerManager::load(const QString &fname)
 
 /*static*/ QString TransducerManager::common_prefix(const QString &s1, const QString &s2)
 {
-    return s1.left(common_prefix_length(s1, s2));
+    return s1.left(TransducerManager::common_prefix_length(s1, s2));
 }
 
 State* TransducerManager::get_or_alloc_state(const State *state, QHash<uint, State*> *key2addr)
