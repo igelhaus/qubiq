@@ -1,5 +1,14 @@
 #include <qubiq/util/transducer_manager.h>
 
+/**
+ * \class TransducerManager
+ *
+ * \brief The TransducerManager class provides means for working with transducers, i.e. building
+ * new transducers from the source lists and serializing into / deserializing from the binary format.
+ *
+ * \sa Transducer
+ */
+
 const int DEFAULT_MAX_WORD_SIZE = 1024;
 
 const qint8 STATE_MARK_FINAL     = 'f';
@@ -13,18 +22,29 @@ const qint64 DEFAULT_BUILD_STATUS_UPDATE_STEP  = 4096; // Report status after ap
 const qint64 DEFAULT_BUILD_STATUS_UPDATE_LOWER =   50;
 const qint64 DEFAULT_BUILD_STATUS_UPDATE_UPPER = 4046;
 
+/**
+ * \brief Constructs a TransducerManager object implicitly creating a new \c Transducer.
+ * \param[in] parent Parent object.
+ */
 TransducerManager::TransducerManager(QObject *parent) : QObject(parent)
 {
     t             = new Transducer();
     is_self_alloc = true;
 }
 
-TransducerManager::TransducerManager(Transducer *other, QObject *parent) : QObject(parent)
+/**
+ * \brief This is an overloaded constructor. Constructs a TransducerManager object for managing already created \c Transducer.
+ * \param[in] transducer Transducer to be managed by the current instance of \c TransducerManager.
+ * \param[in] parent     Parent object.
+ */
+//!
+TransducerManager::TransducerManager(Transducer *transducer, QObject *parent) : QObject(parent)
 {
-    t             = other;
+    t             = transducer;
     is_self_alloc = false;
 }
 
+//! Destructs the TransducerManager object.
 TransducerManager::~TransducerManager()
 {
     if (is_self_alloc)
@@ -37,6 +57,20 @@ TransducerManager::~TransducerManager()
  * 0-w-0-o-0-r-0-d-0
  * 0-w-0-o-0-r-0-m-0
  *
+ */
+/**
+ * \brief Builds a transducer in-memory from the source file.
+ *
+ * The source file for building a trsnducer should be a text file where each line should have format
+ *
+ * token<tab character>data associated with the token
+ *
+ * See tests for an example.
+ *
+ * \param[in] fname         Source file name.
+ * \param[in] max_word_size Maximum token size. 0 or negative value falls back to \c DEFAULT_MAX_WORD_SIZE.
+ *
+ * \return \c true if build is successful, \c false otherwise. In case of errors, error message is set.
  */
 bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 {
@@ -148,7 +182,11 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     return true;
 }
 
-/*
+/**
+ * \brief Serializes transducer on disk in a binary QUTD format.
+ *
+ * BNF for the current version of the QUTD format is:
+ *
  * SERIALIZED      := PROLOGUE STATES
  * PROLOGUE        := PROLOGUE_MARKER VERSION INIT_STATE_ID NUM_STATES
  * PROLOGUE_MARKER := 'Q' 'U' 'T' 'D'
@@ -166,8 +204,13 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
  * LABEL           := qchar
  * OUTPUT          := qstring
  * NEXT_STATE_ID   := qint64
+ *
+ * \param[in] fname File name to write to.
+ *
+ * \return \c true if the transducer was serialized, \c false otherwise. In case of errors, error message is set.
+ *
+ * \sa load
  */
-
 bool TransducerManager::save(const QString &fname)
 {
     clear_err_str();
@@ -176,7 +219,6 @@ bool TransducerManager::save(const QString &fname)
         emit saveFinished(set_err_str("Unable to save unready transducer"));
         return false;
     }
-
 
     QFile out_file(fname);
     if (!out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -238,6 +280,15 @@ bool TransducerManager::save(const QString &fname)
     return true;
 }
 
+/**
+ * \brief Reads a transducer from the QUTD file into memory.
+ *
+ * \param[in] fname File name to read from.
+ *
+ * \return \c true if the transducer was read, \c false otherwise. In case of errors, error message is set.
+ *
+ * \sa save
+ */
 bool TransducerManager::load(const QString &fname)
 {
     clear_err_str();
@@ -367,6 +418,7 @@ bool TransducerManager::load(const QString &fname)
     return true;
 }
 
+//! \internal Initializes a vector of temporary states for building a transducer from the source file.
 /*static*/ QVector<State*>* TransducerManager::_initialize_tmp_states(int n)
 {
     QVector<State*> *tmp_states = new QVector<State*>(n);
@@ -376,12 +428,14 @@ bool TransducerManager::load(const QString &fname)
     return tmp_states;
 }
 
+//! \internal Destroys the vector of temporary states for building a transducer from the source file.
 /*static*/ void TransducerManager::_destroy_tmp_states(QVector<State*> *tmp_states)
 {
     qDeleteAll(tmp_states->begin(), tmp_states->end());
     delete tmp_states;
 }
 
+//! \internal Calculates common prefix length between strings \c s1 and \c s2.
 /*static*/ int TransducerManager::common_prefix_length(const QString &s1, const QString &s2)
 {
     int prefix_len = 0;
@@ -394,11 +448,13 @@ bool TransducerManager::load(const QString &fname)
     return prefix_len;
 }
 
+//! \internal Finds common prefix length between strings \c s1 and \c s2.
 /*static*/ QString TransducerManager::common_prefix(const QString &s1, const QString &s2)
 {
     return s1.left(TransducerManager::common_prefix_length(s1, s2));
 }
 
+//! \internal Finds a state among already constructed or allocates a new one (used on \c build).
 State* TransducerManager::get_or_alloc_state(const State *state, QHash<uint, State*> *key2addr)
 {
     uint state_key = state->key();
@@ -414,6 +470,7 @@ State* TransducerManager::get_or_alloc_state(const State *state, QHash<uint, Sta
     return _state;
 }
 
+//! \internal Finds a state among already constructed or allocates a new one (used on \c load).
 State* TransducerManager::get_or_alloc_state(qint64 state_id, QHash<qint64, State*> *id2addr)
 {
     State *state = id2addr->value(state_id, NULL);

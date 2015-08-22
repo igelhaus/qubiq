@@ -11,7 +11,7 @@ class TransducerManager : public QObject
 
 public:
     TransducerManager(QObject *parent = 0);
-    TransducerManager(Transducer *other, QObject *parent = 0);
+    TransducerManager(Transducer *transducer, QObject *parent = 0);
     ~TransducerManager();
 
     inline const Transducer *transducer() const { return t; }
@@ -34,12 +34,14 @@ signals:
     void loadFinished(bool status);
 
 private:
-    bool is_self_alloc;
-    Transducer *t;
+    Transducer *t;            //!< Pointer to the transducer being managed by \c this manager.
+    bool       is_self_alloc; //!< Flag indicating whether \c this manager allocated the managed transducer.
+    QString    err_str;       //!< Buffer holding error message (if any) from the last operation.
 
-    QString err_str;
-
+    //! \internal Sets error message.
     inline bool set_err_str(const char *msg) { err_str = msg; return false; }
+
+    //! \internal Clears error message.
     inline void clear_err_str() { err_str.clear(); }
 
     State* get_or_alloc_state(const State *state, QHash<uint, State*> *key2addr);

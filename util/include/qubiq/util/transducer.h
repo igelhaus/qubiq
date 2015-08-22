@@ -15,12 +15,14 @@ public:
 
     ~Transducer();
 
+    //! Checks the state of the transducer and returns \c true it is ready for searching and \c false otherwise.
     bool isReady() const { return init_state != NULL; }
+
     QStringList search(const QString &s) const;
 
 private:
-    QList<State*> *states;
-    State         *init_state;
+    QList<State*> *states;     //!< List of states composing the transducer.
+    State         *init_state; //!< The initial state of the transducer.
 
     void clear();
 };
