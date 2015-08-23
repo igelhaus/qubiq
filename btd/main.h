@@ -18,17 +18,18 @@ public:
 
     inline void setInputFile (const QString &fname) { in_fname = fname; }
     inline void setOutputFile(const QString &fname) { out_fname = fname; }
+    inline void setSelfTest  (bool self_test)       { run_selftest = self_test; }
 
     void startBuilding();
     bool selfTest();
     void startSaving();
 
 public slots:
-    void buildProgress(qint64 bytes_read, qint64 bytes_total);
-    void buildFinished(bool status, QString message);
+    void buildStatusUpdate(qint64 bytes_read, qint64 bytes_total);
+    void buildFinished    (bool status, QString message);
 
-    void saveProgress(int states_saved, int states_total);
-    void saveFinished(bool status, QString message);
+    void saveStatusUpdate(int states_saved, int states_total);
+    void saveFinished    (bool status, QString message);
 
 signals:
     void allDone();

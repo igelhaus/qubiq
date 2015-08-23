@@ -28,7 +28,7 @@ void TransducerBuilder::startBuilding()
     QObject::connect(build_thread, SIGNAL(finished()),  _tm, SLOT(deleteLater()));
     QObject::connect(
         _tm , SIGNAL(buildStatusUpdate(qint64, qint64)),
-        this, SLOT  (buildProgress    (qint64, qint64))
+        this, SLOT  (buildStatusUpdate(qint64, qint64))
     );
     QObject::connect(
         _tm , SIGNAL(buildFinished(bool, QString)),
@@ -38,7 +38,7 @@ void TransducerBuilder::startBuilding()
     build_thread->start();
 }
 
-void TransducerBuilder::buildProgress(qint64 bytes_read, qint64 bytes_total)
+void TransducerBuilder::buildStatusUpdate(qint64 bytes_read, qint64 bytes_total)
 {
     std::cout << "Bytes read: " << bytes_read << " / " << bytes_total << '\r';
 }
@@ -59,10 +59,14 @@ void TransducerBuilder::buildFinished(bool status, QString message)
 
     std::cout << "Successfully built" << std::endl;
 
-    if (run_selftest && !selfTest()) {
-        std::cout << "ERROR self-testing" << std::endl;
-        emit allDone();
-        return;
+    if (run_selftest) {
+        if (selfTest()) {
+            std::cout << "Successfully self-tested" << std::endl;
+        } else {
+            std::cout << "ERROR self-testing" << std::endl;
+            emit allDone();
+            return;
+        }
     }
 
     startSaving();
@@ -78,7 +82,7 @@ void TransducerBuilder::startSaving()
     QObject::connect(save_thread, SIGNAL(finished()),  _tm, SLOT(deleteLater()));
     QObject::connect(
         _tm,  SIGNAL(saveStatusUpdate(int, int)),
-        this, SLOT  (saveProgress    (int, int))
+        this, SLOT  (saveStatusUpdate(int, int))
     );
     QObject::connect(
         _tm,  SIGNAL(saveFinished(bool, QString)),
@@ -88,7 +92,7 @@ void TransducerBuilder::startSaving()
     save_thread->start();
 }
 
-void TransducerBuilder::saveProgress(int states_saved, int states_total)
+void TransducerBuilder::saveStatusUpdate(int states_saved, int states_total)
 {
     std::cout << "Saved: " << states_saved << " / " << states_total << '\r';
 }
@@ -110,8 +114,33 @@ void TransducerBuilder::saveFinished(bool status, QString message)
     emit allDone();
 }
 
+// FIXME: Make more sofisticated
 bool TransducerBuilder::selfTest()
 {
+    QFile in_file(in_fname);
+
+    if (!in_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    std::cout << "Started self-testing" << std::endl;
+
+    QString current_word;
+    QString current_output;
+    QTextStream in_stream(&in_file);
+    while (!in_stream.atEnd()) {
+        QString line      = in_stream.readLine();
+        QStringList parts = line.split("\t");
+        current_word    = parts.at(0);
+        current_output  = parts.at(1);
+
+        QStringList found = t->search(current_word);
+        if (found.size() == 0) {
+            return false;
+        }
+    }
+    in_file.close();
+
     return true;
 }
 
@@ -131,17 +160,20 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
 
     QCommandLineOption
-        optInput ("in" , "[STRING] Input file." , "in"),
-        optOutput("out", "[STRING] Output file.", "out")
+        optInput   ("in" ,       "[STRING] Input file." , "in"),
+        optOutput  ("out",       "[STRING] Output file.", "out"),
+        optSelfTest("self-test", "[BOOLEAN] If specified, transducer is self-tested after building.")
     ;
     parser.addOption(optInput);
     parser.addOption(optOutput);
+    parser.addOption(optSelfTest);
 
     parser.process(app);
 
     TransducerBuilder builder(&app);
     builder.setInputFile(parser.value("in"));
     builder.setOutputFile(parser.value("out"));
+    builder.setSelfTest(parser.isSet("self-test"));
 
     QObject::connect(&builder, SIGNAL(allDone()), &app, SLOT(quit()));
     builder.startBuilding();
