@@ -25,10 +25,10 @@ public:
 
 public slots:
     void buildProgress(qint64 bytes_read, qint64 bytes_total);
-    void buildFinished(bool status);
+    void buildFinished(bool status, QString message);
 
     void saveProgress(int states_saved, int states_total);
-    void saveFinished(bool status);
+    void saveFinished(bool status, QString message);
 
 signals:
     void allDone();

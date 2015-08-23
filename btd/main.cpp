@@ -31,8 +31,8 @@ void TransducerBuilder::startBuilding()
         this, SLOT  (buildProgress    (qint64, qint64))
     );
     QObject::connect(
-        _tm , SIGNAL(buildFinished(bool)),
-        this, SLOT  (buildFinished(bool))
+        _tm , SIGNAL(buildFinished(bool, QString)),
+        this, SLOT  (buildFinished(bool, QString))
     );
 
     build_thread->start();
@@ -40,19 +40,19 @@ void TransducerBuilder::startBuilding()
 
 void TransducerBuilder::buildProgress(qint64 bytes_read, qint64 bytes_total)
 {
-    std::cout << "Read: " << bytes_read << " / " << bytes_total << std::endl;
+    std::cout << "Bytes read: " << bytes_read << " / " << bytes_total << '\r';
 }
 
-void TransducerBuilder::buildFinished(bool status)
+void TransducerBuilder::buildFinished(bool status, QString message)
 {
     t_manager = NULL;
     build_thread->quit();
     build_thread->wait();
 
+    std::cout << std::endl;
+
     if (!status) {
-        // FIXME: handle status
-        // std::cout << "ERROR building: " << _tm->error().toUtf8().data() << std::endl;
-        std::cout << "ERROR building" << std::endl;
+        std::cout << "ERROR building: " << message.toUtf8().data() << std::endl;
         emit allDone();
         return;
     }
@@ -81,8 +81,8 @@ void TransducerBuilder::startSaving()
         this, SLOT  (saveProgress    (int, int))
     );
     QObject::connect(
-        _tm,  SIGNAL(saveFinished(bool)),
-        this, SLOT  (saveFinished(bool))
+        _tm,  SIGNAL(saveFinished(bool, QString)),
+        this, SLOT  (saveFinished(bool, QString))
     );
 
     save_thread->start();
@@ -90,21 +90,21 @@ void TransducerBuilder::startSaving()
 
 void TransducerBuilder::saveProgress(int states_saved, int states_total)
 {
-    std::cout << "Saved: " << states_saved << " / " << states_total << std::endl;
+    std::cout << "Saved: " << states_saved << " / " << states_total << '\r';
 }
 
-void TransducerBuilder::saveFinished(bool status)
+void TransducerBuilder::saveFinished(bool status, QString message)
 {
     t_manager = NULL;
     save_thread->quit();
     save_thread->wait();
 
+    std::cout << std::endl;
+
     if (status) {
         std::cout << "Successfully saved" << std::endl;
     } else {
-        // FIXME: handle status
-        // std::cout << "ERROR saving: " << _tm->error().toUtf8().data() << std::endl;
-        std::cout << "ERROR saving" << std::endl;
+        std::cout << "ERROR saving" << message.toUtf8().data() << std::endl;
     }
 
     emit allDone();
