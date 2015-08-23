@@ -25,13 +25,47 @@ public slots:
 
 signals:
 
+    /**
+     * \brief Signal emitted when a new chunk of input is processed during build.
+     * \param[in] bytes_read  Bytes read so far.
+     * \param[in] bytes_total Total size of input in bytes.
+     */
     void buildStatusUpdate(qint64 bytes_read, qint64 bytes_total);
+
+    /**
+     * \brief Signal emitted when a new portion of states is processed during serialization.
+     * \param[in] states_saved Number of states serialized so far.
+     * \param[in] states_total Total number of states in the transducer associated with \c this manager.
+     */
     void saveStatusUpdate(int states_saved, int states_total);
+
+    /**
+     * \brief Signal emitted when a new portion of states is processed during deserialization.
+     * \param[in] states_read  Number of states deserialized so far.
+     * \param[in] states_saved Total number of states expected to be read into the transducer associated with \c this manager.
+     */
     void loadStatusUpdate(int states_read, int states_total);
 
-    void buildFinished(bool status);
-    void saveFinished(bool status);
-    void loadFinished(bool status);
+    /**
+     * \brief Signal emitted when build is complete (either successfully or not).
+     * \param[in] status  \c true on success, \c false on failure.
+     * \param[in] message Error message or an empty string if build succeeded.
+     */
+    void buildFinished(bool status, QString message);
+
+    /**
+     * \brief Signal emitted when serialization is complete (either successfully or not).
+     * \param[in] status  \c true on success, \c false on failure.
+     * \param[in] message Error message or an empty string if serialization succeeded.
+     */
+    void saveFinished(bool status, QString message);
+
+    /**
+     * \brief Signal emitted when deserialization is complete (either successfully or not).
+     * \param[in] status  \c true on success, \c false on failure.
+     * \param[in] message Error message or an empty string if deserialization succeeded.
+     */
+    void loadFinished(bool status, QString message);
 
 private:
     Transducer *t;            //!< Pointer to the transducer being managed by \c this manager.

@@ -79,7 +79,8 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        emit buildFinished(set_err_str("Unable to open input file for reading"));
+        set_err_str("Unable to open input file for reading");
+        emit buildFinished(false, err_str);
         return false;
     }
 
@@ -87,7 +88,8 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     qint64 num_bytes_read  = 0;
 
     if (num_bytes == 0) {
-        emit buildFinished(set_err_str("Input file is of zero length"));
+        set_err_str("Input file is of zero length");
+        emit buildFinished(false, err_str);
         return false;
     }
 
@@ -111,7 +113,8 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 
         if (current_len > max_word_size) {
             TransducerManager::_destroy_tmp_states(tmp_states);
-            emit buildFinished(set_err_str("Length of current word is more than max_word_size"));
+            set_err_str("Length of current word is more than max_word_size");
+            emit buildFinished(false, err_str);
             return false;
         }
 
@@ -178,7 +181,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
 
     TransducerManager::_destroy_tmp_states(tmp_states);
 
-    emit buildFinished(true);
+    emit buildFinished(true, err_str);
     return true;
 }
 
@@ -216,13 +219,15 @@ bool TransducerManager::save(const QString &fname)
     clear_err_str();
 
     if (!t->isReady()) {
-        emit saveFinished(set_err_str("Unable to save unready transducer"));
+        set_err_str("Unable to save unready transducer");
+        emit saveFinished(false, err_str);
         return false;
     }
 
     QFile out_file(fname);
     if (!out_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        emit saveFinished(set_err_str("Unable to open output file for writing"));
+        set_err_str("Unable to open output file for writing");
+        emit saveFinished(false, err_str);
         return false;
     }
 
@@ -276,7 +281,7 @@ bool TransducerManager::save(const QString &fname)
 
     out_file.close();
 
-    emit saveFinished(true);
+    emit saveFinished(true, err_str);
     return true;
 }
 
@@ -295,7 +300,8 @@ bool TransducerManager::load(const QString &fname)
 
     QFile in_file(fname);
     if (!in_file.open(QIODevice::ReadOnly)) {
-        emit loadFinished(set_err_str("Unable to open input file for reading"));
+        set_err_str("Unable to open input file for reading");
+        emit loadFinished(false, err_str);
         return false;
     }
 
@@ -313,31 +319,29 @@ bool TransducerManager::load(const QString &fname)
         >> num_states
     ;
 
+    bool is_prologue_ok = true;
     if (format_marker != TRANSDUCER_FORMAT_MARKER) {
-        emit loadFinished(set_err_str("Bad file format"));
-        return false;
+        is_prologue_ok = set_err_str("Bad file format");
+    } else if (init_state_id == 0) {
+        is_prologue_ok = set_err_str("Bad init_state_id");
+    } else if (num_states == 0) {
+        is_prologue_ok = set_err_str("Bad number of states");
     }
 
-    if (init_state_id == 0) {
-        emit loadFinished(set_err_str("Bad init_state_id"));
-        return false;
-    }
-
-    if (num_states == 0) {
-        emit loadFinished(set_err_str("Bad number of states"));
-        return false;
+    if (!is_prologue_ok) {
+        emit loadFinished(is_prologue_ok, err_str);
+        return is_prologue_ok;
     }
 
     t->clear();
-
-    // FIXME: Ensure correct destruction of newly allocated states:
 
     int num_states_read = 0;
 
     QHash<qint64, State*> id2addr;
     while (!in_stream.atEnd()) {
         if (num_states_read > num_states) {
-            emit loadFinished(set_err_str("Read more states than declared"));
+            set_err_str("Read more states than declared");
+            emit loadFinished(false, err_str);
             return false;
         }
 
@@ -346,7 +350,8 @@ bool TransducerManager::load(const QString &fname)
 
         in_stream >> state_id;
         if (state_id == 0) {
-            emit loadFinished(set_err_str("Bad state_id"));
+            set_err_str("Bad state_id");
+            emit loadFinished(false, err_str);
             return false;
         }
 
@@ -363,14 +368,16 @@ bool TransducerManager::load(const QString &fname)
         } else if (state_mark == STATE_MARK_NON_FINAL) {
             state->setFinal(false);
         } else {
-            emit loadFinished(set_err_str("Bad state mark"));
+            set_err_str("Bad state mark");
+            emit loadFinished(false, err_str);
             return false;
         }
 
         qint64 num_transitions = 0;
         in_stream >> num_transitions;
         if (num_transitions == 0 && !state->isFinal()) {
-            emit loadFinished(set_err_str("Bad state: 0 transitions for non-final state"));
+            set_err_str("Bad state: 0 transitions for non-final state");
+            emit loadFinished(false, err_str);
             return false;
         }
 
@@ -385,11 +392,13 @@ bool TransducerManager::load(const QString &fname)
             ;
 
             if (next_id == 0) {
-                emit loadFinished(set_err_str("Bad next_id"));
+                set_err_str("Bad next_id");
+                emit loadFinished(false, err_str);
                 return false;
             }
             if (label == '\0') {
-                emit loadFinished(set_err_str("Bad label"));
+                set_err_str("Bad label");
+                emit loadFinished(false, err_str);
                 return false;
             }
 
@@ -406,7 +415,8 @@ bool TransducerManager::load(const QString &fname)
 
     State *init_state = id2addr.value(init_state_id, NULL);
     if (init_state == NULL) {
-        emit loadFinished(set_err_str("Unknown init_state_id"));
+        set_err_str("Unknown init_state_id");
+        emit loadFinished(false, err_str);
         return false;
     }
 
@@ -414,7 +424,7 @@ bool TransducerManager::load(const QString &fname)
 
     in_file.close();
 
-    emit loadFinished(true);
+    emit loadFinished(true, err_str);
     return true;
 }
 
