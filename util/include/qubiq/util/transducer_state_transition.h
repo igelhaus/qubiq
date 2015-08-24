@@ -55,19 +55,19 @@ public:
     inline void setNext(State *next) { n = next; }
 
     //! Returns an output associated with \c this transition.
-    inline QString output() const { return o; }
+    inline QString output() const { return o.join(""); }
 
     //! Sets an output to be associated with \c this transition.
-    inline void setOutput(const QString &output) { o = output; }
+    inline void setOutput(const QString &output) { o.clear(); o << output; }
 
     //! Prepends a \c prefix to the output associated with \c this transition.
     inline void prependOutput(const QString &prefix) { o.prepend(prefix); }
 
 private:
 
-    QChar   l; //!< Label associated with \c this transition.
-    QString o; //!< Output associated with \c this transition.
-    State  *n; //!< State \c this transition points to.
+    QChar        l; //!< Label associated with \c this transition.
+    QStringList  o; //!< Output associated with \c this transition.
+    State       *n; //!< State \c this transition points to.
 
     //! \internal Assings \c other internals to \c this.
     void _assign(const Transition &other)
