@@ -24,6 +24,8 @@ private:
     QList<State*> *states;     //!< List of states composing the transducer.
     State         *init_state; //!< The initial state of the transducer.
 
+    static const QString _empty_string;
+
     void clear();
 };
 

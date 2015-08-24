@@ -1,5 +1,7 @@
 #include <qubiq/util/transducer.h>
 
+const QString Transducer::_empty_string = QString("");
+
 /**
  * \class Transducer
  *
@@ -43,7 +45,7 @@ QStringList Transducer::search(const QString &s) const
         return result;
     }
 
-    QString output_prefix("");
+    QStringList output_prefix_parts(Transducer::_empty_string);
     State *current_state = init_state;
     State *next_state    = NULL;
     for (int i = 0; i < s.length(); i++) {
@@ -53,7 +55,10 @@ QStringList Transducer::search(const QString &s) const
             current_state = NULL;
             break;
         }
-        output_prefix.append(current_state->output(c));
+        const QString _output = current_state->output(c);
+        if (_output.length() > 0) {
+            output_prefix_parts.append(_output);
+        }
         current_state = next_state;
     }
 
@@ -65,8 +70,9 @@ QStringList Transducer::search(const QString &s) const
         return result;
     }
 
+    const QString output_prefix  = output_prefix_parts.join(Transducer::_empty_string);
     const QList<QString> *finals = current_state->finalStrings();
-    result.append(output_prefix);
+    result.append(output_prefix); // FIXME: test this
     for (int i = 0; i < finals->size(); i++) {
         result.append(output_prefix + finals->at(i));
     }

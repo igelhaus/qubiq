@@ -55,7 +55,15 @@ public:
     inline void setNext(State *next) { n = next; }
 
     //! Returns an output associated with \c this transition.
-    inline QString output() const { return o.join(_output_sep); }
+    inline QString output() const {
+        if (o.size() == 0) {
+            return QString(_default_output);
+        } else if (o.size() == 1) {
+            return o.at(0);
+        } else {
+            return o.join(_output_sep);
+        }
+    }
 
     //! Sets an output to be associated with \c this transition.
     inline void setOutput(const QString &output) { o.clear(); o << output; }
@@ -72,11 +80,14 @@ private:
     //! \internal Assings \c other internals to \c this.
     void _assign(const Transition &other)
     {
-        o = other.o;
+        QString _o = other.o.join(_output_sep);
+        o.clear();
+        o << _o;
         l = other.l;
         n = other.n;
     }
 
+    static const QString _default_output;
     static const QString _output_sep;
 };
 
