@@ -1,5 +1,8 @@
 #include "main.h"
 
+const char *DEFAULT_IN_FNAME  = "src-transducer";
+const char *DEFAULT_OUT_FNAME = "src-transducer-qutd";
+
 TransducerBuilder::TransducerBuilder(QObject *parent) : QObject(parent)
 {
     t            = new Transducer();
@@ -40,7 +43,8 @@ void TransducerBuilder::startBuilding()
 
 void TransducerBuilder::buildStatusUpdate(qint64 bytes_read, qint64 bytes_total)
 {
-    std::cout << "Bytes read: " << bytes_read << " / " << bytes_total << '\r';
+    float read_pct = (float)100.0 * (float)bytes_read / (float)bytes_total;
+    std::cout << "Read: " << read_pct << "% (" << bytes_read << " / " << bytes_total << ")" << '\r';
 }
 
 void TransducerBuilder::buildFinished(bool status, QString message)
@@ -49,7 +53,7 @@ void TransducerBuilder::buildFinished(bool status, QString message)
     build_thread->quit();
     build_thread->wait();
 
-    std::cout << std::endl;
+    std::cout << "Read 100%                              " << std::endl;
 
     if (!status) {
         std::cout << "ERROR building: " << message.toUtf8().data() << std::endl;
@@ -103,7 +107,7 @@ void TransducerBuilder::saveFinished(bool status, QString message)
     save_thread->quit();
     save_thread->wait();
 
-    std::cout << std::endl;
+    std::cout << "Saved 100%                              " << std::endl;
 
     if (status) {
         std::cout << "Successfully saved" << std::endl;
@@ -170,9 +174,12 @@ int main(int argc, char *argv[])
 
     parser.process(app);
 
+    QString in_file (parser.isSet("in") ? parser.value("in")  : DEFAULT_IN_FNAME);
+    QString out_file(parser.isSet("out")? parser.value("out") : DEFAULT_OUT_FNAME);
+
     TransducerBuilder builder(&app);
-    builder.setInputFile(parser.value("in"));
-    builder.setOutputFile(parser.value("out"));
+    builder.setInputFile(in_file);
+    builder.setOutputFile(out_file);
     builder.setSelfTest(parser.isSet("self-test"));
 
     QObject::connect(&builder, SIGNAL(allDone()), &app, SLOT(quit()));
