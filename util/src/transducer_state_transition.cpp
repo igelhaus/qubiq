@@ -1,5 +1,7 @@
 #include <qubiq/util/transducer_state_transition.h>
 
+const QString Transition::_output_sep = QString("");
+
 //
 // Related functions
 //

@@ -55,7 +55,7 @@ public:
     inline void setNext(State *next) { n = next; }
 
     //! Returns an output associated with \c this transition.
-    inline QString output() const { return o.join(""); }
+    inline QString output() const { return o.join(_output_sep); }
 
     //! Sets an output to be associated with \c this transition.
     inline void setOutput(const QString &output) { o.clear(); o << output; }
@@ -77,6 +77,7 @@ private:
         n = other.n;
     }
 
+    static const QString _output_sep;
 };
 
 //! Calculates the unique key of the transition \c t.
