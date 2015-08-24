@@ -67,9 +67,7 @@ void TransducerBuilder::buildFinished(bool status, QString message)
         if (selfTest()) {
             std::cout << "Successfully self-tested" << std::endl;
         } else {
-            std::cout << "ERROR self-testing" << std::endl;
-            emit allDone();
-            return;
+            std::cout << "WARNING: self-testing failed" << std::endl;
         }
     }
 
@@ -129,10 +127,15 @@ bool TransducerBuilder::selfTest()
 
     std::cout << "Started self-testing" << std::endl;
 
+    int current_line  = 0;
+    int num_not_found = 0;
+
     QString current_word;
     QString current_output;
     QTextStream in_stream(&in_file);
     while (!in_stream.atEnd()) {
+        current_line++;
+
         QString line      = in_stream.readLine();
         QStringList parts = line.split("\t");
         current_word    = parts.at(0);
@@ -140,12 +143,15 @@ bool TransducerBuilder::selfTest()
 
         QStringList found = t->search(current_word);
         if (found.size() == 0) {
-            return false;
+            std::cout << "Not found on line: " << current_line << std::endl;
+            num_not_found++;
         }
     }
     in_file.close();
 
-    return true;
+    std::cout << "Total not founds: " << num_not_found << std::endl;
+
+    return num_not_found == 0;
 }
 
 int main(int argc, char *argv[])
