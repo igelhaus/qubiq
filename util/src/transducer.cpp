@@ -70,6 +70,7 @@ QStringList Transducer::search(const QString &s) const
         return result;
     }
 
+    // NB! The join below seems to be very expensive. Consider adding caching for search.
     const QString output_prefix  = output_prefix_parts.join(Transducer::_empty_string);
     const QList<QString> *finals = current_state->finalStrings();
     result.append(output_prefix); // FIXME: test this
