@@ -70,8 +70,8 @@ bool State::operator ==(const State &other) const // FIXME: Test me
     QList<QChar> t_keys = _transitions->keys();
     for (int i = 0; i < t_keys.size(); i++) {
         Transition *this_t  = _transitions->value(t_keys.at(i));
-        Transition *other_t = other._transitions->value(t_keys.at(i));
-        if (*this_t != *other_t) {
+        Transition *other_t = other._transitions->value(t_keys.at(i), NULL);
+        if (other_t == NULL || *this_t != *other_t) {
             return false;
         }
     }
