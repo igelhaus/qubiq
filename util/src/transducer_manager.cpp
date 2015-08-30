@@ -98,7 +98,6 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     }
 
     QVector<State*> *tmp_states = TransducerManager::_initialize_tmp_states(max_word_size + 1);
-    QHash<uint, State*> key2addr;
 
     QString     current_word;
     QString     current_output;
@@ -123,8 +122,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         // We minimize the states from the suffix of the previous word
         for (int i = previous_word.length() /*= last previous state index*/; i >= prefix_len + 1; i--) {
             tmp_states->at(i - 1)->setNext(
-                previous_word.at(i - 1),
-                get_or_alloc_state(tmp_states->at(i), &key2addr)
+                previous_word.at(i - 1), get_or_alloc_state(tmp_states->at(i))
             );
         }
         // This loop intializes the tail states for the current word
@@ -172,12 +170,11 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
     // Minimize the last word
     for (int i = current_word.length() /*= last previous state index*/; i >= 1; i--) {
         tmp_states->at(i - 1)->setNext(
-            current_word.at(i - 1),
-            get_or_alloc_state(tmp_states->at(i), &key2addr)
+            current_word.at(i - 1), get_or_alloc_state(tmp_states->at(i))
         );
     }
 
-    t->init_state = get_or_alloc_state(tmp_states->at(0), &key2addr);
+    t->init_state = get_or_alloc_state(tmp_states->at(0));
 
     TransducerManager::_destroy_tmp_states(tmp_states);
 
@@ -233,7 +230,7 @@ bool TransducerManager::save(const QString &fname)
 
     QDataStream out_stream(&out_file);
 
-    QList<State*> *states  = t->states;
+    QSet<State> *states = t->states;
 
     out_stream
         << TRANSDUCER_FORMAT_MARKER
@@ -245,9 +242,9 @@ bool TransducerManager::save(const QString &fname)
     const int num_states = states->size();
     int num_states_saved = 0;
 
-    for (int i = 0; i < states->size(); i++) {
-
-        State *state = states->at(i);
+    QSet<State>::const_iterator i = states->constBegin();
+    while (i != states->constEnd()) {
+        const State *state = i.operator ->();
         out_stream << (qint64)state;
 
         if (state->isFinal()) {
@@ -277,6 +274,7 @@ bool TransducerManager::save(const QString &fname)
         if ((++num_states_saved) % DEFAULT_SAVE_LOAD_STATUS_UPDATE_STEP == 0) {
             emit saveStatusUpdate(num_states_saved, num_states);
         }
+        ++i;
     }
 
     out_file.close();
@@ -332,8 +330,6 @@ bool TransducerManager::load(const QString &fname)
         emit loadFinished(is_prologue_ok, err_str);
         return is_prologue_ok;
     }
-
-    t->clear();
 
     int num_states_read = 0;
 
@@ -413,7 +409,19 @@ bool TransducerManager::load(const QString &fname)
         }
     }
 
-    State *init_state = id2addr.value(init_state_id, NULL);
+    t->clear();
+    State *init_state = NULL;
+
+    QHash<qint64, State*>::iterator i;
+    for (i = id2addr.begin(); i != id2addr.end(); ++i) {
+        State *state = i.value();
+        QSet<State>::iterator inserted = t->states->insert(*state);
+        if (i.key() == init_state_id) {
+            init_state = const_cast<State*>(inserted.operator ->());
+        }
+        delete state;
+    }
+
     if (init_state == NULL) {
         set_err_str("Unknown init_state_id");
         emit loadFinished(false, err_str);
@@ -465,19 +473,13 @@ bool TransducerManager::load(const QString &fname)
 }
 
 //! \internal Finds a state among already constructed or allocates a new one (used on \c build).
-State* TransducerManager::get_or_alloc_state(const State *state, QHash<uint, State*> *key2addr)
+State* TransducerManager::get_or_alloc_state(const State *state)
 {
-    uint state_key = state->key();
-    State *_state  = key2addr->value(state_key, NULL);
-    if (_state != NULL) {
-        return _state;
+    QSet<State>::iterator found = t->states->find(*state);
+    if (found == t->states->end()) {
+        found = t->states->insert(*state);
     }
-
-    _state = new State(*state);
-    key2addr->insert(state_key, _state);
-    t->states->append(_state);
-
-    return _state;
+    return const_cast<State*>(found.operator ->());
 }
 
 //! \internal Finds a state among already constructed or allocates a new one (used on \c load).
@@ -490,7 +492,6 @@ State* TransducerManager::get_or_alloc_state(qint64 state_id, QHash<qint64, Stat
 
     state = new State();
     id2addr->insert(state_id, state);
-    t->states->append(state);
 
     return state;
 }

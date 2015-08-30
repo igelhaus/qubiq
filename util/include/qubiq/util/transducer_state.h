@@ -18,6 +18,9 @@ public:
     State& operator = (const State &other);
     bool   operator ==(const State &other) const;
 
+    //! Returns \c true if \c this state is not equal to \c other and \c false otherwise.
+    inline bool operator !=(const State &other) const { return !operator ==(other); }
+
     //! Returns \c if state is final for some trace, \c false otherwise.
     inline bool isFinal() const { return is_final; }
 

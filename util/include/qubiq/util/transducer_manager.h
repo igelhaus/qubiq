@@ -80,7 +80,7 @@ private:
     //! \internal Clears error message.
     inline void clear_err_str() { err_str.clear(); }
 
-    State* get_or_alloc_state(const State *state, QHash<uint, State*> *key2addr);
+    State* get_or_alloc_state(const State *state);
     State* get_or_alloc_state(qint64 state_id, QHash<qint64, State*> *id2addr);
 
     static QVector<State*>* _initialize_tmp_states(int n);

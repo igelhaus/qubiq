@@ -71,7 +71,7 @@ bool State::operator ==(const State &other) const // FIXME: Test me
     for (int i = 0; i < t_keys.size(); i++) {
         Transition *this_t  = _transitions->value(t_keys.at(i));
         Transition *other_t = other._transitions->value(t_keys.at(i));
-        if (!(*this_t == *other_t)) {
+        if (*this_t != *other_t) {
             return false;
         }
     }

@@ -24,17 +24,23 @@ public:
     ~Transducer();
 
     //! Checks the state of the transducer and returns \c true it is ready for searching and \c false otherwise.
-    bool isReady() const { return init_state != NULL; }
+    inline bool isReady() const { return init_state != NULL; }
 
     QStringList search(const QString &s, TransducerSearchTrace *trace = NULL) const;
 
 private:
-    QList<State*> *states;     //!< List of states composing the transducer.
-    State         *init_state; //!< The initial state of the transducer.
+    QSet<State> *states;     //!< List of states composing the transducer.
+    State       *init_state; //!< The initial state of the transducer.
 
     static const QString _empty_string;
 
-    void clear();
+    //! Clears the Transducer object: All memory allocated for storing states gets destroyed, but the containers remain undestroyed.
+    inline void clear()
+    {
+        init_state = NULL;
+        states->clear();
+    }
+
 };
 
 #endif // _TRANSDUCER_H_

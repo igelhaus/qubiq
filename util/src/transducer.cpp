@@ -14,7 +14,7 @@ const QString Transducer::_empty_string = QString("");
 //! Constructs the Transducer object.
 Transducer::Transducer()
 {
-    states     = new QList<State*>();
+    states     = new QSet<State>();
     init_state = NULL;
 }
 
@@ -105,12 +105,4 @@ QStringList Transducer::search(const QString &s, TransducerSearchTrace *trace /*
     }
 
     return result;
-}
-
-//! Clears the Transducer object: All memory allocated for storing states gets destroyed, but the containers remain undestroyed.
-void Transducer::clear()
-{
-    qDeleteAll(states->begin(), states->end());
-    states->clear();
-    init_state = NULL;
 }
