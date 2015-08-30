@@ -68,6 +68,8 @@ signals:
     void loadFinished(bool status, QString message);
 
 private:
+    friend class TestTransducer;
+
     Transducer *t;            //!< Pointer to the transducer being managed by \c this manager.
     bool       is_self_alloc; //!< Flag indicating whether \c this manager allocated the managed transducer.
     QString    err_str;       //!< Buffer holding error message (if any) from the last operation.

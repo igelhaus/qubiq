@@ -9,13 +9,14 @@ class TestTransducer: public QObject
     Q_OBJECT
 
 private slots:
-    void testStateTransition();
-    void testTransducerStates();
-    void testStateHashing();
+    void stateTransitions();
+    void transducerStates();
+    void stateHashing();
+    void transducerManagerHelpers();
     void simpleTransducer();
 };
 
-void TestTransducer::testStateTransition()
+void TestTransducer::stateTransitions()
 {
     QChar   label('a');
     QString empty("");
@@ -53,7 +54,7 @@ void TestTransducer::testStateTransition()
     QCOMPARE(qHash(t2) != qHash(t3), true);
 }
 
-void TestTransducer::testTransducerStates()
+void TestTransducer::transducerStates()
 {
     /* Topology of states being tested:
      *
@@ -189,7 +190,7 @@ void TestTransducer::testTransducerStates()
     QCOMPARE(fs2.key(), fs2_copy.key());
 }
 
-void TestTransducer::testStateHashing()
+void TestTransducer::stateHashing()
 {
     /* Topology of states being tested:
      *
@@ -212,6 +213,23 @@ void TestTransducer::testStateHashing()
     QCOMPARE(s2.key() != s6.key(), true);
     QCOMPARE(s4.key() != s6.key(), true);
     QCOMPARE(s6.key() != fs1.key(), true);
+}
+
+void TestTransducer::transducerManagerHelpers()
+{
+    QCOMPARE(TransducerManager::common_prefix_length(   "",    ""), 0);
+    QCOMPARE(TransducerManager::common_prefix_length(  "a",   "a"), 1);
+    QCOMPARE(TransducerManager::common_prefix_length("foo", "bar"), 0);
+    QCOMPARE(TransducerManager::common_prefix_length( "fo", "foo"), 2);
+    QCOMPARE(TransducerManager::common_prefix_length("foo",  "fo"), 2);
+    QCOMPARE(TransducerManager::common_prefix_length("bar", "baz"), 2);
+
+    QCOMPARE(TransducerManager::common_prefix(   "",    "") ==   "", true);
+    QCOMPARE(TransducerManager::common_prefix(  "a",   "a") ==  "a", true);
+    QCOMPARE(TransducerManager::common_prefix("foo", "bar") ==   "", true);
+    QCOMPARE(TransducerManager::common_prefix( "fo", "foo") == "fo", true);
+    QCOMPARE(TransducerManager::common_prefix("foo",  "fo") == "fo", true);
+    QCOMPARE(TransducerManager::common_prefix("bar", "baz") == "ba", true);
 }
 
 void TestTransducer::simpleTransducer()
