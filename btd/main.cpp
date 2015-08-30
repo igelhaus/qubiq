@@ -141,9 +141,17 @@ bool TransducerBuilder::selfTest()
         current_word    = parts.at(0);
         current_output  = parts.at(1);
 
-        QStringList found = t->search(current_word);
+        TransducerSearchTrace trace;
+        QStringList found = t->search(current_word, &trace);
         if (found.size() == 0) {
+            QString formatted(current_word);
+            formatted.insert(trace.reached_pos + 1, "<--");
             std::cout << "Not found on line: " << current_line << std::endl;
+            std::cout << "word                 = " << formatted.toUtf8().data() << std::endl;
+            std::cout << "is_transducer_ready  = " << (trace.is_transducer_ready ? "true" : "false") << std::endl;
+            std::cout << "is_reached_pos_final = " << (trace.is_reached_pos_final? "true" : "false") << std::endl;
+            std::cout << "reached_pos          = " << trace.reached_pos << std::endl;
+            std::cout << "labels_at_failed     = " << trace.labels_at_failed.toUtf8().data() << std::endl;
             num_not_found++;
         }
     }

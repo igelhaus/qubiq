@@ -37,21 +37,39 @@ Transducer::~Transducer()
  *
  * \returns A string list of outputs.
  */
-QStringList Transducer::search(const QString &s) const
+QStringList Transducer::search(const QString &s, TransducerSearchTrace *trace /*= NULL*/) const
 {
     QStringList result;
+
+    if (trace != NULL) {
+        trace->reached_pos          = 0;
+        trace->is_transducer_ready  = false;
+        trace->is_reached_pos_final = false;
+        trace->labels_at_failed.clear();
+    }
 
     if (!isReady()) {
         return result;
     }
 
+    if (trace != NULL) {
+        trace->is_transducer_ready = true;
+    }
+
     QStringList output_prefix_parts(Transducer::_empty_string);
     State *current_state = init_state;
     State *next_state    = NULL;
-    for (int i = 0; i < s.length(); i++) {
+    int i;
+    for (i = 0; i < s.length(); i++) {
         const QChar &c = s.at(i);
         next_state     = current_state->next(c);
         if (next_state == NULL) {
+            if (trace != NULL) {
+                QList<QChar> labels = current_state->transitions()->keys();
+                for (int j = 0; j < labels.size(); j++) {
+                    trace->labels_at_failed.append(labels[j]).append(" | ");
+                }
+            }
             current_state = NULL;
             break;
         }
@@ -62,12 +80,20 @@ QStringList Transducer::search(const QString &s) const
         current_state = next_state;
     }
 
+    if (trace != NULL) {
+        trace->reached_pos = i;
+    }
+
     if (current_state == NULL) {
         return result;
     }
 
     if (!current_state->isFinal()) {
         return result;
+    }
+
+    if (trace != NULL) {
+        trace->is_reached_pos_final = true;
     }
 
     // NB! The join below seems to be very expensive. Consider adding caching for search.
