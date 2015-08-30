@@ -42,6 +42,9 @@ public:
         return *this;
     }
 
+    //! Comparison operator. Returns \c true if \c this transition is equal to \c other and \c false otherwise.
+    inline bool operator ==(const Transition &other) const { return l == other.l && n == other.n && o == other.o; } // FIXME: test me
+
     //! Returns a label associated with \c this transition.
     inline QChar label() const { return l; }
 

@@ -39,6 +39,46 @@ State& State::operator =(const State &other)
     return *this;
 }
 
+/**
+ * @brief Comparison operator.
+ *
+ * Two states are equal if and only if they are both final or both non-final,
+ * have equal lists of final suffixes and equal sets of transitions.
+ *
+ * @param[in] other State to compare \c this to.
+ *
+ * @return \c true if \c this state is equal to \c other and \c false otherwise.
+ */
+bool State::operator ==(const State &other) const // FIXME: Test me
+{
+    if (this == &other) {
+        return true;
+    }
+
+    if (is_final != other.is_final) {
+        return false;
+    }
+
+    if (is_final && *_final_suffixes != *(other._final_suffixes)) {
+        return false;
+    }
+
+    if (_transitions->size() != other._transitions->size()) {
+        return false;
+    }
+
+    QList<QChar> t_keys = _transitions->keys();
+    for (int i = 0; i < t_keys.size(); i++) {
+        Transition *this_t  = _transitions->value(t_keys.at(i));
+        Transition *other_t = other._transitions->value(t_keys.at(i));
+        if (!(*this_t == *other_t)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 //! Returns the next state for the \c label or \c NULL if there is no such transition.
 State* State::next(const QChar &label) const
 {

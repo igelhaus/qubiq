@@ -15,7 +15,8 @@ public:
 
     ~State();
 
-    State& operator =(const State &other);
+    State& operator = (const State &other);
+    bool   operator ==(const State &other) const;
 
     //! Returns \c if state is final for some trace, \c false otherwise.
     inline bool isFinal() const { return is_final; }
@@ -52,5 +53,8 @@ private:
     void _initialize();
     void _assign(const State &other);
 };
+
+//! qHash() overload for hashing states.
+inline uint qHash(const State &state, uint seed = 0) { return state.key(seed); }
 
 #endif // _TRANSDUCER_STATE_H_
