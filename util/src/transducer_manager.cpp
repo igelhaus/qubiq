@@ -159,7 +159,7 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         previous_word = current_word;
 
         // Report status:
-        num_bytes_read += (qint64)(line.length());
+        num_bytes_read += (qint64)(line.length()) * 2; // NB! Approximate number of bytes
         const qint64 remainder = num_bytes_read % DEFAULT_BUILD_STATUS_UPDATE_STEP;
         if (remainder < DEFAULT_BUILD_STATUS_UPDATE_LOWER || remainder > DEFAULT_BUILD_STATUS_UPDATE_UPPER) {
             emit buildStatusUpdate(num_bytes_read, num_bytes);
