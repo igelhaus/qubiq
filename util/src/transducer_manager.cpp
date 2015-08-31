@@ -475,10 +475,7 @@ bool TransducerManager::load(const QString &fname)
 //! \internal Finds a state among already constructed or allocates a new one (used on \c build).
 State* TransducerManager::get_or_alloc_state(const State *state)
 {
-    QSet<State>::iterator found = t->states->find(*state);
-    if (found == t->states->end()) {
-        found = t->states->insert(*state);
-    }
+    QSet<State>::iterator found = t->states->insert(*state);
     return const_cast<State*>(found.operator ->());
 }
 

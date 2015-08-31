@@ -67,10 +67,10 @@ bool State::operator ==(const State &other) const // FIXME: Test me
         return false;
     }
 
-    QList<QChar> t_keys = _transitions->keys();
-    for (int i = 0; i < t_keys.size(); i++) {
-        Transition *this_t  = _transitions->value(t_keys.at(i));
-        Transition *other_t = other._transitions->value(t_keys.at(i), NULL);
+    QHash<QChar, Transition*>::const_iterator i;
+    for (i = _transitions->constBegin(); i != _transitions->constEnd(); ++i) {
+        Transition *this_t  = i.value();
+        Transition *other_t = other._transitions->value(i.key(), NULL);
         if (other_t == NULL || *this_t != *other_t) {
             return false;
         }
