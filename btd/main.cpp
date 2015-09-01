@@ -71,7 +71,9 @@ void TransducerBuilder::buildFinished(bool status, QString message)
         }
     }
 
-    startSaving();
+    // NB! Disable saving functionality
+    emit allDone();
+    //startSaving();
 }
 
 void TransducerBuilder::startSaving()
