@@ -43,7 +43,7 @@ public:
     }
 
     //! Comparison operator. Returns \c true if \c this transition is equal to \c other and \c false otherwise.
-    inline bool operator ==(const Transition &other) const { return l == other.l && n == other.n && o == other.o; } // FIXME: test me
+    inline bool operator ==(const Transition &other) const { return l == other.l && n == other.n /*&& o == other.o*/; } // FIXME: test me; optimize comparison
 
     //! Returns \c true if \c this transition is not equal to \c other and \c false otherwise.
     inline bool operator !=(const Transition &other) const { return !operator ==(other); }
