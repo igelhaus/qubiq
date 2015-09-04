@@ -114,6 +114,15 @@ void State::setOutput(const QChar &label, const QString &output)
     t->setOutput(output);
 }
 
+void State::chopOutput(const QChar &label, int n)
+{
+    Transition *t = _transitions->value(label, NULL);
+    if (t == NULL) {
+        return;
+    }
+    t->chopOutput(n);
+}
+
 //! Updates all outputs of the state with a given \c prefix.
 void State::updateOutputsWithPrefix(const QString &prefix)
 {

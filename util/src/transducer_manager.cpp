@@ -138,16 +138,19 @@ bool TransducerManager::build(const QString &fname, int max_word_size /*= 0*/)
         }
         // Optimize output:
         for (int i = 0; i < prefix_len; i++) {
-            QString _output       = tmp_states->at(i)->output(current_word.at(i));
-            QString output_prefix = TransducerManager::common_prefix(_output, current_output);
-            QString output_suffix = _output.right(_output.length() - output_prefix.length());
+            State *state          = tmp_states->at(i);
+            const QChar label     = current_word.at(i);
+            QString _output       = state->output(label);
+            int output_prefix_len = TransducerManager::common_prefix_length(_output, current_output);
+            int output_suffix_len = _output.length() - output_prefix_len;
+            QString output_suffix = _output.right(output_suffix_len);
 
-            tmp_states->at(i)->setOutput(current_word.at(i), output_prefix);
-            tmp_states->at(i)->updateOutputsWithPrefix(output_suffix);
-            if (tmp_states->at(i)->isFinal()) {
-                tmp_states->at(i)->updateFinalsWithPrefix(output_suffix);
+            state->chopOutput(label, output_suffix_len); // FIXME: unsafe
+            state->updateOutputsWithPrefix(output_suffix);
+            if (state->isFinal()) {
+                state->updateFinalsWithPrefix(output_suffix);
             }
-            current_output = current_output.right(current_output.length() - output_prefix.length());
+            current_output.remove(0, output_prefix_len);
         }
 
         if (current_word == previous_word) {

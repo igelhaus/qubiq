@@ -36,8 +36,9 @@ public:
     State *next   (const QChar &label) const;
     void   setNext(const QChar &label, State *next);
 
-    QString output   (const QChar &label) const;
-    void    setOutput(const QChar &label, const QString &output);
+    QString output    (const QChar &label) const;
+    void    setOutput (const QChar &label, const QString &output);
+    void    chopOutput(const QChar &label, int n);
 
     void updateOutputsWithPrefix(const QString &prefix);
 
