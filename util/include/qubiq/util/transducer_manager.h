@@ -87,7 +87,6 @@ private:
     static void _destroy_tmp_states(QVector<State*> *tmp_states);
 
     static int common_prefix_length(const QString &s1, const QString &s2);
-    static QString common_prefix(const QString &s1, const QString &s2);
 };
 
 #endif // _TRANSDUCER_MANAGER_H_

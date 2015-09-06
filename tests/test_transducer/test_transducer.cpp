@@ -223,13 +223,6 @@ void TestTransducer::transducerManagerHelpers()
     QCOMPARE(TransducerManager::common_prefix_length( "fo", "foo"), 2);
     QCOMPARE(TransducerManager::common_prefix_length("foo",  "fo"), 2);
     QCOMPARE(TransducerManager::common_prefix_length("bar", "baz"), 2);
-
-    QCOMPARE(TransducerManager::common_prefix(   "",    "") ==   "", true);
-    QCOMPARE(TransducerManager::common_prefix(  "a",   "a") ==  "a", true);
-    QCOMPARE(TransducerManager::common_prefix("foo", "bar") ==   "", true);
-    QCOMPARE(TransducerManager::common_prefix( "fo", "foo") == "fo", true);
-    QCOMPARE(TransducerManager::common_prefix("foo",  "fo") == "fo", true);
-    QCOMPARE(TransducerManager::common_prefix("bar", "baz") == "ba", true);
 }
 
 void TestTransducer::simpleTransducer()

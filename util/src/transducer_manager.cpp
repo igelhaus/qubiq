@@ -469,12 +469,6 @@ bool TransducerManager::load(const QString &fname)
     return prefix_len;
 }
 
-//! \internal Finds common prefix length between strings \c s1 and \c s2.
-/*static*/ QString TransducerManager::common_prefix(const QString &s1, const QString &s2)
-{
-    return s1.left(TransducerManager::common_prefix_length(s1, s2));
-}
-
 //! \internal Finds a state among already constructed or allocates a new one (used on \c build).
 State* TransducerManager::get_or_alloc_state(const State *state)
 {
