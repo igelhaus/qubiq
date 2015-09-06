@@ -67,7 +67,7 @@ public:
     inline QString output()
     {
         if (o.size() == 0) {
-            return QString(_default_output);
+            return _default_output;
         }
         if (o.size() > 1) {
             _join_and_assign(NULL);
