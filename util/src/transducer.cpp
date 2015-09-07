@@ -14,15 +14,17 @@ const QString Transducer::_empty_string = QString("");
 //! Constructs the Transducer object.
 Transducer::Transducer()
 {
-    states     = new QSet<State>();
-    init_state = NULL;
+    states_set  = new QSet<State>();
+    states_hash = new QHash<qint64, State*>();
+    init_state  = NULL;
 }
 
 //! Destructs the Transducer object.
 Transducer::~Transducer()
 {
     clear();
-    delete states;
+    delete states_set;
+    delete states_hash;
 }
 
 /**

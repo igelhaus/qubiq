@@ -233,7 +233,7 @@ bool TransducerManager::save(const QString &fname)
 
     QDataStream out_stream(&out_file);
 
-    QSet<State> *states = t->states;
+    QSet<State> *states = t->states_set; // FIXME: select appropriate set
 
     out_stream
         << TRANSDUCER_FORMAT_MARKER
@@ -334,6 +334,8 @@ bool TransducerManager::load(const QString &fname)
         return is_prologue_ok;
     }
 
+    t->clear();
+
     int num_states_read = 0;
 
     QHash<qint64, State*> id2addr;
@@ -412,19 +414,7 @@ bool TransducerManager::load(const QString &fname)
         }
     }
 
-    t->clear();
-    State *init_state = NULL;
-
-    QHash<qint64, State*>::iterator i;
-    for (i = id2addr.begin(); i != id2addr.end(); ++i) {
-        State *state = i.value();
-        QSet<State>::iterator inserted = t->states->insert(*state);
-        if (i.key() == init_state_id) {
-            init_state = const_cast<State*>(inserted.operator ->());
-        }
-        delete state;
-    }
-
+    State *init_state = id2addr.value(init_state_id, NULL);
     if (init_state == NULL) {
         set_err_str("Unknown init_state_id");
         emit loadFinished(false, err_str);
@@ -472,7 +462,7 @@ bool TransducerManager::load(const QString &fname)
 //! \internal Finds a state among already constructed or allocates a new one (used on \c build).
 State* TransducerManager::get_or_alloc_state(const State *state)
 {
-    QSet<State>::iterator found = t->states->insert(*state);
+    QSet<State>::iterator found = t->states_set->insert(*state);
     return const_cast<State*>(found.operator ->());
 }
 
@@ -486,6 +476,7 @@ State* TransducerManager::get_or_alloc_state(qint64 state_id, QHash<qint64, Stat
 
     state = new State();
     id2addr->insert(state_id, state);
+    t->states_hash->append(state);
 
     return state;
 }

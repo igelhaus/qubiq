@@ -29,8 +29,9 @@ public:
     QStringList search(const QString &s, TransducerSearchTrace *trace = NULL) const;
 
 private:
-    QSet<State> *states;     //!< List of states composing the transducer.
-    State       *init_state; //!< The initial state of the transducer.
+    QSet<State>           *states_set;  //!< Set of states composing the transducer.
+    QHash<qint64, State*> *states_hash; //!< Hash of states composing the transducer.
+    State                 *init_state;  //!< The initial state of the transducer.
 
     static const QString _empty_string;
 
@@ -38,7 +39,11 @@ private:
     inline void clear()
     {
         init_state = NULL;
-        states->clear();
+
+        qDeleteAll(states_hash->begin(), states_hash->end());
+
+        states_set->clear();
+        states_hash->clear();
     }
 
 };
